@@ -78,6 +78,13 @@ namespace DressMySlugcat
             {
                 Container.AddChild(sprite);
             }
+
+            //-- TODO: Forcing arms body, should implement Noir's thing so it displays correctly ingame when moving to the left/right
+            Sprites[5].MoveBehindOtherNode(Sprites[0]);
+            Sprites[6].MoveBehindOtherNode(Sprites[0]);
+
+            //-- Forcing legs behind hips, make this an optional toggle and implement ingame
+            Sprites[4].MoveBehindOtherNode(Sprites[1]);
         }
 
         public void UpdateSpritePositions()

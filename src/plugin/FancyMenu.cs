@@ -124,13 +124,13 @@ namespace DressMySlugcat
                 for (int sprite = 0; sprite < SpriteParts[spritename].Length; sprite++)
                 {
                     var i = SpriteParts[spritename][sprite];
-                    if (slugcatDummy.Sprites[i].element.name.StartsWith("fancyslugcatslite_white_"))
+                    if (slugcatDummy.Sprites[i].element.name.StartsWith(Plugin.BaseName + "_dressmyslugcat.saintshirt_"))
                     {
-                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName(slugcatDummy.Sprites[i].element.name.Substring(24));
+                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName(slugcatDummy.Sprites[i].element.name.Substring((Plugin.BaseName + "_dressmyslugcat.saintshirt_").Length));
                     }
                     else
                     {
-                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName("fancyslugcatslite_white_" + slugcatDummy.Sprites[i].element.name);
+                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName(Plugin.BaseName + "_dressmyslugcat.saintshirt_" + slugcatDummy.Sprites[i].element.name);
                     }
                 }
             }
