@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Run in RainWorld": {
+      "commandName": "Executable",
+      "executablePath": "./RainWorld.exe",
+      "workingDirectory": "../../game",
+      "nativeDebugging": false
+    }
+  }
+}

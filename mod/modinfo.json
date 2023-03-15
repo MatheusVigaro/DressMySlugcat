@@ -1,0 +1,12 @@
+{
+	"id": "dressmyslugcat",
+	"name": "Dress My Slugcat",
+	"version": "1.0.0",
+	"hide_version": false,
+	"authors": "Vigaro",
+	"description": "Dress My Slugcat",
+	"requirements": [],
+	"requirements_names": [],
+	"checksum_override_version": false,
+	"tags": ["Cosmetics", "Dependency", "Tools"]
+}
