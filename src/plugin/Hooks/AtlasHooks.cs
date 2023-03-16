@@ -56,7 +56,7 @@ namespace DressMySlugcat.Hooks
 
         public static void LoadAtlases(string directory = Plugin.BaseName)
         {
-            var files = AssetManager.ListDirectory(directory, includeAll: true);
+            var files = AssetManager.ListDirectory(directory, includeAll: true).Distinct().ToList();
 
             var metaFile = files.FirstOrDefault(f => "metadata.json".Equals(Path.GetFileName(f), StringComparison.InvariantCultureIgnoreCase));
 
@@ -101,17 +101,14 @@ namespace DressMySlugcat.Hooks
                         }
 
                         spriteSheet.Atlases.Add(atlas);
-                        foreach (var element in atlas.elements)
-                        {
-                            spriteSheet.Elements[element.name.Substring(spriteSheet.Prefix.Length)] = element;
-                        }
                     }
                 }
 
+                spriteSheet.ParseAtlases();
                 Plugin.SpriteSheets.Add(spriteSheet);
             }
 
-            var subDirectories = AssetManager.ListDirectory(directory, true, true);
+            var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();
             foreach (var subDir in subDirectories)
             {
                 LoadAtlases(subDir);

@@ -23,5 +23,41 @@ namespace DressMySlugcat
 
         public Dictionary<string, FAtlasElement> Elements = new();
         public List<FAtlas> Atlases = new();
+        public List<string> AvailableSprites = new();
+
+        public static Dictionary<string, List<string>> RequiredSprites = new();
+
+        public SpriteSheet() {
+            if (RequiredSprites.Count == 0)
+            {
+                RequiredSprites.Add("BODY", new List<string> { "BodyA" });
+                RequiredSprites.Add("HIPS", new List<string> { "BodyA" });
+                RequiredSprites.Add("LEGS", new List<string> { "LegsA0", "LegsA1", "LegsA2", "LegsA3", "LegsA4", "LegsA5", "LegsA6", "LegsAAir0", "LegsAAir1", "LegsAClimbing0", "LegsAClimbing1", "LegsAClimbing2", "LegsAClimbing3", "LegsAClimbing4", "LegsAClimbing5", "LegsAClimbing6", "LegsACrawling0", "LegsACrawling1", "LegsACrawling2", "LegsACrawling3", "LegsACrawling4", "LegsACrawling5", "LegsAOnPole0", "LegsAOnPole1", "LegsAOnPole2", "LegsAOnPole3", "LegsAOnPole4", "LegsAOnPole5", "LegsAOnPole6", "LegsAPole", "LegsAVerticalPole", "LegsAWall" });
+                RequiredSprites.Add("HEAD", new List<string> { "HeadA0", "HeadA1", "HeadA2", "HeadA3", "HeadA4", "HeadA5", "HeadA6", "HeadA7", "HeadA8", "HeadA9", "HeadA10", "HeadA11", "HeadA12", "HeadA13", "HeadA14", "HeadA15", "HeadA16", "HeadA17" });
+                RequiredSprites.Add("FACE", new List<string> { "FaceA0", "FaceA1", "FaceA2", "FaceA3", "FaceA4", "FaceA5", "FaceA6", "FaceA7", "FaceA8", "FaceB0", "FaceB1", "FaceB2", "FaceB3", "FaceB4", "FaceB5", "FaceB6", "FaceB7", "FaceB8", "FaceDead", "FaceStunned" });
+                RequiredSprites.Add("ARMS", new List<string> { "PlayerArm0", "PlayerArm1", "PlayerArm2", "PlayerArm3", "PlayerArm4", "PlayerArm5", "PlayerArm6", "PlayerArm7", "PlayerArm8", "PlayerArm9", "PlayerArm10", "PlayerArm11", "PlayerArm12", "OnTopOfTerrainHand", "OnTopOfTerrainHand2" });
+                RequiredSprites.Add("TAIL", new List<string> { "TailTexture" });
+            }
+        }
+
+        public void ParseAtlases()
+        {
+            foreach (FAtlas atlas in Atlases)
+            {
+                foreach (var element in atlas.elements)
+                {
+                    Elements[element.name.Substring(Prefix.Length)] = element;
+                }
+            }
+
+            foreach (var group in RequiredSprites.Keys)
+            {
+                var required = RequiredSprites[group];
+                if (required.All(sprite => Elements.Keys.Contains(sprite)))
+                {
+                    AvailableSprites.Add(group);
+                }
+            }
+        }
     }
 }
