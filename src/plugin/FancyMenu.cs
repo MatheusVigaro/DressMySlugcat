@@ -21,9 +21,12 @@ namespace DressMySlugcat
         public RoundedRect textBoxBorder;
         public FSprite textBoxBack;
         public PlayerGraphicsDummy slugcatDummy;
+        public Dictionary<string, SpriteSheet> selectedSprites;
 
         public FancyMenu(ProcessManager manager) : base (manager, Plugin.FancyMenu)
         {
+            selectedSprites = new();
+
             pages.Add(new Page(this, null, "main", 0));
             scene = new InteractiveMenuScene(this, pages[0], manager.rainWorld.options.subBackground);
             pages[0].subObjects.Add(scene);
@@ -61,19 +64,9 @@ namespace DressMySlugcat
             pages[0].Container.AddChild(textBoxBack);
             pages[0].subObjects.Add(textBoxBorder);
 
-            slugcatDummy = new PlayerGraphicsDummy();
+            slugcatDummy = new PlayerGraphicsDummy(this);
             slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
             slugcatDummy.Container.scale = 8f;
-
-            Dictionary<string, int[]> SpriteParts = new();
-
-            SpriteParts["HEAD"] = new int[] { 3 };
-            SpriteParts["FACE"] = new int[] { 9 };
-            SpriteParts["BODY"] = new int[] { 0 };
-            SpriteParts["ARMS"] = new int[] { 5, 6 };
-            SpriteParts["HIPS"] = new int[] { 1 };
-            SpriteParts["LEGS"] = new int[] { 4 };
-            SpriteParts["TAIL"] = new int[] { 2 };
 
             for (var i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
             {
@@ -134,7 +127,7 @@ namespace DressMySlugcat
             {
                 var spritename = message.Substring(16);
 
-                var dialog = new GalleryDialog(spritename, manager);
+                var dialog = new GalleryDialog(spritename, manager, this);
                 PlaySound(SoundID.MENU_Player_Join_Game);
                 manager.ShowDialog(dialog);
 
@@ -155,15 +148,25 @@ namespace DressMySlugcat
             }
         }
 
-        public class GalleryDialog : Dialog
+        public class GalleryDialog : Dialog, SelectOneButton.SelectOneButtonOwner
         {
             public SimpleButton cancelButton;
             public RoundedRect border;
             public RoundedRect[,] spriteBoxes;
+            public List<SpriteSheet> spriteSheets;
+            public MenuLabel[] galleryLabels;
+            public FSprite[] gallerySprites;
+            public SelectOneButton[] galleryButtons;
+            public int currentSelection;
+            public FancyMenu owner;
+            public string spriteName;
 
-            public GalleryDialog(string description, ProcessManager manager)
+            public GalleryDialog(string spriteName, ProcessManager manager, FancyMenu owner)
                 : base(manager)
             {
+                this.owner = owner;
+                this.spriteName = spriteName;
+
                 border = new RoundedRect(this, pages[0], new Vector2(8, 42f), new Vector2(800, 725), true);
 
                 darkSprite.anchorX = 0f;
@@ -177,14 +180,6 @@ namespace DressMySlugcat
                 cancelButton = new SimpleButton(this, pages[0], "BACK", "CANCEL", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(110f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
-                //-- Use this for scrolling
-                /*
-                var x = new OpScrollBox();
-                var z = new UIelementWrapper()
-
-                pages[0].subObjects.Add(z);
-                */
-
                 spriteBoxes = new RoundedRect[4,3];
                 var paddingX = 18;
                 var paddingY = 70;
@@ -192,17 +187,118 @@ namespace DressMySlugcat
                 var boxSize = 180;
                 var labelHeight = 20;
 
-                var label = new MenuLabel(this, pages[0], description, new Vector2((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
+                var label = new MenuLabel(this, pages[0], spriteName, new Vector2((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
                 pages[0].subObjects.Add(label);
 
-                for (var x = 0; x < 4; x++)
+                spriteSheets = new();
+                foreach (var spriteSheet in Plugin.SpriteSheets)
                 {
-                    for (var y = 0; y < 3; y++)
+                    if (!spriteSheet.AvailableSprites.Contains(spriteName))
                     {
-                        spriteBoxes[x, y] = new RoundedRect(this, pages[0], new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x), 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize)), new Vector2(boxSize, boxSize), true);
-
-                        pages[0].subObjects.Add(spriteBoxes[x, y]);
+                        continue;
                     }
+
+                    spriteSheets.Add(spriteSheet);
+                }
+
+                galleryButtons = new SelectOneButton[spriteSheets.Count];
+                gallerySprites = new FSprite[spriteSheets.Count];
+                galleryLabels = new MenuLabel[spriteSheets.Count];
+
+                for (var y = 0; y < 3; y++)
+                {
+                    for (var x = 0; x < 4; x++)
+                    {
+                        var n = (y * 4) + x;
+                        if (n < spriteSheets.Count)
+                        {
+                            var spriteSheet = spriteSheets[n];
+                            var pos = new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x), 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize));
+                            var size = new Vector2(boxSize, boxSize);
+
+                            galleryLabels[n] = new MenuLabel(this, pages[0], spriteSheet.Name, pos + new Vector2(0, size.y+5), new Vector2(size.x, 20f), true);
+                            pages[0].subObjects.Add(galleryLabels[n]);
+
+                            switch (spriteName)
+                            {
+                                case "HEAD":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["HeadA0"]);
+                                    break;
+                                case "FACE":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["FaceA0"]);
+                                    break;
+                                case "BODY":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["BodyA"]);
+                                    break;
+                                case "ARMS":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["PlayerArm12"]);
+                                    break;
+                                case "HIPS":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["HipsA"]);
+                                    gallerySprites[n].scaleY = -1;
+                                    break;
+                                case "LEGS":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["LegsA0"]);
+                                    break;
+                                case "TAIL":
+                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["TailTexture"]);
+                                    break;
+                            }
+
+                            var sprite = gallerySprites[n];
+                            container.AddChild(sprite);
+
+                            sprite.x = pos.x + 1 + ((size.x - 4) / 2);
+                            sprite.y = pos.y + 1 + ((size.x - 4) / 2);
+                            sprite.anchorX = 0.5f; 
+                            sprite.anchorY = 0.5f;
+
+                            var element = sprite.element;
+                            if (element.sourceSize.x > element.sourceSize.y)
+                            {
+                                var targetSize = size.x - 4f;
+                                var scale = targetSize / element.sourceSize.x;
+
+                                sprite.scaleX *= scale;
+                                sprite.scaleY *= scale;
+                                var ySize = element.sourceSize.x * scale;
+                                //sprite.y = sprite.y + (targetSize - ySize) / 2;
+                            }
+                            else
+                            {
+                                var targetSize = size.y - 4f;
+                                var scale = targetSize / element.sourceSize.y;
+
+                                sprite.scaleX *= scale;
+                                sprite.scaleY *= scale;
+                                var xSize = element.sourceSize.y * scale;
+                                //sprite.x = sprite.x + (targetSize - xSize) / 2;
+                            }
+
+                            galleryButtons[n] = new SelectOneButton(this, pages[0], "", "SELECTED_" + spriteSheet.ID, pos, size, galleryButtons, n);
+                            pages[0].subObjects.Add(galleryButtons[n]);
+                        }
+                    }
+                }
+            }
+
+            public int GetCurrentlySelectedOfSeries(string series)
+            {
+                if (series.StartsWith("SELECTED_"))
+                {
+                    return currentSelection;
+                }
+
+                return 0;
+            }
+
+            public void SetCurrentlySelectedOfSeries(string series, int to)
+            {
+                if (series.StartsWith("SELECTED_") && currentSelection != to)
+                {
+                    currentSelection = to;
+                    owner.selectedSprites[spriteName] = spriteSheets[to];
+                    owner.slugcatDummy.UpdateSprites();
                 }
             }
 
@@ -210,6 +306,11 @@ namespace DressMySlugcat
             {
                 if (message != null && message == "CANCEL")
                 {
+                    foreach (var sprite in gallerySprites)
+                    {
+                        sprite.RemoveFromContainer();
+                    }
+
                     manager.StopSideProcess(this);
                 }
             }

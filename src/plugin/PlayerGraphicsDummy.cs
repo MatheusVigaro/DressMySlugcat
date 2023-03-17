@@ -19,9 +19,9 @@ namespace DressMySlugcat
         public FContainer Container;
         public Vector2 SlugcatPosition
         {
-            get 
-            { 
-                return Sprites[0].GetPosition(); 
+            get
+            {
+                return Sprites[0].GetPosition();
             }
             set
             {
@@ -30,10 +30,12 @@ namespace DressMySlugcat
             }
         }
 
-        FAtlas atlas;
+        FancyMenu owner;
 
-        public PlayerGraphicsDummy()
+        public PlayerGraphicsDummy(FancyMenu owner)
         {
+            this.owner = owner;
+
             Container = new FContainer();
             Futile.stage.AddChild(Container);
 
@@ -68,6 +70,8 @@ namespace DressMySlugcat
             Sprites[9] = new FSprite("FaceA0");
 
             Sprites[9].color = new Color(0.1f, 0.1f, 0.1f);
+
+            UpdateSprites();
 
             AddToContainer();
         }
@@ -143,6 +147,64 @@ namespace DressMySlugcat
             Sprites[9].scaleX = 1;
             Sprites[9].scaleY = 1;
             Sprites[9].rotation = 0;
+        }
+
+        internal void UpdateSprites()
+        {
+            if (owner.selectedSprites.ContainsKey("BODY"))
+            {
+                Sprites[0].element = owner.selectedSprites["BODY"].Elements["BodyA"];
+            }
+            else
+            {
+                Sprites[0].element = Futile.atlasManager.GetElementWithName("BodyA");
+            }
+            if (owner.selectedSprites.ContainsKey("HIPS"))
+            {
+                Sprites[1].element = owner.selectedSprites["HIPS"].Elements["HipsA"];
+            }
+            else
+            {
+                Sprites[1].element = Futile.atlasManager.GetElementWithName("HipsA");
+            }
+            if (owner.selectedSprites.ContainsKey("HEAD"))
+            {
+                Sprites[3].element = owner.selectedSprites["HEAD"].Elements["HeadA0"];
+            }
+            else
+            {
+                Sprites[3].element = Futile.atlasManager.GetElementWithName("HeadA0");
+            }
+            if (owner.selectedSprites.ContainsKey("LEGS"))
+            {
+                Sprites[4].element = owner.selectedSprites["LEGS"].Elements["LegsA0"];
+            }
+            else
+            {
+                Sprites[4].element = Futile.atlasManager.GetElementWithName("LegsA0");
+            }
+            if (owner.selectedSprites.ContainsKey("ARMS"))
+            {
+                Sprites[5].element = owner.selectedSprites["ARMS"].Elements["PlayerArm12"];
+                Sprites[6].element = owner.selectedSprites["ARMS"].Elements["PlayerArm12"];
+                Sprites[7].element = owner.selectedSprites["ARMS"].Elements["OnTopOfTerrainHand"];
+                Sprites[8].element = owner.selectedSprites["ARMS"].Elements["OnTopOfTerrainHand"];
+            }
+            else
+            {
+                Sprites[5].element = Futile.atlasManager.GetElementWithName("PlayerArm12");
+                Sprites[6].element = Futile.atlasManager.GetElementWithName("PlayerArm12");
+                Sprites[7].element = Futile.atlasManager.GetElementWithName("OnTopOfTerrainHand");
+                Sprites[8].element = Futile.atlasManager.GetElementWithName("OnTopOfTerrainHand");
+            }
+            if (owner.selectedSprites.ContainsKey("FACE"))
+            {
+                Sprites[9].element = owner.selectedSprites["FACE"].Elements["FaceA0"];
+            }
+            else
+            {
+                Sprites[9].element = Futile.atlasManager.GetElementWithName("FaceA0");
+            }
         }
     }
 }

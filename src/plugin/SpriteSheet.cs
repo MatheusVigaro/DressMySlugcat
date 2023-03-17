@@ -22,6 +22,7 @@ namespace DressMySlugcat
         public string Prefix;
 
         public Dictionary<string, FAtlasElement> Elements = new();
+        public Dictionary<string, FAtlasElement> TrimmedElements = new();
         public List<FAtlas> Atlases = new();
         public List<string> AvailableSprites = new();
 
@@ -47,6 +48,7 @@ namespace DressMySlugcat
                 foreach (var element in atlas.elements)
                 {
                     Elements[element.name.Substring(Prefix.Length)] = element;
+                    TrimmedElements[element.name.Substring(Prefix.Length)] = TrimElement(element);
                 }
             }
 
@@ -58,6 +60,57 @@ namespace DressMySlugcat
                     AvailableSprites.Add(group);
                 }
             }
+        }
+
+        private FAtlasElement TrimElement(FAtlasElement element)
+        {
+            var texture = element.atlas.texture as Texture2D;
+            var rect = element.sourceRect;
+
+            var pos = Vector2Int.RoundToInt(element.uvRect.position * element.atlas.textureSize);
+            var size = Vector2Int.RoundToInt(element.uvRect.size * element.atlas.textureSize);
+
+            var bottomLeft = pos + size;
+            var topRight = new Vector2Int(0, 0);
+
+            for (var x = pos.x; x <= pos.x + size.x; x++)
+            {
+                for (var y = pos.y; y <= pos.y + size.y; y++)
+                {
+                    if (texture.GetPixel(x, y).a != 0)
+                    {
+                        if (x < bottomLeft.x)
+                        {
+                            bottomLeft.x = x;
+                        }
+                        if (y < bottomLeft.y)
+                        {
+                            bottomLeft.y = y;
+                        }
+                        if (x > topRight.x)
+                        {
+                            topRight.x = x;
+                        }
+                        if (y > topRight.y)
+                        {
+                            topRight.y = y;
+                        }
+                    }
+                }
+            }
+
+            if (bottomLeft.x > 0)
+            {
+                bottomLeft.x--;
+            }
+            if (bottomLeft.y > 0)
+            {
+                bottomLeft.y--;
+            }
+            topRight.x++;
+            topRight.y++;
+
+            return element.atlas.CreateUnnamedElement(bottomLeft.x, bottomLeft.y, topRight.x - bottomLeft.x, topRight.y - bottomLeft.y);
         }
     }
 }
