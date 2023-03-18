@@ -18,7 +18,7 @@ namespace DressMySlugcat
         public string ID;
         public string Name;
         public string Author;
-
+    
         public string Prefix;
 
         public Dictionary<string, FAtlasElement> Elements = new();
@@ -65,7 +65,6 @@ namespace DressMySlugcat
         private FAtlasElement TrimElement(FAtlasElement element)
         {
             var texture = element.atlas.texture as Texture2D;
-            var rect = element.sourceRect;
 
             var pos = Vector2Int.RoundToInt(element.uvRect.position * element.atlas.textureSize);
             var size = Vector2Int.RoundToInt(element.uvRect.size * element.atlas.textureSize);
@@ -99,14 +98,6 @@ namespace DressMySlugcat
                 }
             }
 
-            if (bottomLeft.x > 0)
-            {
-                bottomLeft.x--;
-            }
-            if (bottomLeft.y > 0)
-            {
-                bottomLeft.y--;
-            }
             topRight.x++;
             topRight.y++;
 

@@ -78,7 +78,6 @@ namespace DressMySlugcat.Hooks
                 }
                 spriteSheet.Prefix = Plugin.BaseName + "_" + spriteSheet.ID + "_";
 
-
                 if (!string.IsNullOrEmpty(spriteSheet.ID))
                 {
                     foreach (var file in files.Where(f => f.EndsWith(".png")))
@@ -105,7 +104,14 @@ namespace DressMySlugcat.Hooks
                 }
 
                 spriteSheet.ParseAtlases();
-                Plugin.SpriteSheets.Add(spriteSheet);
+                if (spriteSheet.ID == "rainworld.default")
+                {
+                    Plugin.SpriteSheets.Insert(0, spriteSheet);
+                }
+                else
+                {
+                    Plugin.SpriteSheets.Add(spriteSheet);
+                }
             }
 
             var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();

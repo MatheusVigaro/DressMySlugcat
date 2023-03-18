@@ -18,6 +18,7 @@ namespace DressMySlugcat
     {
         public FSprite darkSprite;
         public SimpleButton backButton;
+        public SimpleButton resetButton;
         public RoundedRect textBoxBorder;
         public FSprite textBoxBack;
         public PlayerGraphicsDummy slugcatDummy;
@@ -94,6 +95,9 @@ namespace DressMySlugcat
                 var button = new SimpleButton(this, pages[0], spriteSelectors[i], "SPRITE_SELECTOR_" + spriteSelectors[i].ToUpper(), internalTopLeft + new Vector2(80, (i * -70) - 30), new Vector2(180f, 30f));
                 pages[0].subObjects.Add(button);
             }
+
+            resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos - new Vector2(0, 40), new Vector2(160f, 30f));
+            pages[0].subObjects.Add(resetButton);
         }
 
         public override void ShutDownProcess()
@@ -130,21 +134,39 @@ namespace DressMySlugcat
                 var dialog = new GalleryDialog(spritename, manager, this);
                 PlaySound(SoundID.MENU_Player_Join_Game);
                 manager.ShowDialog(dialog);
-
-                /*
-                for (int sprite = 0; sprite < SpriteParts[spritename].Length; sprite++)
+            }
+            else if (message == "RELOAD_ATLASES")
+            {
+                Dictionary<string, string> selectedBackup = new();
+                foreach (var key in selectedSprites.Keys.ToList())
                 {
-                    var i = SpriteParts[spritename][sprite];
-                    if (slugcatDummy.Sprites[i].element.name.StartsWith(Plugin.BaseName + "_dressmyslugcat.saintshirt_"))
+                    selectedBackup[key] = selectedSprites[key].ID;
+                    selectedSprites.Remove(key);
+                }
+
+                foreach (var sheet in Plugin.SpriteSheets)
+                {
+                    foreach (var atlas in sheet.Atlases)
                     {
-                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName(slugcatDummy.Sprites[i].element.name.Substring((Plugin.BaseName + "_dressmyslugcat.saintshirt_").Length));
-                    }
-                    else
-                    {
-                        slugcatDummy.Sprites[i].element = Futile.atlasManager.GetElementWithName(Plugin.BaseName + "_dressmyslugcat.saintshirt_" + slugcatDummy.Sprites[i].element.name);
+                        Futile.atlasManager.UnloadAtlas(atlas.name);
                     }
                 }
-                RemoveMainView();*/
+
+                Plugin.SpriteSheets.Clear();
+
+                AtlasHooks.LoadAtlases();
+
+                foreach (var key in selectedBackup.Keys)
+                {
+                    var sheet = Plugin.SpriteSheets.FirstOrDefault(x => x.ID == selectedBackup[key]);
+                    if (sheet != null)
+                    {
+                        selectedSprites[key] = sheet;
+                    }
+                }
+
+                slugcatDummy.UpdateSprites();
+                PlaySound(SoundID.MENU_Player_Join_Game);
             }
         }
 
@@ -157,9 +179,23 @@ namespace DressMySlugcat
             public MenuLabel[] galleryLabels;
             public FSprite[] gallerySprites;
             public SelectOneButton[] galleryButtons;
-            public int currentSelection;
+            public SymbolButton leftPage;
+            public SymbolButton rightPage;
+            public MenuLabel pageLabel;
+            public int currentSelection = -1;
+            public int currentPageNumber;
             public FancyMenu owner;
             public string spriteName;
+            public int pageCount;
+
+            public int columns = 4;
+            public int rows = 3;
+            
+            public int paddingX = 18;
+            public int paddingY = 70;
+            public int boxMargin = 15;
+            public int boxSize = 180;
+            public int labelHeight = 20;
 
             public GalleryDialog(string spriteName, ProcessManager manager, FancyMenu owner)
                 : base(manager)
@@ -177,15 +213,10 @@ namespace DressMySlugcat
                 darkSprite.y = border.pos.y + 6f;
                 darkSprite.alpha = 1f;
 
-                cancelButton = new SimpleButton(this, pages[0], "BACK", "CANCEL", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(110f, 30f));
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(110f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
                 spriteBoxes = new RoundedRect[4,3];
-                var paddingX = 18;
-                var paddingY = 70;
-                var boxMargin = 15;
-                var boxSize = 180;
-                var labelHeight = 20;
 
                 var label = new MenuLabel(this, pages[0], spriteName, new Vector2((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
                 pages[0].subObjects.Add(label);
@@ -201,56 +232,132 @@ namespace DressMySlugcat
                     spriteSheets.Add(spriteSheet);
                 }
 
-                galleryButtons = new SelectOneButton[spriteSheets.Count];
-                gallerySprites = new FSprite[spriteSheets.Count];
-                galleryLabels = new MenuLabel[spriteSheets.Count];
+                pageCount = ((spriteSheets.Count / (rows * columns)) + 1);
 
-                for (var y = 0; y < 3; y++)
+                pageLabel = new MenuLabel(this, pages[0], "", cancelButton.pos + new Vector2(336, 0), new Vector2(102, 30), true);
+                pages[0].subObjects.Add(pageLabel);
+
+                leftPage = new SymbolButton(this, pages[0], "Big_Menu_Arrow", "LEFT_PAGE", cancelButton.pos + new Vector2(300, -6));
+                leftPage.symbolSprite.rotation = 270f;
+                leftPage.size = new Vector2(36f, 36f);
+                leftPage.roundedRect.size = leftPage.size;
+                pages[0].subObjects.Add(leftPage);
+
+                rightPage = new SymbolButton(this, pages[0], "Big_Menu_Arrow", "RIGHT_PAGE", cancelButton.pos + new Vector2(438, -6));
+                rightPage.symbolSprite.rotation = 90f;
+                rightPage.size = new Vector2(36f, 36f);
+                rightPage.roundedRect.size = rightPage.size;
+                pages[0].subObjects.Add(rightPage);
+
+                if (owner.selectedSprites.TryGetValue(spriteName, out var selectedSheet) && selectedSheet != null)
                 {
-                    for (var x = 0; x < 4; x++)
+                    currentPageNumber = spriteSheets.IndexOf(selectedSheet) / (rows * columns);
+                }
+
+                SetupGallery();
+                LoadPage(currentPageNumber);
+
+                if (currentSelection < 0)
+                {
+                    currentSelection = 0;
+                }
+
+                var resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES_GALLERY", owner.resetButton.pos, owner.resetButton.size);
+                pages[0].subObjects.Add(resetButton);
+            }
+
+            private void SetupGallery()
+            {
+                galleryButtons = new SelectOneButton[rows * columns];
+                gallerySprites = new FSprite[rows * columns];
+                galleryLabels = new MenuLabel[rows * columns];
+
+                for (var y = 0; y < rows; y++)
+                {
+                    for (var x = 0; x < columns; x++)
                     {
-                        var n = (y * 4) + x;
-                        if (n < spriteSheets.Count)
+                        var n = (y * columns) + x;
+                        var pos = new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x), 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize));
+                        var size = new Vector2(boxSize, boxSize);
+
+                        galleryLabels[n] = new MenuLabel(this, pages[0], "", pos + new Vector2(0, size.y + 5), new Vector2(size.x, 20f), true);
+                        pages[0].subObjects.Add(galleryLabels[n]);
+
+                        gallerySprites[n] = new FSprite("pixel");
+
+                        var sprite = gallerySprites[n];
+                        container.AddChild(sprite);
+
+                        sprite.x = pos.x + 2 + ((size.x - 4) / 2);
+                        sprite.y = pos.y + 2 + ((size.x - 4) / 2);
+                        sprite.anchorX = 0.5f;
+                        sprite.anchorY = 0.5f;
+                        if (spriteName == "HIPS")
                         {
-                            var spriteSheet = spriteSheets[n];
+                            sprite.rotation = 180;
+                        }
+                        galleryButtons[n] = new SelectOneButton(this, pages[0], "", "", pos - new Vector2(2, 2), size + new Vector2(2, 2), galleryButtons, n);
+
+                        pages[0].subObjects.Add(galleryButtons[n]);
+
+                        gallerySprites[n].isVisible = false;
+                        galleryButtons[n].inactive = true;
+                        galleryLabels[n].text = string.Empty;
+                    }
+                }
+            }
+
+            private void LoadPage(int page)
+            {
+                currentSelection = -1;
+                currentPageNumber = page;
+
+                pageLabel.text = (page + 1) + "/" + pageCount;
+                leftPage.inactive = page == 0;
+                rightPage.inactive = page >= pageCount-1;
+
+                for (var y = 0; y < rows; y++)
+                {
+                    for (var x = 0; x < columns; x++)
+                    {
+                        var spritePosition = (y * columns) + x;
+                        var spriteNumber = (page * columns * rows) + spritePosition;
+                        if (spriteNumber < spriteSheets.Count)
+                        {
+                            var spriteSheet = spriteSheets[spriteNumber];
                             var pos = new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x), 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize));
                             var size = new Vector2(boxSize, boxSize);
-
-                            galleryLabels[n] = new MenuLabel(this, pages[0], spriteSheet.Name, pos + new Vector2(0, size.y+5), new Vector2(size.x, 20f), true);
-                            pages[0].subObjects.Add(galleryLabels[n]);
 
                             switch (spriteName)
                             {
                                 case "HEAD":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["HeadA0"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["HeadA0"];
                                     break;
                                 case "FACE":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["FaceA0"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["FaceA0"];
                                     break;
                                 case "BODY":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["BodyA"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["BodyA"];
                                     break;
                                 case "ARMS":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["PlayerArm12"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["PlayerArm12"];
                                     break;
                                 case "HIPS":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["HipsA"]);
-                                    gallerySprites[n].scaleY = -1;
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["HipsA"];
                                     break;
                                 case "LEGS":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["LegsA0"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["LegsA0"];
                                     break;
                                 case "TAIL":
-                                    gallerySprites[n] = new FSprite(spriteSheet.TrimmedElements["TailTexture"]);
+                                    gallerySprites[spritePosition].element = spriteSheet.TrimmedElements["TailTexture"];
                                     break;
                             }
 
-                            var sprite = gallerySprites[n];
-                            container.AddChild(sprite);
+                            var sprite = gallerySprites[spritePosition];
 
-                            sprite.x = pos.x + 1 + ((size.x - 4) / 2);
-                            sprite.y = pos.y + 1 + ((size.x - 4) / 2);
-                            sprite.anchorX = 0.5f; 
+                            sprite.x = pos.x + 2 + ((size.x - 4) / 2);
+                            sprite.y = pos.y + 2 + ((size.x - 4) / 2);
+                            sprite.anchorX = 0.5f;
                             sprite.anchorY = 0.5f;
 
                             var element = sprite.element;
@@ -259,9 +366,9 @@ namespace DressMySlugcat
                                 var targetSize = size.x - 4f;
                                 var scale = targetSize / element.sourceSize.x;
 
-                                sprite.scaleX *= scale;
-                                sprite.scaleY *= scale;
-                                var ySize = element.sourceSize.x * scale;
+                                sprite.scaleX = scale;
+                                sprite.scaleY = scale;
+                                //var ySize = element.sourceSize.x * scale;
                                 //sprite.y = sprite.y + (targetSize - ySize) / 2;
                             }
                             else
@@ -269,14 +376,29 @@ namespace DressMySlugcat
                                 var targetSize = size.y - 4f;
                                 var scale = targetSize / element.sourceSize.y;
 
-                                sprite.scaleX *= scale;
-                                sprite.scaleY *= scale;
-                                var xSize = element.sourceSize.y * scale;
+                                sprite.scaleX = scale;
+                                sprite.scaleY = scale;
+                                //var xSize = element.sourceSize.y * scale;
                                 //sprite.x = sprite.x + (targetSize - xSize) / 2;
                             }
 
-                            galleryButtons[n] = new SelectOneButton(this, pages[0], "", "SELECTED_" + spriteSheet.ID, pos, size, galleryButtons, n);
-                            pages[0].subObjects.Add(galleryButtons[n]);
+                            gallerySprites[spritePosition].isVisible = true;
+
+                            galleryButtons[spritePosition].signalText = "SELECTED_" + spriteSheet.ID;
+                            galleryButtons[spritePosition].inactive = false;
+
+                            galleryLabels[spritePosition].text = spriteSheet.Name;
+
+                            if (owner.selectedSprites.TryGetValue(spriteName, out var selectedSheet) && selectedSheet == spriteSheet)
+                            {
+                                currentSelection = spritePosition;
+                            }
+                        }
+                        else
+                        {
+                            gallerySprites[spritePosition].isVisible = false;
+                            galleryButtons[spritePosition].inactive = true;
+                            galleryLabels[spritePosition].text = "";
                         }
                     }
                 }
@@ -296,22 +418,60 @@ namespace DressMySlugcat
             {
                 if (series.StartsWith("SELECTED_") && currentSelection != to)
                 {
-                    currentSelection = to;
-                    owner.selectedSprites[spriteName] = spriteSheets[to];
-                    owner.slugcatDummy.UpdateSprites();
+                    var spriteNumber = (currentPageNumber * columns * rows) + to;
+                    if (spriteNumber < spriteSheets.Count)
+                    {
+                        currentSelection = to;
+                        owner.selectedSprites[spriteName] = spriteSheets[(currentPageNumber * columns * rows) + to];
+                        owner.slugcatDummy.UpdateSprites();
+                    }
                 }
             }
 
             public override void Singal(MenuObject sender, string message)
             {
-                if (message != null && message == "CANCEL")
+                if (message == "BACK")
                 {
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
                     foreach (var sprite in gallerySprites)
                     {
-                        sprite.RemoveFromContainer();
+                        if (sprite != null)
+                        {
+                            sprite.RemoveFromContainer();
+                        }
                     }
 
                     manager.StopSideProcess(this);
+                }
+                else if (message == "RELOAD_ATLASES_GALLERY")
+                {
+                    Singal(sender, "BACK");
+                    owner.Singal(sender, "RELOAD_ATLASES");
+                    owner.Singal(sender, "SPRITE_SELECTOR_" + spriteName);
+                }
+                else if (message == "LEFT_PAGE")
+                {
+                    if ((sender as SymbolButton).inactive)
+                    {
+                        PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                    }
+                    else
+                    {
+                        PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        LoadPage(currentPageNumber - 1);
+                    }
+                }
+                else if (message == "RIGHT_PAGE")
+                {
+                    if ((sender as SymbolButton).inactive)
+                    {
+                        PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                    }
+                    else
+                    {
+                        PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        LoadPage(currentPageNumber + 1);
+                    }
                 }
             }
         }
