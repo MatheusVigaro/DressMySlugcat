@@ -122,7 +122,10 @@ namespace DressMySlugcat
                 var sheet = SpriteSheet.Get(replacement.replacement);
                 if (sheet != null)
                 {
-                    selectedSprites[replacement.slugcat][replacement.sprite] = sheet.ID;
+                    if (selectedSprites.ContainsKey(replacement.slugcat))
+                    {
+                        selectedSprites[replacement.slugcat][replacement.sprite] = sheet.ID;
+                    }
                 }
             }
         }

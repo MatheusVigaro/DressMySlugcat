@@ -20,32 +20,103 @@ namespace DressMySlugcat.Hooks
 {
     public class PlayerGraphicsHooks
     {
+        public static ConditionalWeakTable<PlayerGraphics, PlayerGraphicsEx> PlayerGraphicsData = new();
+
         public static void Init()
         {
             On.PlayerGraphics.ctor += PlayerGraphics_ctor;
             On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
-            On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+            On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainer;
+            IL.RoomCamera.SpriteLeaser.Update += SpriteLeaser_Update;
+            IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+        }
+
+        private static void PlayerGraphics_AddToContainer(On.PlayerGraphics.orig_AddToContainer orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
+        {
+            orig(self, sLeaser, rCam, newContatiner);
+
+            //-- Legs behind hips
+            sLeaser.sprites[4].MoveBehindOtherNode(sLeaser.sprites[1]);
+
+            //-- Tail behind legs
+            sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[4]);
+        }
+
+        private static void PlayerGraphics_DrawSprites(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchRet()))
+            {
+                return;
+            }
+
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser) =>
+            {
+                if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData))
+                {
+                    playerGraphicsData.SpriteNames = new string[sLeaser.sprites.Length];
+                    for (var i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
+                    }
+                }
+            });
+        }
+
+        private static void SpriteLeaser_Update(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            
+            if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdarg(0),
+                                                    i => i.MatchLdfld<RoomCamera.SpriteLeaser>("drawableObject"),
+                                                    i => i.MatchLdarg(0),
+                                                    i => i.MatchLdarg(2),
+                                                    i => i.MatchLdarg(1),
+                                                    i => i.MatchLdarg(3),
+                                                    i => i.MatchCallOrCallvirt<IDrawable>("DrawSprites")))
+            {
+                return;
+            }
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser) =>
+            {
+                if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData))
+                {
+                    for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
+                    {
+                        if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
+                        {
+                            sLeaser.sprites[i].element = replacement;
+                        }
+                    }
+                }
+            });
         }
 
         private static void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
             orig(self, sLeaser, rCam);
 
-            var name = self.player.slugcatStats.name.value.ToLower();
-            /*
-            if (sLeaser.sprites[2] is TriangleMesh tail && Plugin.TailAtlases.ContainsKey(name))
+            if (!PlayerGraphicsData.TryGetValue(self, out var playerGraphicsData) || playerGraphicsData == null)
             {
-                var atlas = Plugin.TailAtlases[name];
-                if (atlas.elements != null && atlas.elements.Count > 0)
+                InitiateCustomGraphics(self);
+            }
+
+            if (sLeaser.sprites[2] is TriangleMesh tail && PlayerGraphicsData.TryGetValue(self, out playerGraphicsData))
+            {
+                if (playerGraphicsData.SpriteReplacements.TryGetValue("TailTexture", out var tailTexture) && tailTexture != null)
                 {
-                    tail.element = atlas.elements[0];
-                    for (int i = tail.verticeColors.Length - 1; i >= 0; i--)
+                    tail.element = tailTexture;
+                    for (int i = tail.vertices.Length - 1; i >= 0; i--)
                     {
-                        float perc = i / 2 / (float)(tail.verticeColors.Length / 2);
+                        float perc = i / 2 / (float)(tail.vertices.Length / 2);
                         Vector2 uv;
                         if (i % 2 == 0)
                             uv = new Vector2(perc, 0f);
-                        else if (i < tail.verticeColors.Length - 1)
+                        else if (i < tail.vertices.Length - 1)
                             uv = new Vector2(perc, 1f);
                         else
                             uv = new Vector2(1f, 0f);
@@ -55,58 +126,46 @@ namespace DressMySlugcat.Hooks
                         uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
 
                         tail.UVvertices[i] = uv;
+
                     }
                 }
-            }*/
+            }
         }
-
-        public static Dictionary<string, Dictionary<string, string>> SpriteReplacements = new();
 
         private static void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
-
-            var name = self.player.slugcatStats.name.value.ToLower();
-            if (!SpriteReplacements.ContainsKey(name))
-            {
-                var startingName = "fancyslugcatslite_" + name + "_";
-
-                Dictionary<string, string> replacements = new();
-                SpriteReplacements[name] = replacements;
-
-                foreach (var key in Futile.atlasManager._allElementsByName.Keys)
-                {
-                    if (key.StartsWith(startingName))
-                    {
-                        replacements[key.Substring(startingName.Length)] = key;
-                    }
-                }
-            }
+            InitiateCustomGraphics(self);
         }
 
-        private static void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        public static void InitiateCustomGraphics(PlayerGraphics self)
         {
-            orig(self, sLeaser, rCam, timeStacker, camPos);
-
-            if (Input.GetKeyDown(KeyCode.RightControl))
+            if (PlayerGraphicsData.TryGetValue(self, out var _))
             {
-                Debug.LogWarning("a");
-                var sprites = sLeaser.sprites;
+                PlayerGraphicsData.Remove(self);
             }
 
-            var name = self.player.slugcatStats.name.value.ToLower();
-            if (SpriteReplacements.ContainsKey(name))
-            {
-                var replacements = SpriteReplacements[name];
+            var playerGraphicsData = new PlayerGraphicsEx();
+            PlayerGraphicsData.Add(self, playerGraphicsData);
 
-                foreach (var sprite in sLeaser.sprites)
+            var name = self.player.slugcatStats.name.value;
+            foreach (var replacement in SaveManager.SpriteReplacements.Where(x => x.slugcat == name))
+            {
+                if (replacement.replacement == "rainworld.default")
                 {
-                    if (replacements.ContainsKey(sprite.element.name))
+                    continue;
+                }
+
+                var sheet = SpriteSheet.Get(replacement.replacement);
+                if (sheet != null)
+                {
+                    foreach (var sprite in SpriteSheet.RequiredSprites[replacement.sprite])
                     {
-                        sprite.element = Futile.atlasManager.GetElementWithName(replacements[sprite.element.name]);
+                        playerGraphicsData.SpriteReplacements[sprite] = sheet.Elements[sprite];
                     }
                 }
             }
+
         }
     }
 }
