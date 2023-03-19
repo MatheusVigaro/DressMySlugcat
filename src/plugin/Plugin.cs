@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using DressMySlugcat.Hooks;
 using System.IO;
+using HUD;
+using System.Runtime.Serialization.Json;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -16,6 +18,7 @@ using System.IO;
 
 namespace DressMySlugcat
 {
+    [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public partial class Plugin : BaseUnityPlugin
     {
@@ -62,6 +65,7 @@ namespace DressMySlugcat
             IsPostInit = true;
 
             AtlasHooks.LoadAtlases();
+            SaveManager.Load();
         }
     }
 }

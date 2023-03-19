@@ -41,9 +41,6 @@
     <Reference Include="HOOKS-Assembly-CSharp">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\plugins\HOOKS-Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="SlugBase">
-      <HintPath>F:\Steam\steamapps\workshop\content\312520\2933196558\plugins\SlugBase.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.dll</HintPath>
       <Private>false</Private>

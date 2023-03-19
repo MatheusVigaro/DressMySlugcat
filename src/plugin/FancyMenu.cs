@@ -14,7 +14,7 @@ using Menu.Remix;
 
 namespace DressMySlugcat
 {
-    public class FancyMenu : Menu.Menu
+    public class FancyMenu : Menu.Menu, SelectOneButton.SelectOneButtonOwner
     {
         public FSprite darkSprite;
         public SimpleButton backButton;
@@ -22,11 +22,19 @@ namespace DressMySlugcat
         public RoundedRect textBoxBorder;
         public FSprite textBoxBack;
         public PlayerGraphicsDummy slugcatDummy;
-        public Dictionary<string, SpriteSheet> selectedSprites;
+        public Dictionary<string, Dictionary<string, string>> selectedSprites;
+        public Dictionary<string, SimpleButton> selectSpriteButtons;
+        public string selectedSlugcat;
+
+        public SelectOneButton[] slugcatButtons;
+        public int selectedSlugcatIndex;
 
         public FancyMenu(ProcessManager manager) : base (manager, Plugin.FancyMenu)
         {
             selectedSprites = new();
+            selectedSlugcat = SlugcatStats.Name.values.entries.FirstOrDefault();
+            slugcatButtons = new SelectOneButton[SlugcatStats.Name.values.entries.Count];
+            selectSpriteButtons = new();
 
             pages.Add(new Page(this, null, "main", 0));
             scene = new InteractiveMenuScene(this, pages[0], manager.rainWorld.options.subBackground);
@@ -43,6 +51,24 @@ namespace DressMySlugcat
             darkSprite.y = -1f;
             darkSprite.alpha = 0.85f;
             pages[0].Container.AddChild(darkSprite);
+
+            for (var i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            {
+                var slugcatName = SlugcatStats.Name.values.entries[i];
+                var slugcatDisplayName = slugcatName;
+                SlugcatStats.Name.TryParse(typeof(SlugcatStats.Name), slugcatName, true, out var slugcatNameExtEnum);
+                if (slugcatNameExtEnum != null)
+                {
+                    slugcatDisplayName = SlugcatStats.getSlugcatName((SlugcatStats.Name)slugcatNameExtEnum);
+                }
+
+                var slugcatButton = new SelectOneButton(this, pages[0], slugcatDisplayName, "SLUGCAT_" + slugcatName, new Vector2(15f, 768f - (50f + (35f * i))), new Vector2(220f, 30f), slugcatButtons, i);
+                pages[0].subObjects.Add(slugcatButton);
+
+                selectedSprites[slugcatName] = new();
+            }
+
+            LoadSelectedSheets();
 
             backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(15f, 50f), new Vector2(220f, 30f));
             pages[0].subObjects.Add(backButton);
@@ -69,20 +95,6 @@ namespace DressMySlugcat
             slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
             slugcatDummy.Container.scale = 8f;
 
-            for (var i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
-            {
-                var slugcatName = SlugcatStats.Name.values.entries[i];
-                var slugcatDisplayName = slugcatName;
-                SlugcatStats.Name.TryParse(typeof(SlugcatStats.Name), slugcatName, true, out var slugcatNameExtEnum);
-                if (slugcatNameExtEnum != null)
-                {
-                    slugcatDisplayName = SlugcatStats.getSlugcatName((SlugcatStats.Name)slugcatNameExtEnum);
-                }
-
-                var slugcatButton = new SimpleButton(this, pages[0], slugcatDisplayName, "SLUGCAT_" + slugcatName, new Vector2(15f, 768f - (50f + (35f * i))), new Vector2(220f, 30f));
-                pages[0].subObjects.Add(slugcatButton);
-            }
-
             var spriteSelectors = new string[] { "Head", "Face", "Body", "Arms", "Hips", "Legs", "Tail" };
 
             var internalTopLeft = new Vector2(190f, 700f);
@@ -92,12 +104,58 @@ namespace DressMySlugcat
                 var label = new MenuLabel(this, pages[0], spriteSelectors[i], internalTopLeft + new Vector2(72, i * -70f), new Vector2(200f, 30f), bigText: true);
                 pages[0].subObjects.Add(label);
 
-                var button = new SimpleButton(this, pages[0], spriteSelectors[i], "SPRITE_SELECTOR_" + spriteSelectors[i].ToUpper(), internalTopLeft + new Vector2(80, (i * -70) - 30), new Vector2(180f, 30f));
+                var button = new SimpleButton(this, pages[0], "", "SPRITE_SELECTOR_" + spriteSelectors[i].ToUpper(), internalTopLeft + new Vector2(80, (i * -70) - 30), new Vector2(180f, 30f));
+                selectSpriteButtons[spriteSelectors[i].ToUpper()] = button;
                 pages[0].subObjects.Add(button);
             }
 
+            UpdateSpriteButtonsText();
+
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos - new Vector2(0, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
+        }
+
+        public void LoadSelectedSheets()
+        {
+            foreach (var replacement in SaveManager.SpriteReplacements)
+            {
+                var sheet = SpriteSheet.Get(replacement.replacement);
+                if (sheet != null)
+                {
+                    selectedSprites[replacement.slugcat][replacement.sprite] = sheet.ID;
+                }
+            }
+        }
+
+        public void UpdateSpriteButtonsText()
+        {
+
+            foreach (var key in selectSpriteButtons.Keys) {
+                selectedSprites[selectedSlugcat].TryGetValue(key, out var sheetID);
+                if (string.IsNullOrEmpty(sheetID))
+                {
+                    sheetID = "rainworld.default";
+                }
+
+                selectSpriteButtons[key].menuLabel.text = SpriteSheet.Get(sheetID).Name;
+            }
+        }
+
+        public int GetCurrentlySelectedOfSeries(string series)
+        {
+            return selectedSlugcatIndex;
+        }
+
+        public void SetCurrentlySelectedOfSeries(string series, int to)
+        {
+            if (series.StartsWith("SLUGCAT_") && selectedSlugcatIndex != to)
+            {
+                selectedSlugcatIndex = to;
+                selectedSlugcat = SlugcatStats.Name.values.entries[to];
+
+                UpdateSpriteButtonsText();
+                slugcatDummy.UpdateSprites();
+            }
         }
 
         public override void ShutDownProcess()
@@ -122,11 +180,26 @@ namespace DressMySlugcat
             {
                 manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 PlaySound(SoundID.MENU_Switch_Page_Out);
+
+                SaveManager.SpriteReplacements.Clear();
+
+                foreach (var slugcat in selectedSprites.Keys)
+                {
+                    foreach (var sprite in selectedSprites[slugcat].Keys)
+                    {
+                        SaveManager.SpriteReplacements.Add(new SaveManager.SpriteReplacement
+                        {
+                            slugcat = slugcat,
+                            sprite = sprite,
+                            replacement = selectedSprites[slugcat][sprite],
+                            enforce = true
+                        });
+                    }
+                }
+
+                SaveManager.Save();
             }
-            else if (message.StartsWith("SLUGCAT_"))
-            {
-                var slugcatName = message.Substring(8);
-            }
+
             else if (message.StartsWith("SPRITE_SELECTOR_"))
             {
                 var spritename = message.Substring(16);
@@ -137,13 +210,6 @@ namespace DressMySlugcat
             }
             else if (message == "RELOAD_ATLASES")
             {
-                Dictionary<string, string> selectedBackup = new();
-                foreach (var key in selectedSprites.Keys.ToList())
-                {
-                    selectedBackup[key] = selectedSprites[key].ID;
-                    selectedSprites.Remove(key);
-                }
-
                 foreach (var sheet in Plugin.SpriteSheets)
                 {
                     foreach (var atlas in sheet.Atlases)
@@ -155,15 +221,6 @@ namespace DressMySlugcat
                 Plugin.SpriteSheets.Clear();
 
                 AtlasHooks.LoadAtlases();
-
-                foreach (var key in selectedBackup.Keys)
-                {
-                    var sheet = Plugin.SpriteSheets.FirstOrDefault(x => x.ID == selectedBackup[key]);
-                    if (sheet != null)
-                    {
-                        selectedSprites[key] = sheet;
-                    }
-                }
 
                 slugcatDummy.UpdateSprites();
                 PlaySound(SoundID.MENU_Player_Join_Game);
@@ -251,7 +308,7 @@ namespace DressMySlugcat
 
                 if (owner.selectedSprites.TryGetValue(spriteName, out var selectedSheet) && selectedSheet != null)
                 {
-                    currentPageNumber = spriteSheets.IndexOf(selectedSheet) / (rows * columns);
+                    currentPageNumber = spriteSheets.IndexOf(SpriteSheet.Get(selectedSheet[spriteName])) / (rows * columns);
                 }
 
                 SetupGallery();
@@ -389,7 +446,7 @@ namespace DressMySlugcat
 
                             galleryLabels[spritePosition].text = spriteSheet.Name;
 
-                            if (owner.selectedSprites.TryGetValue(spriteName, out var selectedSheet) && selectedSheet == spriteSheet)
+                            if (owner.selectedSprites.TryGetValue(spriteName, out var selectedSheet) && SpriteSheet.Get(selectedSheet[spriteName]) == spriteSheet)
                             {
                                 currentSelection = spritePosition;
                             }
@@ -422,7 +479,9 @@ namespace DressMySlugcat
                     if (spriteNumber < spriteSheets.Count)
                     {
                         currentSelection = to;
-                        owner.selectedSprites[spriteName] = spriteSheets[(currentPageNumber * columns * rows) + to];
+                        owner.selectedSprites[owner.selectedSlugcat][spriteName] = spriteSheets[(currentPageNumber * columns * rows) + to].ID;
+
+                        owner.UpdateSpriteButtonsText();
                         owner.slugcatDummy.UpdateSprites();
                     }
                 }

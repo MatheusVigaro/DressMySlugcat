@@ -103,5 +103,10 @@ namespace DressMySlugcat
 
             return element.atlas.CreateUnnamedElement(bottomLeft.x, bottomLeft.y, topRight.x - bottomLeft.x, topRight.y - bottomLeft.y);
         }
+
+        public static SpriteSheet Get(string id)
+        {
+            return Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
+        }
     }
 }
