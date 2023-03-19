@@ -1,6 +1,7 @@
 ﻿using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -40,6 +42,21 @@ namespace DressMySlugcat.Hooks
 
             //-- Tail behind legs
             sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[4]);
+
+            //-- Gills behind face
+            if (self.gills != null)
+            {
+                var lastSprite = sLeaser.sprites[9];
+                for (int i = self.gills.startSprite + self.gills.numberOfSprites -1; i >= self.gills.startSprite; i--)
+                {
+                    sLeaser.sprites[i].MoveBehindOtherNode(lastSprite);
+                    lastSprite = sLeaser.sprites[i];
+                }
+            }
+
+            //-- Arms behind head (can also go behind body when walking, check DrawSprites)
+            sLeaser.sprites[5].MoveBehindOtherNode(sLeaser.sprites[3]);
+            sLeaser.sprites[6].MoveBehindOtherNode(sLeaser.sprites[3]);
         }
 
         private static void PlayerGraphics_DrawSprites(ILContext il)
@@ -60,6 +77,18 @@ namespace DressMySlugcat.Hooks
                     for (var i = 0; i < sLeaser.sprites.Length; i++)
                     {
                         playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
+                    }
+
+
+                    if (playerGraphics.player.flipDirection == 1)
+                    {
+                        sLeaser.sprites[5].MoveBehindOtherNode(sLeaser.sprites[3]);
+                        sLeaser.sprites[6].MoveBehindOtherNode(sLeaser.sprites[0]);
+                    }
+                    else
+                    {
+                        sLeaser.sprites[5].MoveBehindOtherNode(sLeaser.sprites[0]);
+                        sLeaser.sprites[6].MoveBehindOtherNode(sLeaser.sprites[3]);
                     }
                 }
             });

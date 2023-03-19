@@ -134,13 +134,25 @@ namespace DressMySlugcat
         {
 
             foreach (var key in selectSpriteButtons.Keys) {
-                selectedSprites[selectedSlugcat].TryGetValue(key, out var sheetID);
-                if (string.IsNullOrEmpty(sheetID))
+                if (selectedSprites.ContainsKey(selectedSlugcat))
                 {
-                    sheetID = "rainworld.default";
-                }
+                    selectedSprites[selectedSlugcat].TryGetValue(key, out var sheetID);
+                    if (string.IsNullOrEmpty(sheetID))
+                    {
+                        sheetID = "rainworld.default";
+                    }
 
-                selectSpriteButtons[key].menuLabel.text = SpriteSheet.Get(sheetID).Name;
+                    var sheet = SpriteSheet.Get(sheetID);
+
+                    if (sheet == null)
+                    {
+                        sheetID = "rainworld.default";
+                        sheet = SpriteSheet.Get(sheetID);
+                    }
+
+                    selectedSprites[selectedSlugcat][key] = sheet.ID;
+                    selectSpriteButtons[key].menuLabel.text = sheet.Name;
+                }
             }
         }
 
