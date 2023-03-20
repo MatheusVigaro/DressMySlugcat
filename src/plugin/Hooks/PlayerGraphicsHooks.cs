@@ -112,13 +112,16 @@ namespace DressMySlugcat.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser) =>
             {
-                if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData))
+                if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
                         if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
                         {
-                            sLeaser.sprites[i].element = replacement;
+                            if (sLeaser.sprites[i] != null)
+                            {
+                                sLeaser.sprites[i].element = replacement;
+                            }
                         }
                     }
                 }
