@@ -14,6 +14,7 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting;
 using System.Security;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -54,70 +55,135 @@ namespace DressMySlugcat.Hooks
             });
         }
 
+        public static List<string> Errors = new();
+        public static void RegisterError(string friendly, Exception exception = null)
+        {
+            Errors.Add(friendly);
+            Debug.LogError("DressMySlugcat: " + friendly);
+
+            if (exception != null)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
         public static void LoadAtlases(string directory = Plugin.BaseName)
+        {
+            Errors.Clear();
+            LoadAtlasesInternal(directory);
+        }
+
+        public static void LoadAtlasesInternal(string directory = Plugin.BaseName)
         {
             var files = AssetManager.ListDirectory(directory, includeAll: true).Distinct().ToList();
 
             var metaFile = files.FirstOrDefault(f => "metadata.json".Equals(Path.GetFileName(f), StringComparison.InvariantCultureIgnoreCase));
 
-            if (!string.IsNullOrEmpty(metaFile))
+            try
             {
-                var spriteSheet = new SpriteSheet();
-                var metaDict = File.ReadAllText(metaFile).dictionaryFromJson();
-                if (metaDict.TryGetValue("id", out var id))
+                if (!string.IsNullOrEmpty(metaFile))
                 {
-                    spriteSheet.ID = (string)id;
-                }
-                if (metaDict.TryGetValue("name", out var name))
-                {
-                    spriteSheet.Name = (string)name;
-                }
-                if (metaDict.TryGetValue("author", out var author))
-                {
-                    spriteSheet.Author = (string)author;
-                }
-                spriteSheet.Prefix = Plugin.BaseName + "_" + spriteSheet.ID + "_";
-
-                if (!string.IsNullOrEmpty(spriteSheet.ID))
-                {
-                    foreach (var file in files.Where(f => f.EndsWith(".png")))
+                    if (Plugin.BaseName.Equals(directory))
                     {
-                        var fileNoExt = file.Substring(0, file.Length - 4);
-                        if (!files.Any(f => f.EndsWith(fileNoExt + ".txt")))
+                        RegisterError($"Metadata file found in the base directory, please create a subdirectory instead: {metaFile}");
+                    }
+
+                    var spriteSheet = new SpriteSheet();
+                    try
+                    {
+                        var metaDict = File.ReadAllText(metaFile).dictionaryFromJson();
+                        if (metaDict.TryGetValue("id", out var id))
                         {
-                            continue;
+                            spriteSheet.ID = (string)id;
+                        }
+                        if (metaDict.TryGetValue("name", out var name))
+                        {
+                            spriteSheet.Name = (string)name;
+                        }
+                        if (metaDict.TryGetValue("author", out var author))
+                        {
+                            spriteSheet.Author = (string)author;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RegisterError($"Error loading spritesheet metadata at \"{metaFile}\"!", ex);
+                        return;
+                    }
+
+                    if (Plugin.SpriteSheets.Any(x => x.ID == spriteSheet.ID))
+                    {
+                        RegisterError($"Duplicate spritesheet ID! \"{spriteSheet.ID}\"!");
+                        return;
+                    }
+
+                    spriteSheet.Prefix = Plugin.BaseName + "_" + spriteSheet.ID + "_";
+
+                    if (!string.IsNullOrEmpty(spriteSheet.ID) && !string.IsNullOrEmpty(spriteSheet.Name) && !string.IsNullOrEmpty(spriteSheet.Author))
+                    {
+                        foreach (var file in files.Where(f => f.EndsWith(".png")))
+                        {
+                            var fileNoExt = file.Substring(0, file.Length - 4);
+                            if (!files.Any(f => f.EndsWith(fileNoExt + ".txt")))
+                            {
+                                RegisterError($"Missing txt for spritesheet at \"{file}\"!");
+                                continue;
+                            }
+
+                            FAtlas atlas = null;
+                            try
+                            {
+                                AtlasElementNamePrefix = spriteSheet.Prefix;
+                                atlas = Futile.atlasManager.LoadAtlas(fileNoExt);
+                            }
+                            catch (Exception ex)
+                            {
+                                RegisterError($"Error loading spritesheet at \"{file}\"!", ex);
+                                return;
+                            }
+                            finally
+                            {
+                                AtlasElementNamePrefix = null;
+                            }
+
+                            spriteSheet.Atlases.Add(atlas);
                         }
 
-                        FAtlas atlas = null;
+                        //-- TODO: This is dirty and should be replaced with something internal...
+                        if (spriteSheet.ID == "rainworld.default")
+                        {
+                            Plugin.SpriteSheets.Insert(0, spriteSheet);
+                        }
+                        else
+                        {
+                            Plugin.SpriteSheets.Add(spriteSheet);
+                        }
+
                         try
                         {
-                            AtlasElementNamePrefix = spriteSheet.Prefix;
-                            atlas = Futile.atlasManager.LoadAtlas(fileNoExt);
+                            spriteSheet.ParseAtlases();
                         }
-                        finally
+                        catch (Exception ex)
                         {
-                            AtlasElementNamePrefix = null;
+                            RegisterError($"Error parsing atlases from spritesheet \"{spriteSheet.ID}\"!", ex);
+                            return;
                         }
-
-                        spriteSheet.Atlases.Add(atlas);
                     }
-                }
-
-                spriteSheet.ParseAtlases();
-                if (spriteSheet.ID == "rainworld.default")
-                {
-                    Plugin.SpriteSheets.Insert(0, spriteSheet);
-                }
-                else
-                {
-                    Plugin.SpriteSheets.Add(spriteSheet);
+                    else
+                    {
+                        RegisterError($"Missing metadata fields in \"{metaFile}\"!");
+                        return;
+                    }
                 }
             }
 
-            var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();
-            foreach (var subDir in subDirectories)
+            finally
             {
-                LoadAtlases(subDir);
+                var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();
+                foreach (var subDir in subDirectories)
+                {
+                    LoadAtlases(subDir);
+                }
             }
         }
     }
