@@ -37,11 +37,21 @@ namespace DressMySlugcat.Hooks
         {
             var cursor = new ILCursor(il);
 
-            if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdloc(7),
-                                                    i => i.MatchLdloc(8),
-                                                    i => i.MatchStfld<FAtlasElement>("name")))
+            try
             {
-                return;
+                if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdloc(7),
+                                                        i => i.MatchLdloc(8),
+                                                        i => i.MatchStfld<FAtlasElement>("name")))
+                {
+                    throw new Exception("Failed to match IL for FAtlas_LoadAtlasData!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Exception when matching IL for FAtlas_LoadAtlasData!");
+                Debug.LogException(ex);
+                Debug.LogError(il);
+                throw;
             }
 
             cursor.MoveAfterLabels();

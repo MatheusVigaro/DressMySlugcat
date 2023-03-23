@@ -33,13 +33,24 @@ namespace DressMySlugcat.Hooks
         {
             var cursor = new ILCursor(il);
 
-            if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchLdarg(0),
-                                                     i => i.MatchLdfld<ProcessManager>("oldProcess"),
-                                                     i => i.MatchLdarg(0),
-                                                     i => i.MatchLdfld<ProcessManager>("currentMainLoop"),
-                                                     i => i.MatchCallOrCallvirt<MainLoopProcess>("CommunicateWithUpcomingProcess")))
+
+            try
             {
-                return;
+                if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchLdarg(0),
+                                                         i => i.MatchLdfld<ProcessManager>("oldProcess"),
+                                                         i => i.MatchLdarg(0),
+                                                         i => i.MatchLdfld<ProcessManager>("currentMainLoop"),
+                                                         i => i.MatchCallOrCallvirt<MainLoopProcess>("CommunicateWithUpcomingProcess")))
+                {
+                    throw new Exception("Failed to match IL for ProcessManager_PostSwitchMainProcess!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Exception when matching IL for ProcessManager_PostSwitchMainProcess!");
+                Debug.LogException(ex);
+                Debug.LogError(il);
+                throw;
             }
 
             cursor.MoveAfterLabels();

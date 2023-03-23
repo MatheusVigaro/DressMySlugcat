@@ -63,9 +63,19 @@ namespace DressMySlugcat.Hooks
         {
             var cursor = new ILCursor(il);
 
-            if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchRet()))
+            try
             {
-                return;
+                if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchRet()))
+                {
+                    throw new Exception("Failed to match IL for PlayerGraphics_DrawSprites!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Exception when matching IL for PlayerGraphics_DrawSprites!");
+                Debug.LogException(ex);
+                Debug.LogError(il);
+                throw;
             }
 
             cursor.Emit(OpCodes.Ldarg_1);
@@ -78,7 +88,6 @@ namespace DressMySlugcat.Hooks
                     {
                         playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
                     }
-
 
                     if (playerGraphics.player.flipDirection == 1)
                     {
@@ -98,16 +107,28 @@ namespace DressMySlugcat.Hooks
         {
             var cursor = new ILCursor(il);
             
-            if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdarg(0),
-                                                    i => i.MatchLdfld<RoomCamera.SpriteLeaser>("drawableObject"),
-                                                    i => i.MatchLdarg(0),
-                                                    i => i.MatchLdarg(2),
-                                                    i => i.MatchLdarg(1),
-                                                    i => i.MatchLdarg(3),
-                                                    i => i.MatchCallOrCallvirt<IDrawable>("DrawSprites")))
+
+            try
             {
-                return;
+                if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdarg(0),
+                                                        i => i.MatchLdfld<RoomCamera.SpriteLeaser>("drawableObject"),
+                                                        i => i.MatchLdarg(0),
+                                                        i => i.MatchLdarg(2),
+                                                        i => i.MatchLdarg(1),
+                                                        i => i.MatchLdarg(3),
+                                                        i => i.MatchCallOrCallvirt<IDrawable>("DrawSprites")))
+                {
+                    throw new Exception("Failed to match IL for SpriteLeaser_Update!");
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.LogError("Exception when matching IL for SpriteLeaser_Update!");
+                Debug.LogException(ex);
+                Debug.LogError(il);
+                throw;
+            }
+
 
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser) =>

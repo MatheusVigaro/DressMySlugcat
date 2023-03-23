@@ -19,7 +19,7 @@ using System.Runtime.Serialization.Json;
 namespace DressMySlugcat
 {
     [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin("dressmyslugcat", "Dress My Slugcat", "1.0.0")]
     public partial class Plugin : BaseUnityPlugin
     {
         public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
@@ -46,12 +46,11 @@ namespace DressMySlugcat
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
 
-                Debug.Log($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+                Debug.Log($"Plugin DressMySlugcat is loaded!");
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex);
-                throw;
+                Debug.LogException(ex);
             }
         }
 
