@@ -154,7 +154,7 @@ namespace DressMySlugcat
             var customizations = SaveManager.Customizations.Where(x => x.Slugcat == owner.selectedSlugcat).ToList();
 
             var customization = customizations.FirstOrDefault(x => x.Sprite == "BODY");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 Sprites[0].element = customization.SpriteSheet.Elements["BodyA"];
             }
@@ -163,7 +163,7 @@ namespace DressMySlugcat
                 Sprites[0].element = Futile.atlasManager.GetElementWithName("BodyA");
             }
             customization = customizations.FirstOrDefault(x => x.Sprite == "HIPS");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 Sprites[1].element = customization.SpriteSheet.Elements["HipsA"];
             }
@@ -172,7 +172,7 @@ namespace DressMySlugcat
                 Sprites[1].element = Futile.atlasManager.GetElementWithName("HipsA");
             }
             customization = customizations.FirstOrDefault(x => x.Sprite == "HEAD");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 Sprites[3].element = customization.SpriteSheet.Elements["HeadA0"];
             }
@@ -181,7 +181,7 @@ namespace DressMySlugcat
                 Sprites[3].element = Futile.atlasManager.GetElementWithName("HeadA0");
             }
             customization = customizations.FirstOrDefault(x => x.Sprite == "LEGS");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 Sprites[4].element = customization.SpriteSheet.Elements["LegsA0"];
             }
@@ -190,7 +190,7 @@ namespace DressMySlugcat
                 Sprites[4].element = Futile.atlasManager.GetElementWithName("LegsA0");
             }
             customization = customizations.FirstOrDefault(x => x.Sprite == "ARMS");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 var sheet = customization.SpriteSheet;
                 Sprites[5].element = sheet.Elements["PlayerArm12"];
@@ -206,7 +206,7 @@ namespace DressMySlugcat
                 Sprites[8].element = Futile.atlasManager.GetElementWithName("OnTopOfTerrainHand");
             }
             customization = customizations.FirstOrDefault(x => x.Sprite == "FACE");
-            if (customization != null)
+            if (customization?.SpriteSheet != null)
             {
                 Sprites[9].element = customization.SpriteSheet.Elements["FaceA0"];
             }
