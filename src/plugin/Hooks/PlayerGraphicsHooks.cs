@@ -13,6 +13,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
@@ -137,6 +138,11 @@ namespace DressMySlugcat.Hooks
                 {
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
+                        if (playerGraphicsData.IsArtificer && playerGraphicsData.SpriteNames[i].StartsWith("FaceB"))
+                        {
+                            playerGraphicsData.SpriteNames[i] = "Face" + (sLeaser.sprites[i].scaleX < 0f ? "C" : "D") + playerGraphicsData.SpriteNames[i].Substring(5);
+                        }
+
                         if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
                         {
                             if (sLeaser.sprites[i] != null)
@@ -209,6 +215,8 @@ namespace DressMySlugcat.Hooks
                 {
                     continue;
                 }
+
+                playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
 
                 var sheet = customization.SpriteSheet;
                 if (sheet != null)

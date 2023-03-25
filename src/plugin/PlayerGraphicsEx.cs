@@ -6,5 +6,6 @@ namespace DressMySlugcat
     {
         public Dictionary<string, FAtlasElement> SpriteReplacements = new();
         public string[] SpriteNames;
+        public bool IsArtificer;
     }
 }
