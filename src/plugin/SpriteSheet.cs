@@ -18,28 +18,16 @@ namespace DressMySlugcat
         public string ID;
         public string Name;
         public string Author;
-    
+
         public string Prefix;
 
         public Dictionary<string, FAtlasElement> Elements = new();
         public Dictionary<string, FAtlasElement> TrimmedElements = new();
         public List<FAtlas> Atlases = new();
-        public List<string> AvailableSprites = new();
+        public List<string> AvailableSpriteNames = new();
 
-        public static Dictionary<string, List<string>> RequiredSprites = new();
-
-        public SpriteSheet() {
-            if (RequiredSprites.Count == 0)
-            {
-                RequiredSprites.Add("BODY", new List<string> { "BodyA" });
-                RequiredSprites.Add("HIPS", new List<string> { "HipsA" });
-                RequiredSprites.Add("LEGS", new List<string> { "LegsA0", "LegsA1", "LegsA2", "LegsA3", "LegsA4", "LegsA5", "LegsA6", "LegsAAir0", "LegsAAir1", "LegsAClimbing0", "LegsAClimbing1", "LegsAClimbing2", "LegsAClimbing3", "LegsAClimbing4", "LegsAClimbing5", "LegsAClimbing6", "LegsACrawling0", "LegsACrawling1", "LegsACrawling2", "LegsACrawling3", "LegsACrawling4", "LegsACrawling5", "LegsAOnPole0", "LegsAOnPole1", "LegsAOnPole2", "LegsAOnPole3", "LegsAOnPole4", "LegsAOnPole5", "LegsAOnPole6", "LegsAPole", "LegsAVerticalPole", "LegsAWall" });
-                RequiredSprites.Add("HEAD", new List<string> { "HeadA0", "HeadA1", "HeadA2", "HeadA3", "HeadA4", "HeadA5", "HeadA6", "HeadA7", "HeadA8", "HeadA9", "HeadA10", "HeadA11", "HeadA12", "HeadA13", "HeadA14", "HeadA15", "HeadA16", "HeadA17" });
-                RequiredSprites.Add("FACE", new List<string> { "FaceA0", "FaceA1", "FaceA2", "FaceA3", "FaceA4", "FaceA5", "FaceA6", "FaceA7", "FaceA8", "FaceB0", "FaceB1", "FaceB2", "FaceB3", "FaceB4", "FaceB5", "FaceB6", "FaceB7", "FaceB8", "FaceDead", "FaceStunned" });
-                RequiredSprites.Add("ARMS", new List<string> { "PlayerArm0", "PlayerArm1", "PlayerArm2", "PlayerArm3", "PlayerArm4", "PlayerArm5", "PlayerArm6", "PlayerArm7", "PlayerArm8", "PlayerArm9", "PlayerArm10", "PlayerArm11", "PlayerArm12", "OnTopOfTerrainHand", "OnTopOfTerrainHand2" });
-                RequiredSprites.Add("TAIL", new List<string> { "TailTexture" });
-            }
-        }
+        public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
+        public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();
 
         public void ParseAtlases()
         {
@@ -52,12 +40,12 @@ namespace DressMySlugcat
                 }
             }
 
-            foreach (var group in RequiredSprites.Keys)
+            foreach (var group in SpriteDefinitions.AvailableSprites)
             {
-                var required = RequiredSprites[group];
+                var required = group.RequiredSprites;
                 if (required.All(sprite => Elements.Keys.Contains(sprite)))
                 {
-                    AvailableSprites.Add(group);
+                    AvailableSpriteNames.Add(group.Name);
                 }
             }
         }
@@ -102,11 +90,6 @@ namespace DressMySlugcat
             topRight.y++;
 
             return element.atlas.CreateUnnamedElement(bottomLeft.x, bottomLeft.y, topRight.x - bottomLeft.x, topRight.y - bottomLeft.y);
-        }
-
-        public static SpriteSheet Get(string id)
-        {
-            return Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
         }
     }
 }

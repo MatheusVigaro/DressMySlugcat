@@ -42,6 +42,7 @@ namespace DressMySlugcat
                 if (IsInit) return;
                 IsInit = true;
 
+                SpriteDefinitions.Init();
                 AtlasHooks.Init();
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();

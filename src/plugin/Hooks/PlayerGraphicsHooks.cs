@@ -47,7 +47,7 @@ namespace DressMySlugcat.Hooks
             if (self.gills != null)
             {
                 var lastSprite = sLeaser.sprites[9];
-                for (int i = self.gills.startSprite + self.gills.numberOfSprites -1; i >= self.gills.startSprite; i--)
+                for (int i = self.gills.startSprite + self.gills.numberOfSprites - 1; i >= self.gills.startSprite; i--)
                 {
                     sLeaser.sprites[i].MoveBehindOtherNode(lastSprite);
                     lastSprite = sLeaser.sprites[i];
@@ -106,7 +106,7 @@ namespace DressMySlugcat.Hooks
         private static void SpriteLeaser_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
-            
+
 
             try
             {
@@ -202,23 +202,34 @@ namespace DressMySlugcat.Hooks
             PlayerGraphicsData.Add(self, playerGraphicsData);
 
             var name = self.player.slugcatStats.name.value;
-            foreach (var replacement in SaveManager.SpriteReplacements.Where(x => x.slugcat == name))
+
+            foreach (var customization in SaveManager.Customizations.Where(x => x.Slugcat == name))
             {
-                if (replacement.replacement == "rainworld.default")
+                if (customization.SpriteSheetID == "rainworld.default")
                 {
                     continue;
                 }
 
-                var sheet = SpriteSheet.Get(replacement.replacement);
+                var sheet = customization.SpriteSheet;
                 if (sheet != null)
                 {
-                    foreach (var sprite in SpriteSheet.RequiredSprites[replacement.sprite])
+                    foreach (var definition in sheet.AvailableSprites.Where(x => x.Name == customization.Sprite && (x.Slugcats.Count == 0 || x.Slugcats.Contains(name))))
                     {
-                        playerGraphicsData.SpriteReplacements[sprite] = sheet.Elements[sprite];
+                        foreach (var sprite in definition.RequiredSprites)
+                        {
+                            var specificSprite = sprite;
+
+                            var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.Slugcat == name && x.GenericName == sprite);
+                            if (specificReplacement != null)
+                            {
+                                specificSprite = specificReplacement.SpecificName;
+                            }
+
+                            playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
+                        }
                     }
                 }
             }
-
         }
     }
 }

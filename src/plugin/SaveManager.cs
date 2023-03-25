@@ -13,6 +13,7 @@ using UnityEngine.Networking;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Collections;
+using static DressMySlugcat.SaveManager;
 
 namespace DressMySlugcat
 {
@@ -20,33 +21,25 @@ namespace DressMySlugcat
     {
         public static string root = Application.persistentDataPath + Path.DirectorySeparatorChar + Plugin.BaseName + Path.DirectorySeparatorChar;
         public static string spriteReplacementsFile = root + "spritereplacements.dat";
-        public static List<SpriteReplacement> SpriteReplacements = new();
+        public static string customizationsFile = root + "customizations.dat";
+        public static List<Customization> Customizations = new();
 
         public static void Load()
         {
-            if (!Directory.Exists(root) || !File.Exists(spriteReplacementsFile))
+            if (File.Exists(spriteReplacementsFile))
+            {
+                MigrateOldSave();
+            }
+
+            if (!Directory.Exists(root) || !File.Exists(customizationsFile))
             {
                 Save();
             }
 
-            SpriteReplacements.Clear();
-            SaveData data;
-
-            FileStream fs = new FileStream(spriteReplacementsFile, FileMode.Open);
-            try
+            using (var fs = new FileStream(customizationsFile, FileMode.Open))
             {
-                BinaryFormatter formatter = new BinaryFormatter();
-
-                data = (SaveData) formatter.Deserialize(fs);
-            }
-            finally
-            {
-                fs.Close();
-            }
-
-            if (data?.SpriteReplacements != null)
-            {
-                SpriteReplacements = data.SpriteReplacements;
+                var formatter = new BinaryFormatter();
+                Customizations = (List<Customization>)formatter.Deserialize(fs);
             }
         }
 
@@ -57,20 +50,43 @@ namespace DressMySlugcat
                 Directory.CreateDirectory(root);
             }
 
-            SaveData data = new();
-            data.SpriteReplacements = SpriteReplacements;
-
-            FileStream fs = new FileStream(spriteReplacementsFile, FileMode.Create);
-            try
+            using (var fs = new FileStream(customizationsFile, FileMode.Create))
             {
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(fs, data);
-            }
-            finally
-            {
-                fs.Close();
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(fs, Customizations);
             }
         }
+
+        #region Legacy save
+        public static void MigrateOldSave()
+        {
+            SaveData data;
+            using (var fs = new FileStream(spriteReplacementsFile, FileMode.Open))
+            {
+                var formatter = new BinaryFormatter();
+
+                data = (SaveData)formatter.Deserialize(fs);
+            }
+
+            if (data?.SpriteReplacements != null)
+            {
+                Customizations.Clear();
+
+                foreach (var replacement in data.SpriteReplacements)
+                {
+                    Customizations.Add(new()
+                    {
+                        Slugcat = replacement.slugcat,
+                        Sprite = replacement.sprite,
+                        SpriteSheetID = replacement.replacement
+                    });
+                }
+            }
+
+            Save();
+            File.Delete(spriteReplacementsFile);
+        }
+
 
         [Serializable]
         public class SaveData
@@ -86,5 +102,6 @@ namespace DressMySlugcat
             public string replacement;
             public bool enforce;
         }
+        #endregion
     }
 }
