@@ -29,12 +29,19 @@ namespace DressMySlugcat
 
         public List<string> slugcatNames;
 
+        public int pageCount;
+        public int currentSlugcatPage;
+        public int slugcatsPerPage = 18;
+        public SymbolButton leftPage;
+        public SymbolButton rightPage;
+        public MenuLabel pageLabel;
+
         public FancyMenu(ProcessManager manager) : base (manager, Plugin.FancyMenu)
         {
             slugcatNames = SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList();
+            pageCount = Mathf.CeilToInt((float)slugcatNames.Count / slugcatsPerPage);
 
             selectedSlugcat = slugcatNames.FirstOrDefault();
-            slugcatButtons = new SelectOneButton[slugcatNames.Count];
 
             pages.Add(new Page(this, null, "main", 0));
             scene = new InteractiveMenuScene(this, pages[0], manager.rainWorld.options.subBackground);
@@ -51,20 +58,6 @@ namespace DressMySlugcat
             darkSprite.y = -1f;
             darkSprite.alpha = 0.85f;
             pages[0].Container.AddChild(darkSprite);
-
-            for (var i = 0; i < slugcatNames.Count; i++)
-            {
-                var slugcatName = slugcatNames[i];
-                var slugcatDisplayName = slugcatName;
-                SlugcatStats.Name.TryParse(typeof(SlugcatStats.Name), slugcatName, true, out var slugcatNameExtEnum);
-                if (slugcatNameExtEnum != null)
-                {
-                    slugcatDisplayName = SlugcatStats.getSlugcatName((SlugcatStats.Name)slugcatNameExtEnum);
-                }
-
-                var slugcatButton = new SelectOneButton(this, pages[0], slugcatDisplayName, "SLUGCAT_" + slugcatName, new Vector2(15f, 768f - (50f + (35f * i))), new Vector2(220f, 30f), slugcatButtons, i);
-                pages[0].subObjects.Add(slugcatButton);
-            }
 
             backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(15f, 50f), new Vector2(220f, 30f));
             pages[0].subObjects.Add(backButton);
@@ -91,10 +84,88 @@ namespace DressMySlugcat
             slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
             slugcatDummy.Container.scale = 8f;
 
+            SetupSlugcatPages();
+            LoadSlugcatPage(0);
+
             UpdateControls();
 
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos - new Vector2(0, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
+        }
+
+        public void SetupSlugcatPages()
+        {
+            slugcatButtons = new SelectOneButton[slugcatsPerPage];
+
+            for (var i = 0; i < slugcatsPerPage; i++)
+            {
+                var slugcatButton = new SelectOneButton(this, pages[0], "", "", new Vector2(15f, 768f - (50f + (35f * i))), new Vector2(220f, 30f), slugcatButtons, i);
+                pages[0].subObjects.Add(slugcatButton);
+                slugcatButtons[i] = slugcatButton;
+            }
+
+            var offset = new Vector2(-277, 40);
+            pageLabel = new MenuLabel(this, pages[0], "", backButton.pos + new Vector2(336, 0) + offset, new Vector2(102, 30), true);
+            pages[0].subObjects.Add(pageLabel);
+
+            leftPage = new SymbolButton(this, pages[0], "Big_Menu_Arrow", "LEFT_PAGE_SLUGCAT", backButton.pos + new Vector2(300, -6) + offset);
+            leftPage.symbolSprite.rotation = 270f;
+            leftPage.size = new Vector2(36f, 36f);
+            leftPage.roundedRect.size = leftPage.size;
+            pages[0].subObjects.Add(leftPage);
+
+            rightPage = new SymbolButton(this, pages[0], "Big_Menu_Arrow", "RIGHT_PAGE_SLUGCAT", backButton.pos + new Vector2(438, -6) + offset);
+            rightPage.symbolSprite.rotation = 90f;
+            rightPage.size = new Vector2(36f, 36f);
+            rightPage.roundedRect.size = rightPage.size;
+            pages[0].subObjects.Add(rightPage);
+        }
+
+        public void LoadSlugcatPage(int page)
+        {
+            selectedSlugcatIndex = -1;
+            currentSlugcatPage = page;
+
+            pageLabel.text = (page + 1) + "/" + pageCount;
+            leftPage.inactive = page == 0;
+            rightPage.inactive = page >= pageCount - 1;
+
+            var startingIndex = page * slugcatsPerPage;
+
+            for (var i = 0; i < slugcatsPerPage; i++)
+            {
+                var currentIndex = startingIndex + i;
+                
+                if (currentIndex < slugcatNames.Count)
+                {
+                    var slugcatName = slugcatNames[currentIndex];
+                    var slugcatDisplayName = slugcatName;
+                    SlugcatStats.Name.TryParse(typeof(SlugcatStats.Name), slugcatName, true, out var slugcatNameExtEnum);
+                    if (slugcatNameExtEnum != null)
+                    {
+                        slugcatDisplayName = SlugcatStats.getSlugcatName((SlugcatStats.Name)slugcatNameExtEnum);
+                    }
+
+                    if (selectedSlugcat == slugcatName)
+                    {
+                        selectedSlugcatIndex = i;
+                    }
+
+                    slugcatButtons[i].inactive = false;
+                    slugcatButtons[i].menuLabel.text = slugcatDisplayName;
+                    slugcatButtons[i].signalText = "SLUGCAT_" + slugcatName;
+                    slugcatButtons[i].pos.x = 15f;
+                    slugcatButtons[i].lastPos.x = 15f;
+                }
+                else
+                {
+                    slugcatButtons[i].inactive = true;
+                    slugcatButtons[i].menuLabel.text = "";
+                    slugcatButtons[i].signalText = "";
+                    slugcatButtons[i].pos.x = -1000;
+                    slugcatButtons[i].lastPos.x = -1000;
+                }
+            }
         }
 
         public void UpdateControls()
@@ -158,7 +229,7 @@ namespace DressMySlugcat
             if (series.StartsWith("SLUGCAT_") && selectedSlugcatIndex != to)
             {
                 selectedSlugcatIndex = to;
-                selectedSlugcat = slugcatNames[to];
+                selectedSlugcat = slugcatNames[to + (currentSlugcatPage * slugcatsPerPage)];
 
                 UpdateControls();
                 slugcatDummy.UpdateSprites();
@@ -216,7 +287,31 @@ namespace DressMySlugcat
                 slugcatDummy.UpdateSprites();
                 PlaySound(SoundID.MENU_Player_Join_Game);
             }
-        }
+            else if (message == "LEFT_PAGE_SLUGCAT")
+            {
+                if ((sender as SymbolButton).inactive)
+                {
+                    PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                }
+                else
+                {
+                    PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    LoadSlugcatPage(currentSlugcatPage - 1);
+                }
+            }
+            else if (message == "RIGHT_PAGE_SLUGCAT")
+            {
+                if ((sender as SymbolButton).inactive)
+                {
+                    PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                }
+                else
+                {
+                    PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    LoadSlugcatPage(currentSlugcatPage + 1);
+                }
+            }
+            }
 
         public class GalleryDialog : Dialog, SelectOneButton.SelectOneButtonOwner
         {
@@ -315,7 +410,7 @@ namespace DressMySlugcat
                 pages[0].subObjects.Add(resetButton);
             }
 
-            private void SetupGallery()
+            public void SetupGallery()
             {
                 galleryButtons = new SelectOneButton[rows * columns];
                 gallerySprites = new FSprite[rows * columns];
@@ -356,7 +451,7 @@ namespace DressMySlugcat
                 }
             }
 
-            private void LoadPage(int page)
+            public void LoadPage(int page)
             {
                 currentSelection = -1;
                 currentPageNumber = page;
