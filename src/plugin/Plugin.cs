@@ -25,23 +25,18 @@ namespace DressMySlugcat
         public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
         public const string BaseName = "dressmyslugcat";
 
-        private void OnEnable()
-        {
-            On.RainWorld.OnModsInit += RainWorld_OnOnModsInit;
-            On.RainWorld.PostModsInit += RainWorld_PostModsInit;
-        }
-
         private bool IsInit;
         private bool IsPostInit;
 
-        private void RainWorld_OnOnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
+        private void OnEnable()
         {
-            orig(self);
             try
             {
                 if (IsInit) return;
                 IsInit = true;
 
+                On.Menu.MainMenu.ctor += MainMenu_ctor;
+    
                 SpriteDefinitions.Init();
                 AtlasHooks.Init();
                 PlayerGraphicsHooks.Init();
@@ -57,15 +52,22 @@ namespace DressMySlugcat
 
         public static List<SpriteSheet> SpriteSheets = new();
 
-        private void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
+        private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
-            orig(self);
+            orig(self, manager, showRegionSpecificBkg);
 
-            if (IsPostInit) return;
-            IsPostInit = true;
+            try
+            {
+                if (IsPostInit) return;
+                IsPostInit = true;
 
-            AtlasHooks.LoadAtlases();
-            SaveManager.Load();
+                AtlasHooks.LoadAtlases();
+                SaveManager.Load();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
     }
 }
