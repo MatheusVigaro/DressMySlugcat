@@ -26,6 +26,8 @@ namespace DressMySlugcat
 
         public SelectOneButton[] slugcatButtons;
         public int selectedSlugcatIndex;
+        public SelectOneButton[] playerButtons;
+        public int selectedPlayerIndex;
 
         public List<string> slugcatNames;
 
@@ -84,12 +86,20 @@ namespace DressMySlugcat
             slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
             slugcatDummy.Container.scale = 8f;
 
+            playerButtons = new SelectOneButton[4];
+            for (int i = 0; i < 4; i++)
+            {
+                var playerButton = new SelectOneButton(this, pages[0], "Player " + (i+1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
+                pages[0].subObjects.Add(playerButton);
+                playerButtons[i] = playerButton;
+            }
+
             SetupSlugcatPages();
             LoadSlugcatPage(0);
 
             UpdateControls();
 
-            resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos - new Vector2(0, 40), new Vector2(160f, 30f));
+            resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) - new Vector2(160, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
         }
 
@@ -198,6 +208,13 @@ namespace DressMySlugcat
                 var button = new SimpleButton(this, pages[0], "", "SPRITE_SELECTOR_" + sprite.Name, internalTopLeft + new Vector2(80, (i * -70) - 30), new Vector2(180f, 30f));
                 selectSpriteButtons[sprite.Name] = button;
                 pages[0].subObjects.Add(button);
+
+                if (sprite.Name == "TAIL")
+                {
+                    //button = new SimpleButton(this, pages[0], "Tail Customizer", "TAIL_CUSTOMIZER", internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(100f, 30f));
+                    //selectSpriteButtons["__INTERNAL_BUTTON_TAIL_CUSTOMIZER"] = button;
+                    //pages[0].subObjects.Add(button);
+                }
             }
 
             UpdateSpriteButtonsText();
@@ -205,10 +222,12 @@ namespace DressMySlugcat
 
         public void UpdateSpriteButtonsText()
         {
-            var customizations = SaveManager.Customizations.Where(x => x.Slugcat ==  selectedSlugcat).ToList();
+            var customization = Customization.For(selectedSlugcat, selectedPlayerIndex);
             foreach (var key in selectSpriteButtons.Keys) {
-                var currentCustomization = customizations.Where(x => x.Sprite == key).FirstOrDefault();
-                SpriteSheet sheet = currentCustomization?.SpriteSheet;
+                if (key.StartsWith("__INTERNAL_BUTTON")) continue;
+
+                var customSprite = customization.CustomSprite(key);
+                SpriteSheet sheet = customSprite?.SpriteSheet;
 
                 if (sheet == null)
                 {
@@ -221,7 +240,15 @@ namespace DressMySlugcat
 
         public int GetCurrentlySelectedOfSeries(string series)
         {
-            return selectedSlugcatIndex;
+            if (series.StartsWith("SLUGCAT_")) {
+                return selectedSlugcatIndex;
+            }
+            else if (series.StartsWith("PLAYER_"))
+            {
+                return selectedPlayerIndex;
+            }
+
+            return -1;
         }
 
         public void SetCurrentlySelectedOfSeries(string series, int to)
@@ -230,6 +257,13 @@ namespace DressMySlugcat
             {
                 selectedSlugcatIndex = to;
                 selectedSlugcat = slugcatNames[to + (currentSlugcatPage * slugcatsPerPage)];
+
+                UpdateControls();
+                slugcatDummy.UpdateSprites();
+            }
+            else if (series.StartsWith("PLAYER_") && selectedPlayerIndex != to)
+            {
+                selectedPlayerIndex = to;
 
                 UpdateControls();
                 slugcatDummy.UpdateSprites();
@@ -340,6 +374,8 @@ namespace DressMySlugcat
             public int boxSize = 180;
             public int labelHeight = 20;
 
+            public SelectOneButton[] playerButtons;
+
             public GalleryDialog(string spriteName, ProcessManager manager, FancyMenu owner)
                 : base(manager)
             {
@@ -392,7 +428,7 @@ namespace DressMySlugcat
                 rightPage.roundedRect.size = rightPage.size;
                 pages[0].subObjects.Add(rightPage);
 
-                var sheet = SaveManager.Customizations.Where(x => x.Sprite == spriteName && x.Slugcat == owner.selectedSlugcat).FirstOrDefault()?.SpriteSheet;
+                var sheet = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex).CustomSprite(spriteName)?.SpriteSheet;
                 if (sheet != null)
                 {
                     currentPageNumber = spriteSheets.IndexOf(sheet) / (rows * columns);
@@ -408,6 +444,13 @@ namespace DressMySlugcat
 
                 var resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES_GALLERY", owner.resetButton.pos, owner.resetButton.size);
                 pages[0].subObjects.Add(resetButton);
+
+                for (var i = 0; i < 4; i++)
+                {
+                    var ownerButton = owner.playerButtons[i];
+                    var button = new SelectOneButton(this, pages[0], ownerButton.menuLabel.text, ownerButton.signalText, ownerButton.pos, ownerButton.size, playerButtons, i);
+                    pages[0].subObjects.Add(button);
+                }
             }
 
             public void SetupGallery()
@@ -509,7 +552,7 @@ namespace DressMySlugcat
 
                             galleryLabels[spritePosition].text = spriteSheet.Name;
 
-                            if (SaveManager.Customizations.Any(x => x.SpriteSheetID == spriteSheet.ID && x.Slugcat == owner.selectedSlugcat && x.Sprite == spriteName))
+                            if (Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex).CustomSprite(spriteName)?.SpriteSheetID == spriteSheet.ID)
                             {
                                 currentSelection = spritePosition;
                             }
@@ -530,8 +573,11 @@ namespace DressMySlugcat
                 {
                     return currentSelection;
                 }
-
-                return 0;
+                else if (series.StartsWith("PLAYER_"))
+                {
+                    return owner.selectedPlayerIndex;
+                }
+                return -1;
             }
 
             public void SetCurrentlySelectedOfSeries(string series, int to)
@@ -542,25 +588,33 @@ namespace DressMySlugcat
                     if (spriteNumber < spriteSheets.Count)
                     {
                         currentSelection = to;
-                        var customization = SaveManager.Customizations.FirstOrDefault(x => x.Slugcat == owner.selectedSlugcat && x.Sprite == spriteName);
+                        var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
+                        var customSprite = customization.CustomSprite(spriteName);
 
-                        if (customization == null)
+                        if (customSprite == null)
                         {
-                            customization = new()
+                            customSprite = new()
                             {
-                                Slugcat = owner.selectedSlugcat,
                                 Sprite = spriteName,
                                 Enforce = true
                             };
 
-                            SaveManager.Customizations.Add(customization);
+                            customization.CustomSprites.Add(customSprite);
                         }
 
-                        customization.SpriteSheetID = spriteSheets[(currentPageNumber * columns * rows) + to].ID;
+                        customSprite.SpriteSheetID = spriteSheets[(currentPageNumber * columns * rows) + to].ID;
 
-                        owner.UpdateSpriteButtonsText();
+                        owner.UpdateControls();
                         owner.slugcatDummy.UpdateSprites();
                     }
+                }
+                if (series.StartsWith("PLAYER_"))
+                {
+                    owner.selectedPlayerIndex = to;
+
+                    LoadPage(currentPageNumber);
+                    owner.UpdateControls();
+                    owner.slugcatDummy.UpdateSprites();
                 }
             }
 

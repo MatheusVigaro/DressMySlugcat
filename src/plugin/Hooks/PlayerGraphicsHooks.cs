@@ -209,19 +209,20 @@ namespace DressMySlugcat.Hooks
 
             var name = self.player.slugcatStats.name.value;
 
-            foreach (var customization in SaveManager.Customizations.Where(x => x.Slugcat == name))
+            var customization = Customization.For(self);
+            foreach (var customSprite in customization.CustomSprites)
             {
-                if (customization.SpriteSheetID == "rainworld.default")
+                if (customSprite.SpriteSheetID == "rainworld.default")
                 {
                     continue;
                 }
 
                 playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
 
-                var sheet = customization.SpriteSheet;
+                var sheet = customSprite.SpriteSheet;
                 if (sheet != null)
                 {
-                    foreach (var definition in sheet.AvailableSprites.Where(x => x.Name == customization.Sprite && (x.Slugcats.Count == 0 || x.Slugcats.Contains(name))))
+                    foreach (var definition in sheet.AvailableSprites.Where(x => x.Name == customSprite.Sprite && (x.Slugcats.Count == 0 || x.Slugcats.Contains(name))))
                     {
                         foreach (var sprite in definition.RequiredSprites)
                         {

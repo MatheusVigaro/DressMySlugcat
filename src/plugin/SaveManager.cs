@@ -20,8 +20,11 @@ namespace DressMySlugcat
     public static class SaveManager
     {
         public static string root = Application.persistentDataPath + Path.DirectorySeparatorChar + Plugin.BaseName + Path.DirectorySeparatorChar;
+        [ObsoleteAttribute("Use customizationFile instead")]
         public static string spriteReplacementsFile = root + "spritereplacements.dat";
-        public static string customizationsFile = root + "customizations.dat";
+        [ObsoleteAttribute("Use customizationFile instead")]
+        public static string oldCustomizationsFile = root + "customizations.dat";
+        public static string customizationFile = root + "customization.dat";
         public static List<Customization> Customizations = new();
 
         public static void Load()
@@ -31,15 +34,31 @@ namespace DressMySlugcat
                 MigrateOldSave();
             }
 
-            if (!Directory.Exists(root) || !File.Exists(customizationsFile))
+            if (File.Exists(oldCustomizationsFile))
+            {
+                MigrateOldSave2();
+            }
+
+            if (!Directory.Exists(root) || !File.Exists(customizationFile))
             {
                 Save();
             }
 
-            using (var fs = new FileStream(customizationsFile, FileMode.Open))
+            using (var fs = new FileStream(customizationFile, FileMode.Open))
             {
                 var formatter = new BinaryFormatter();
                 Customizations = (List<Customization>)formatter.Deserialize(fs);
+            }
+
+            foreach (var name in SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList())
+            {
+                for (var i = 0; i < 4; i++)
+                {
+                    if (!Customizations.Any(x => x.Slugcat == name && x.PlayerNumber == i))
+                    {
+                        Customizations.Add(new() { Slugcat = name, PlayerNumber = i });
+                    }
+                }
             }
         }
 
@@ -50,7 +69,7 @@ namespace DressMySlugcat
                 Directory.CreateDirectory(root);
             }
 
-            using (var fs = new FileStream(customizationsFile, FileMode.Create))
+            using (var fs = new FileStream(customizationFile, FileMode.Create))
             {
                 var formatter = new BinaryFormatter();
                 formatter.Serialize(fs, Customizations);
@@ -87,6 +106,34 @@ namespace DressMySlugcat
             File.Delete(spriteReplacementsFile);
         }
 
+        public static void MigrateOldSave2()
+        {
+            using (var fs = new FileStream(oldCustomizationsFile, FileMode.Open))
+            {
+                var formatter = new BinaryFormatter();
+                var customizations = (List<Customization>)formatter.Deserialize(fs);
+
+                foreach (var oldCustomization in customizations)
+                {
+                    var customization = Customizations.FirstOrDefault(x => x.Slugcat == oldCustomization.Slugcat);
+                    if (customization == null)
+                    {
+                        customization = new() { Slugcat = oldCustomization.Slugcat };
+                        Customizations.Add(customization);
+                    }
+                    customization.CustomSprites.Add(new()
+                    {
+                        Sprite = oldCustomization.Sprite,
+                        SpriteSheetID = oldCustomization.SpriteSheetID,
+                        Enforce = oldCustomization.Enforce,
+                        ForceWhiteColor = oldCustomization.ForceWhiteColor
+                    });
+                }
+            }
+
+            Save();
+            File.Delete(oldCustomizationsFile);
+        }
 
         [Serializable]
         public class SaveData
