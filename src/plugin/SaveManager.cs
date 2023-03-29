@@ -60,6 +60,11 @@ namespace DressMySlugcat
                     }
                 }
             }
+
+            foreach (var customization in Customizations)
+            {
+                customization.CustomTail ??= new();
+            }
         }
 
         public static void Save()

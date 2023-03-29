@@ -375,14 +375,22 @@ namespace DressMySlugcat
             public FancyMenu owner;
             public MenuTabWrapper tabWrapper;
 
-            public Configurable<float> length;
-            public Configurable<float> wideness;
-            public Configurable<float> roudness;
-            public Configurable<float> lift;
+            public Configurable<float> lengthConf;
+            public Configurable<float> widenessConf;
+            public Configurable<float> roundnessConf;
+            public Configurable<float> liftConf;
+
+            OpFloatSlider length;
+            OpFloatSlider wideness;
+            OpFloatSlider roundness;
+            OpFloatSlider lift;
+
+            Customization customization;
 
             public TailCustomizer(FancyMenu owner) : base(owner.manager)
             {
                 this.owner = owner;
+                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
 
                 var pos = owner.tailButton.pos + new Vector2(owner.tailButton.size.x + 10, -100f);
 
@@ -405,34 +413,52 @@ namespace DressMySlugcat
                 tabWrapper = new MenuTabWrapper(this, pages[0]);
                 pages[0].subObjects.Add(tabWrapper);
 
-                lift = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                var slider = new OpFloatSlider(lift, cancelButton.pos + new Vector2(0, 40), 180);
-                new UIelementWrapper(tabWrapper, slider);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+                liftConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                lift = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180);
+                new UIelementWrapper(tabWrapper, lift);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", lift.pos + new Vector2(0, 40), new Vector2(lift.size.x, 20), true));
 
-                roudness = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                slider = new OpFloatSlider(roudness, cancelButton.pos + new Vector2(0, 100), 180);
-                new UIelementWrapper(tabWrapper, slider);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+                roundnessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                roundness = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180);
+                new UIelementWrapper(tabWrapper, roundness);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundness.pos + new Vector2(0, 40), new Vector2(roundness.size.x, 20), true));
 
-                wideness = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                slider = new OpFloatSlider(wideness, cancelButton.pos + new Vector2(0, 160), 180);
-                new UIelementWrapper(tabWrapper, slider);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+                widenessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                wideness = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180);
+                new UIelementWrapper(tabWrapper, wideness);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", wideness.pos + new Vector2(0, 40), new Vector2(wideness.size.x, 20), true));
 
-                length = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                slider = new OpFloatSlider(length, cancelButton.pos + new Vector2(0, 220), 180);
-                new UIelementWrapper(tabWrapper, slider);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+                lengthConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                length = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
+                new UIelementWrapper(tabWrapper, length);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", length.pos + new Vector2(0, 40), new Vector2(length.size.x, 20), true));
+
+                length.value = customization.CustomTail.Length.ToString();
+                wideness.value = customization.CustomTail.Wideness.ToString();
+                roundness.value = customization.CustomTail.Roundness.ToString();
+                lift.value = customization.CustomTail.Lift.ToString();
             }
 
             public override void Singal(MenuObject sender, string message)
             {
                 if (message == "BACK")
                 {
-                    PlaySound(SoundID.MENU_Switch_Page_Out);
+                    customization.CustomTail.Length = float.Parse(length.value);
+                    customization.CustomTail.Wideness = float.Parse(wideness.value);
+                    customization.CustomTail.Roundness = float.Parse(roundness.value);
+                    customization.CustomTail.Lift = float.Parse(lift.value);
 
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.StopSideProcess(this);
+                }
+                else if (message == "RESET")
+                {
+                    length.value = "0";
+                    wideness.value = "0";
+                    roundness.value = "0";
+                    lift.value = "0";
+
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
                 }
             }
         }

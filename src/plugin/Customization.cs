@@ -7,7 +7,7 @@ namespace DressMySlugcat
     [Serializable]
     public class Customization
     {
-        public CustomTail CustomTail;
+        public CustomTail CustomTail = new();
         public List<CustomSprite> CustomSprites = new();
 
         public string Slugcat;
