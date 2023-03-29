@@ -9,6 +9,9 @@ using Random = UnityEngine.Random;
 using DressMySlugcat.Hooks;
 using System.IO;
 using Menu;
+using Menu.Remix.MixedUI;
+using Menu.Remix;
+using System.CodeDom;
 
 namespace DressMySlugcat
 {
@@ -24,6 +27,8 @@ namespace DressMySlugcat
         public Dictionary<string, MenuLabel> selectSpriteLabels = new();
         public string selectedSlugcat;
 
+        public SimpleButton tailButton;
+
         public SelectOneButton[] slugcatButtons;
         public int selectedSlugcatIndex;
         public SelectOneButton[] playerButtons;
@@ -38,7 +43,7 @@ namespace DressMySlugcat
         public SymbolButton rightPage;
         public MenuLabel pageLabel;
 
-        public FancyMenu(ProcessManager manager) : base (manager, Plugin.FancyMenu)
+        public FancyMenu(ProcessManager manager) : base(manager, Plugin.FancyMenu)
         {
             slugcatNames = SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList();
             pageCount = Mathf.CeilToInt((float)slugcatNames.Count / slugcatsPerPage);
@@ -89,7 +94,7 @@ namespace DressMySlugcat
             playerButtons = new SelectOneButton[4];
             for (int i = 0; i < 4; i++)
             {
-                var playerButton = new SelectOneButton(this, pages[0], "Player " + (i+1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
+                var playerButton = new SelectOneButton(this, pages[0], "Player " + (i + 1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
                 pages[0].subObjects.Add(playerButton);
                 playerButtons[i] = playerButton;
             }
@@ -98,6 +103,14 @@ namespace DressMySlugcat
             LoadSlugcatPage(0);
 
             UpdateControls();
+
+
+            //-- TODO: Use for color pickers
+            /*var conf = new Configurable<Color>(Color.white);
+            var colorPicker = new OpColorPicker(conf, textBoxBorder.pos + new Vector2(10, 10));
+            var tabWrapper = new MenuTabWrapper(this, pages[0]);
+            var elementWrapper = new UIelementWrapper(tabWrapper, colorPicker);
+            pages[0].subObjects.Add(tabWrapper);*/
 
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) - new Vector2(160, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
@@ -145,7 +158,7 @@ namespace DressMySlugcat
             for (var i = 0; i < slugcatsPerPage; i++)
             {
                 var currentIndex = startingIndex + i;
-                
+
                 if (currentIndex < slugcatNames.Count)
                 {
                     var slugcatName = slugcatNames[currentIndex];
@@ -211,9 +224,10 @@ namespace DressMySlugcat
 
                 if (sprite.Name == "TAIL")
                 {
-                    //button = new SimpleButton(this, pages[0], "Tail Customizer", "TAIL_CUSTOMIZER", internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(100f, 30f));
-                    //selectSpriteButtons["__INTERNAL_BUTTON_TAIL_CUSTOMIZER"] = button;
-                    //pages[0].subObjects.Add(button);
+                    button = new SimpleButton(this, pages[0], "Customize", "TAIL_CUSTOMIZER", internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(70f, 30f));
+                    selectSpriteButtons["__INTERNAL_BUTTON_TAIL_CUSTOMIZER"] = button;
+                    pages[0].subObjects.Add(button);
+                    tailButton = button;
                 }
             }
 
@@ -223,7 +237,8 @@ namespace DressMySlugcat
         public void UpdateSpriteButtonsText()
         {
             var customization = Customization.For(selectedSlugcat, selectedPlayerIndex);
-            foreach (var key in selectSpriteButtons.Keys) {
+            foreach (var key in selectSpriteButtons.Keys)
+            {
                 if (key.StartsWith("__INTERNAL_BUTTON")) continue;
 
                 var customSprite = customization.CustomSprite(key);
@@ -233,14 +248,15 @@ namespace DressMySlugcat
                 {
                     sheet = SpriteSheet.Get("rainworld.default");
                 }
-                
+
                 selectSpriteButtons[key].menuLabel.text = sheet.Name;
             }
         }
 
         public int GetCurrentlySelectedOfSeries(string series)
         {
-            if (series.StartsWith("SLUGCAT_")) {
+            if (series.StartsWith("SLUGCAT_"))
+            {
                 return selectedSlugcatIndex;
             }
             else if (series.StartsWith("PLAYER_"))
@@ -300,9 +316,8 @@ namespace DressMySlugcat
             {
                 var spritename = message.Substring(16);
 
-                var dialog = new GalleryDialog(spritename, manager, this);
                 PlaySound(SoundID.MENU_Player_Join_Game);
-                manager.ShowDialog(dialog);
+                manager.ShowDialog(new GalleryDialog(spritename, this));
             }
             else if (message == "RELOAD_ATLASES")
             {
@@ -345,7 +360,82 @@ namespace DressMySlugcat
                     LoadSlugcatPage(currentSlugcatPage + 1);
                 }
             }
+            else if (message == "TAIL_CUSTOMIZER")
+            {
+                PlaySound(SoundID.MENU_Player_Join_Game);
+                manager.ShowDialog(new TailCustomizer(this));
             }
+        }
+
+        public class TailCustomizer : Dialog
+        {
+            public SimpleButton cancelButton;
+            public SimpleButton resetButton;
+            public RoundedRect border;
+            public FancyMenu owner;
+            public MenuTabWrapper tabWrapper;
+
+            public Configurable<float> length;
+            public Configurable<float> wideness;
+            public Configurable<float> roudness;
+            public Configurable<float> lift;
+
+            public TailCustomizer(FancyMenu owner) : base(owner.manager)
+            {
+                this.owner = owner;
+
+                var pos = owner.tailButton.pos + new Vector2(owner.tailButton.size.x + 10, -100f);
+
+                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 300), true);
+
+                darkSprite.anchorX = 0f;
+                darkSprite.anchorY = 0f;
+                darkSprite.scaleX = border.size.x - 12f;
+                darkSprite.scaleY = border.size.y - 12f;
+                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.y = border.pos.y + 6f;
+                darkSprite.alpha = 1f;
+
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(50f, 30f));
+                pages[0].subObjects.Add(cancelButton);
+
+                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
+                pages[0].subObjects.Add(resetButton);
+
+                tabWrapper = new MenuTabWrapper(this, pages[0]);
+                pages[0].subObjects.Add(tabWrapper);
+
+                lift = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                var slider = new OpFloatSlider(lift, cancelButton.pos + new Vector2(0, 40), 180);
+                new UIelementWrapper(tabWrapper, slider);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+
+                roudness = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                slider = new OpFloatSlider(roudness, cancelButton.pos + new Vector2(0, 100), 180);
+                new UIelementWrapper(tabWrapper, slider);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+
+                wideness = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                slider = new OpFloatSlider(wideness, cancelButton.pos + new Vector2(0, 160), 180);
+                new UIelementWrapper(tabWrapper, slider);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+
+                length = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                slider = new OpFloatSlider(length, cancelButton.pos + new Vector2(0, 220), 180);
+                new UIelementWrapper(tabWrapper, slider);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", slider.pos + new Vector2(0, 40), new Vector2(slider.size.x, 20), true));
+            }
+
+            public override void Singal(MenuObject sender, string message)
+            {
+                if (message == "BACK")
+                {
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
+
+                    manager.StopSideProcess(this);
+                }
+            }
+        }
 
         public class GalleryDialog : Dialog, SelectOneButton.SelectOneButtonOwner
         {
@@ -367,7 +457,7 @@ namespace DressMySlugcat
 
             public int columns = 4;
             public int rows = 3;
-            
+
             public int paddingX = 18;
             public int paddingY = 70;
             public int boxMargin = 15;
@@ -376,8 +466,8 @@ namespace DressMySlugcat
 
             public SelectOneButton[] playerButtons;
 
-            public GalleryDialog(string spriteName, ProcessManager manager, FancyMenu owner)
-                : base(manager)
+            public GalleryDialog(string spriteName, FancyMenu owner)
+                : base(owner.manager)
             {
                 this.owner = owner;
                 this.spriteName = spriteName;
@@ -395,7 +485,7 @@ namespace DressMySlugcat
                 cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(110f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
-                spriteBoxes = new RoundedRect[4,3];
+                spriteBoxes = new RoundedRect[4, 3];
 
                 var label = new MenuLabel(this, pages[0], spriteName, new Vector2((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
                 pages[0].subObjects.Add(label);
@@ -501,7 +591,7 @@ namespace DressMySlugcat
 
                 pageLabel.text = (page + 1) + "/" + pageCount;
                 leftPage.inactive = page == 0;
-                rightPage.inactive = page >= pageCount-1;
+                rightPage.inactive = page >= pageCount - 1;
 
                 for (var y = 0; y < rows; y++)
                 {
