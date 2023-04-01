@@ -69,12 +69,7 @@ namespace DressMySlugcat.Hooks
         public static void RegisterError(string friendly, Exception exception = null)
         {
             Errors.Add(friendly);
-            Debug.LogError("DressMySlugcat: " + friendly);
-
-            if (exception != null)
-            {
-                Debug.LogException(exception);
-            }
+            Debug.LogWarning("DressMySlugcat: " + friendly);
         }
 
         public static void LoadAtlases(string directory = Plugin.BaseName)

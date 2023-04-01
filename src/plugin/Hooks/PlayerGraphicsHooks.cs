@@ -66,7 +66,7 @@ namespace DressMySlugcat.Hooks
                         }
                     }
                     array[(playerGraphics.tail.Length - 1) * 4] = new Triangle((playerGraphics.tail.Length - 1) * 4, (playerGraphics.tail.Length - 1) * 4 + 1, (playerGraphics.tail.Length - 1) * 4 + 2);
-                    tail = new TriangleMesh("Futile_White", array, false, false);
+                    tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
                     sLeaser.sprites[2] = tail;
                     playerGraphicsData.tailRef = tail;
 
@@ -344,6 +344,7 @@ namespace DressMySlugcat.Hooks
                 var length = customization.CustomTail.EffectiveLength;
                 var wideness = customization.CustomTail.EffectiveWideness;
                 var roundness = customization.CustomTail.EffectiveRoundness;
+                //var offset = customization.CustomTail.EffectiveOffset;
                 var pup = self.player.playerState.isPup;
 
                 self.tail = new TailSegment[length];
@@ -354,6 +355,7 @@ namespace DressMySlugcat.Hooks
                 var bp = self.bodyParts.ToList();
                 bp.RemoveAll(x => x is TailSegment);
                 bp.AddRange(self.tail);
+                self.bodyParts = bp.ToArray();
             }
 
             foreach (var customSprite in customization.CustomSprites)
