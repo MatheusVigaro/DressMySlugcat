@@ -109,6 +109,24 @@ namespace DressMySlugcat.Hooks
                         {
                             spriteSheet.Author = (string)author;
                         }
+                        if (metaDict.TryGetValue("defaults", out var defaults))
+                        {
+                            foreach (KeyValuePair<string, object> sprite in defaults as Dictionary<string, object>)
+                            {
+                                var defaultsDict = sprite.Value as Dictionary<string, object>;
+                                foreach (KeyValuePair<string, object> def in defaultsDict)
+                                {
+                                    switch (def.Key.ToLower())
+                                    {
+                                        case "color":
+                                            if (ColorUtility.TryParseHtmlString((string)def.Value, out var color)) {
+                                                spriteSheet.DefaultColors.Add(sprite.Key, color);
+                                            }
+                                            break;
+                                    }
+                                }
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {

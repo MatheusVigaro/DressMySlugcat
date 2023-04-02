@@ -302,6 +302,7 @@ namespace DressMySlugcat.Hooks
             {
                 if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
+                    #region TailColor
                     if (playerGraphicsData.tailColor != default && playerGraphicsData.tailColor.a != 0 && sLeaser.sprites[2] != null)
                     {
                         var color = playerGraphicsData.tailColor;
@@ -313,7 +314,9 @@ namespace DressMySlugcat.Hooks
 
                         sLeaser.sprites[2].color = playerGraphics.HypothermiaColorBlend(color);
                     }
+                    #endregion
 
+                    #region SpriteColors
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
                         if (playerGraphicsData.IsArtificer && playerGraphicsData.SpriteNames[i].StartsWith("FaceB"))
@@ -340,6 +343,18 @@ namespace DressMySlugcat.Hooks
                             }
                         }
                     }
+                    #endregion
+
+                    #region GillColors
+                    if (playerGraphics.gills != null)
+                    {
+                        var gills = playerGraphics.gills;
+                        for (int num = gills.startSprite + gills.scalesPositions.Length - 1; num >= gills.startSprite; num--)
+                        {
+                            sLeaser.sprites[num].color = sLeaser.sprites[3].color;
+                        }
+                    }
+                    #endregion
                 }
             });
         }
@@ -374,7 +389,8 @@ namespace DressMySlugcat.Hooks
                 var pup = self.player.playerState.isPup;
 
                 self.tail = new TailSegment[length];
-                for (var i = 0; i < length; i++) {
+                for (var i = 0; i < length; i++)
+                {
                     self.tail[i] = new TailSegment(self, Mathf.Lerp(6f, 1f, Mathf.Pow((float)(i + 1) / (float)length, wideness)) * (1f + Mathf.Sin((float)i / (float)length * (float)Math.PI) * roundness), (float)((i == 0) ? 4 : 7) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, true);
                 }
 
@@ -391,6 +407,8 @@ namespace DressMySlugcat.Hooks
                 playerGraphicsData.tailColor = customization.CustomTail.Color;
             }
 
+            playerGraphicsData.gillEffectColor = Utils.DefaultExtraColor(name);
+
             foreach (var customSprite in customization.CustomSprites)
             {
 
@@ -400,7 +418,13 @@ namespace DressMySlugcat.Hooks
                     customColor = customSprite.Color;
                 }
 
+                if (customColor != default && customSprite.Sprite == "GILLS")
+                {
+                    playerGraphicsData.gillEffectColor = customColor;
+                }
+
                 var sheet = customSprite.SpriteSheet;
+
                 if (sheet != null)
                 {
                     foreach (var definition in sheet.AvailableSprites.Where(x => x.Name == customSprite.Sprite && (x.Slugcats.Count == 0 || x.Slugcats.Contains(name))))
@@ -418,6 +442,10 @@ namespace DressMySlugcat.Hooks
                             if (customSprite.SpriteSheetID != "rainworld.default")
                             {
                                 playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
+                                if (customColor != default)
+                                {
+                                    playerGraphicsData.SpriteColors[sheet.Elements[sprite].name] = customColor;
+                                }
                             }
 
                             if (customColor != default)

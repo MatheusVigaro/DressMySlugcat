@@ -29,6 +29,8 @@ namespace DressMySlugcat
         public Dictionary<string, MenuLabel> selectSpriteLabels = new();
         public Dictionary<string, SimpleButton> customizeSpriteButtons = new();
         public string selectedSlugcat;
+        public bool useDefaults = true;
+        public bool useEntireSet = false;
 
         public SelectOneButton[] slugcatButtons;
         public int selectedSlugcatIndex;
@@ -573,7 +575,7 @@ namespace DressMySlugcat
             }
         }
 
-        public class GalleryDialog : Dialog, SelectOneButton.SelectOneButtonOwner
+        public class GalleryDialog : Dialog, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
         {
             public SimpleButton cancelButton;
             public RoundedRect border;
@@ -585,6 +587,8 @@ namespace DressMySlugcat
             public SymbolButton leftPage;
             public SymbolButton rightPage;
             public MenuLabel pageLabel;
+            public CheckBox useDefaults;
+            public CheckBox useEntireSet;
             public int currentSelection = -1;
             public int currentPageNumber;
             public FancyMenu owner;
@@ -659,6 +663,12 @@ namespace DressMySlugcat
                 {
                     currentPageNumber = spriteSheets.IndexOf(sheet) / (rows * columns);
                 }
+
+                useDefaults = new CheckBox(this, pages[0], this, rightPage.pos + new Vector2(rightPage.size.x + 5, 6), 40, "Use Defaults", "USE_DEFAULTS", true);
+                pages[0].subObjects.Add(useDefaults);
+
+                useEntireSet = new CheckBox(this, pages[0], this, rightPage.pos + new Vector2(rightPage.size.x + 125, 6), 40, "Use Entire Set", "USE_ENTIRE_SET", true);
+                pages[0].subObjects.Add(useEntireSet);
 
                 SetupGallery();
                 LoadPage(currentPageNumber);
@@ -814,21 +824,57 @@ namespace DressMySlugcat
                     if (spriteNumber < spriteSheets.Count)
                     {
                         currentSelection = to;
+                        var spriteSheet = spriteSheets[(currentPageNumber * columns * rows) + to];
                         var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
-                        var customSprite = customization.CustomSprite(spriteName);
 
-                        if (customSprite == null)
+                        if (owner.useEntireSet)
                         {
-                            customSprite = new()
+                            var slugcatSprites = spriteSheet.AvailableSprites.Where(x => x.Slugcats.Count == 0 || x.Slugcats.Contains(owner.selectedSlugcat)).ToList();
+                            foreach (var sprite in slugcatSprites)
                             {
-                                Sprite = spriteName,
-                                Enforce = true
-                            };
+                                var customSprite = customization.CustomSprite(sprite.Name);
 
-                            customization.CustomSprites.Add(customSprite);
+                                if (customSprite == null)
+                                {
+                                    customSprite = new()
+                                    {
+                                        Sprite = sprite.Name,
+                                        Enforce = true
+                                    };
+
+                                    customization.CustomSprites.Add(customSprite);
+                                }
+
+                                if (owner.useDefaults && spriteSheet.DefaultColors.TryGetValue(sprite.Name, out var color) && color != default && color.a != 0)
+                                {
+                                    customSprite.Color = color;
+                                }
+
+                                customSprite.SpriteSheetID = spriteSheet.ID;
+                            }
                         }
+                        else
+                        {
+                            var customSprite = customization.CustomSprite(spriteName);
 
-                        customSprite.SpriteSheetID = spriteSheets[(currentPageNumber * columns * rows) + to].ID;
+                            if (customSprite == null)
+                            {
+                                customSprite = new()
+                                {
+                                    Sprite = spriteName,
+                                    Enforce = true
+                                };
+
+                                customization.CustomSprites.Add(customSprite);
+                            }
+
+                            if (owner.useDefaults && spriteSheet.DefaultColors.TryGetValue(spriteName, out var color) && color != default && color.a != 0)
+                            {
+                                customSprite.Color = color;
+                            }
+
+                            customSprite.SpriteSheetID = spriteSheet.ID;
+                        }
 
                         owner.UpdateControls();
                         owner.slugcatDummy.UpdateSprites();
@@ -888,6 +934,32 @@ namespace DressMySlugcat
                         PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         LoadPage(currentPageNumber + 1);
                     }
+                }
+            }
+
+            public bool GetChecked(CheckBox box)
+            {
+                switch (box.IDString)
+                {
+                    case "USE_DEFAULTS":
+                        return owner.useDefaults;
+                    case "USE_ENTIRE_SET":
+                        return owner.useEntireSet;
+                    default:
+                        return false;
+                }
+            }
+
+            public void SetChecked(CheckBox box, bool c)
+            {
+                switch (box.IDString)
+                {
+                    case "USE_DEFAULTS":
+                        owner.useDefaults = c;
+                        break;
+                    case "USE_ENTIRE_SET":
+                        owner.useEntireSet = c;
+                        break;
                 }
             }
         }

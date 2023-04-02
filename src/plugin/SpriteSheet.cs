@@ -25,6 +25,7 @@ namespace DressMySlugcat
         public Dictionary<string, FAtlasElement> TrimmedElements = new();
         public List<FAtlas> Atlases = new();
         public List<string> AvailableSpriteNames = new();
+        public Dictionary<string, Color> DefaultColors = new();
 
         public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
         public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();

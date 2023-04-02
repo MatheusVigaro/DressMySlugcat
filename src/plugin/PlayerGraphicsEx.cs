@@ -12,6 +12,7 @@ namespace DressMySlugcat
         public Customization Customization;
         public TriangleMesh tailRef;
         public Color tailColor;
+        public Color gillEffectColor;
 
         public bool TailIntegrity(RoomCamera.SpriteLeaser sLeaser) => sLeaser.sprites.Length > 2 && sLeaser.sprites[2] == tailRef;
     }
