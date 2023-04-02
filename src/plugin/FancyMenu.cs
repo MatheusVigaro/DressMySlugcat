@@ -12,6 +12,8 @@ using Menu;
 using Menu.Remix.MixedUI;
 using Menu.Remix;
 using System.CodeDom;
+using IL.MoreSlugcats;
+using UnityEngine.UIElements;
 
 namespace DressMySlugcat
 {
@@ -25,9 +27,8 @@ namespace DressMySlugcat
         public PlayerGraphicsDummy slugcatDummy;
         public Dictionary<string, SimpleButton> selectSpriteButtons = new();
         public Dictionary<string, MenuLabel> selectSpriteLabels = new();
+        public Dictionary<string, SimpleButton> customizeSpriteButtons = new();
         public string selectedSlugcat;
-
-        public SimpleButton tailButton;
 
         public SelectOneButton[] slugcatButtons;
         public int selectedSlugcatIndex;
@@ -103,14 +104,6 @@ namespace DressMySlugcat
             LoadSlugcatPage(0);
 
             UpdateControls();
-
-
-            //-- TODO: Use for color pickers
-            /*var conf = new Configurable<Color>(Color.white);
-            var colorPicker = new OpColorPicker(conf, textBoxBorder.pos + new Vector2(10, 10));
-            var tabWrapper = new MenuTabWrapper(this, pages[0]);
-            var elementWrapper = new UIelementWrapper(tabWrapper, colorPicker);
-            pages[0].subObjects.Add(tabWrapper);*/
 
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) - new Vector2(160, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
@@ -207,6 +200,13 @@ namespace DressMySlugcat
             }
             selectSpriteButtons.Clear();
 
+            foreach (var button in customizeSpriteButtons.Values)
+            {
+                button.RemoveSprites();
+                pages[0].RemoveSubObject(button);
+            }
+            customizeSpriteButtons.Clear();
+
             var internalTopLeft = new Vector2(190f, 710f);
             var availableSprites = SpriteDefinitions.AvailableSprites.Where(x => x.Slugcats.Count == 0 || x.Slugcats.Contains(selectedSlugcat)).ToList();
 
@@ -222,13 +222,9 @@ namespace DressMySlugcat
                 selectSpriteButtons[sprite.Name] = button;
                 pages[0].subObjects.Add(button);
 
-                if (sprite.Name == "TAIL")
-                {
-                    button = new SimpleButton(this, pages[0], "Customize", "TAIL_CUSTOMIZER", internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(70f, 30f));
-                    selectSpriteButtons["__INTERNAL_BUTTON_TAIL_CUSTOMIZER"] = button;
-                    pages[0].subObjects.Add(button);
-                    tailButton = button;
-                }
+                button = new SimpleButton(this, pages[0], "Customize", sprite.Name == "TAIL" ? "TAIL_CUSTOMIZER" : "SPRITE_CUSTOMIZER_" + sprite.Name, internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(70f, 30f));
+                customizeSpriteButtons.Add(sprite.Name, button);
+                pages[0].subObjects.Add(button);
             }
 
             UpdateSpriteButtonsText();
@@ -365,6 +361,108 @@ namespace DressMySlugcat
                 PlaySound(SoundID.MENU_Player_Join_Game);
                 manager.ShowDialog(new TailCustomizer(this));
             }
+            else if (message.StartsWith("SPRITE_CUSTOMIZER_"))
+            {
+                var spritename = message.Substring(18);
+                PlaySound(SoundID.MENU_Player_Join_Game);
+                manager.ShowDialog(new SpriteCustomizer(this, spritename));
+            }
+        }
+
+        public class SpriteCustomizer : Dialog
+        {
+            public SimpleButton cancelButton;
+            public SimpleButton resetButton;
+            public RoundedRect border;
+            FancyMenu owner;
+            string sprite;
+            SimpleButton selectedButton;
+
+            public MenuTabWrapper tabWrapper;
+
+            public Configurable<Color> colorConf;
+            public OpColorPicker colorOp;
+
+            public Customization customization;
+            public CustomSprite customSprite;
+
+            public SpriteCustomizer(FancyMenu owner, string sprite) : base(owner.manager)
+            {
+                this.owner = owner;
+                this.sprite = sprite;
+                selectedButton = owner.customizeSpriteButtons[sprite];
+
+                var pos = selectedButton.pos + new Vector2(selectedButton.size.x + 10, -120f);
+
+                border = new RoundedRect(this, pages[0], pos, new Vector2(171, 207), true);
+
+                darkSprite.anchorX = 0f;
+                darkSprite.anchorY = 0f;
+                darkSprite.scaleX = border.size.x - 12f;
+                darkSprite.scaleY = border.size.y - 12f;
+                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.y = border.pos.y + 6f;
+                darkSprite.alpha = 1f;
+
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(50f, 30f));
+                pages[0].subObjects.Add(cancelButton);
+
+                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
+                pages[0].subObjects.Add(resetButton);
+
+                tabWrapper = new MenuTabWrapper(this, pages[0]);
+                pages[0].subObjects.Add(tabWrapper);
+
+                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
+                customSprite = customization.CustomSprite(sprite);
+
+                if (customSprite == null)
+                {
+                    customSprite = new()
+                    {
+                        Sprite = sprite,
+                        Enforce = true,
+                        SpriteSheetID = "rainworld.default",
+                        Color = Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite)
+                    };
+
+                    customization.CustomSprites.Add(customSprite);
+                }
+
+                tabWrapper = new MenuTabWrapper(this, pages[0]);
+                pages[0].subObjects.Add(tabWrapper);
+
+                colorConf = new Configurable<Color>(default);
+                colorOp = new OpColorPicker(colorConf, cancelButton.pos + new Vector2(0, 40));
+                var onValueChanged = typeof(UIconfig).GetEvent("OnValueChanged");
+                onValueChanged.AddEventHandler(colorOp, Delegate.CreateDelegate(onValueChanged.EventHandlerType, this, typeof(SpriteCustomizer).GetMethod("OnColorChanged")));
+                new UIelementWrapper(tabWrapper, colorOp);
+
+                colorOp.valueColor = customSprite.Color != default ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite);
+            }
+
+            public void OnColorChanged(UIconfig sender, string oldValue, string newValue)
+            {
+                customSprite.Color = (sender as OpColorPicker).valueColor;
+                owner.slugcatDummy.UpdateSprites();
+            }
+
+            public override void Singal(MenuObject sender, string message)
+            {
+                if (message == "BACK")
+                {
+                    customSprite.Color = colorOp.valueColor;
+
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
+                    owner.slugcatDummy.UpdateSprites();
+                    manager.StopSideProcess(this);
+                }
+                else if (message == "RESET")
+                {
+                    colorOp.valueColor = Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite);
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
+                }
+            }
         }
 
         public class TailCustomizer : Dialog
@@ -374,25 +472,29 @@ namespace DressMySlugcat
             public RoundedRect border;
             public FancyMenu owner;
             public MenuTabWrapper tabWrapper;
-
+            
             public Configurable<float> lengthConf;
             public Configurable<float> widenessConf;
             public Configurable<float> roundnessConf;
             public Configurable<float> liftConf;
+            public Configurable<Color> colorConf;
 
-            OpFloatSlider length;
-            OpFloatSlider wideness;
-            OpFloatSlider roundness;
-            OpFloatSlider lift;
+            public OpFloatSlider lengthOp;
+            public OpFloatSlider widenessOp;
+            public OpFloatSlider roundnessOp;
+            public OpFloatSlider liftOp;
+            public OpColorPicker colorOp;
 
-            Customization customization;
+            public Customization customization;
 
             public TailCustomizer(FancyMenu owner) : base(owner.manager)
             {
                 this.owner = owner;
+                var tailButton = owner.customizeSpriteButtons["TAIL"];
+
                 customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
 
-                var pos = owner.tailButton.pos + new Vector2(owner.tailButton.size.x + 10, -100f);
+                var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
 
                 border = new RoundedRect(this, pages[0], pos, new Vector2(204, 300), true);
 
@@ -414,49 +516,57 @@ namespace DressMySlugcat
                 pages[0].subObjects.Add(tabWrapper);
 
                 liftConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                lift = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180);
-                new UIelementWrapper(tabWrapper, lift);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", lift.pos + new Vector2(0, 40), new Vector2(lift.size.x, 20), true));
+                liftOp = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180);
+                new UIelementWrapper(tabWrapper, liftOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", liftOp.pos + new Vector2(0, 40), new Vector2(liftOp.size.x, 20), true));
 
                 roundnessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                roundness = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180);
-                new UIelementWrapper(tabWrapper, roundness);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundness.pos + new Vector2(0, 40), new Vector2(roundness.size.x, 20), true));
+                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180);
+                new UIelementWrapper(tabWrapper, roundnessOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, 40), new Vector2(roundnessOp.size.x, 20), true));
 
                 widenessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                wideness = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180);
-                new UIelementWrapper(tabWrapper, wideness);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", wideness.pos + new Vector2(0, 40), new Vector2(wideness.size.x, 20), true));
+                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180);
+                new UIelementWrapper(tabWrapper, widenessOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, 40), new Vector2(widenessOp.size.x, 20), true));
 
                 lengthConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                length = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
-                new UIelementWrapper(tabWrapper, length);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", length.pos + new Vector2(0, 40), new Vector2(length.size.x, 20), true));
+                lengthOp = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
+                new UIelementWrapper(tabWrapper, lengthOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, 40), new Vector2(lengthOp.size.x, 20), true));
 
-                length.value = customization.CustomTail.Length.ToString();
-                wideness.value = customization.CustomTail.Wideness.ToString();
-                roundness.value = customization.CustomTail.Roundness.ToString();
-                lift.value = customization.CustomTail.Lift.ToString();
+
+                colorConf = new Configurable<Color>(default);
+                colorOp = new OpColorPicker(colorConf, new Vector2(resetButton.pos.x + resetButton.size.x + 14, border.pos.y));
+                new UIelementWrapper(tabWrapper, colorOp);
+
+                lengthOp.value = customization.CustomTail.Length.ToString();
+                widenessOp.value = customization.CustomTail.Wideness.ToString();
+                roundnessOp.value = customization.CustomTail.Roundness.ToString();
+                liftOp.value = customization.CustomTail.Lift.ToString();
+                colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
             }
 
             public override void Singal(MenuObject sender, string message)
             {
                 if (message == "BACK")
                 {
-                    customization.CustomTail.Length = float.Parse(length.value);
-                    customization.CustomTail.Wideness = float.Parse(wideness.value);
-                    customization.CustomTail.Roundness = float.Parse(roundness.value);
-                    customization.CustomTail.Lift = float.Parse(lift.value);
+                    customization.CustomTail.Length = float.Parse(lengthOp.value);
+                    customization.CustomTail.Wideness = float.Parse(widenessOp.value);
+                    customization.CustomTail.Roundness = float.Parse(roundnessOp.value);
+                    customization.CustomTail.Lift = float.Parse(liftOp.value);
+                    customization.CustomTail.Color = colorOp.valueColor;
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.StopSideProcess(this);
                 }
                 else if (message == "RESET")
                 {
-                    length.value = "0";
-                    wideness.value = "0";
-                    roundness.value = "0";
-                    lift.value = "0";
+                    lengthOp.value = "0";
+                    widenessOp.value = "0";
+                    roundnessOp.value = "0";
+                    liftOp.value = "0";
+                    colorOp.valueColor = Utils.DefaultBodyColor(owner.selectedSlugcat);
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                 }

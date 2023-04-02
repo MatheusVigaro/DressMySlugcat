@@ -162,6 +162,8 @@ namespace DressMySlugcat
             {
                 Sprites[0].element = Futile.atlasManager.GetElementWithName("BodyA");
             }
+            Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "BODY");
+
             customSprite = customization.CustomSprite("HIPS");
             if (customSprite?.SpriteSheet != null)
             {
@@ -171,6 +173,8 @@ namespace DressMySlugcat
             {
                 Sprites[1].element = Futile.atlasManager.GetElementWithName("HipsA");
             }
+            Sprites[1].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
+
             customSprite = customization.CustomSprite("HEAD");
             if (customSprite?.SpriteSheet != null)
             {
@@ -180,6 +184,8 @@ namespace DressMySlugcat
             {
                 Sprites[3].element = Futile.atlasManager.GetElementWithName("HeadA0");
             }
+            Sprites[3].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HEAD");
+
             customSprite = customization.CustomSprite("LEGS");
             if (customSprite?.SpriteSheet != null)
             {
@@ -189,6 +195,8 @@ namespace DressMySlugcat
             {
                 Sprites[4].element = Futile.atlasManager.GetElementWithName("LegsA0");
             }
+            Sprites[4].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "LEGS");
+
             customSprite = customization.CustomSprite("ARMS");
             if (customSprite?.SpriteSheet != null)
             {
@@ -205,6 +213,11 @@ namespace DressMySlugcat
                 Sprites[7].element = Futile.atlasManager.GetElementWithName("OnTopOfTerrainHand");
                 Sprites[8].element = Futile.atlasManager.GetElementWithName("OnTopOfTerrainHand");
             }
+            Sprites[5].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "ARMS");
+            Sprites[6].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "ARMS");
+            Sprites[7].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "ARMS");
+            Sprites[8].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "ARMS");
+
             customSprite = customization.CustomSprite("FACE");
             if (customSprite?.SpriteSheet != null)
             {
@@ -214,6 +227,7 @@ namespace DressMySlugcat
             {
                 Sprites[9].element = Futile.atlasManager.GetElementWithName("FaceA0");
             }
+            Sprites[9].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "FACE");
         }
     }
 }

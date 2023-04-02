@@ -6,6 +6,7 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.NetworkInformation;
@@ -13,8 +14,10 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static TriangleMesh;
+using Color = UnityEngine.Color;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
@@ -299,6 +302,18 @@ namespace DressMySlugcat.Hooks
             {
                 if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
+                    if (playerGraphicsData.tailColor != default && playerGraphicsData.tailColor.a != 0 && sLeaser.sprites[2] != null)
+                    {
+                        var color = playerGraphicsData.tailColor;
+                        if (playerGraphics.malnourished > 0f)
+                        {
+                            float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
+                            color = Color.Lerp(color, Color.gray, 0.4f * num);
+                        }
+
+                        sLeaser.sprites[2].color = playerGraphics.HypothermiaColorBlend(color);
+                    }
+
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
                         if (playerGraphicsData.IsArtificer && playerGraphicsData.SpriteNames[i].StartsWith("FaceB"))
@@ -306,11 +321,22 @@ namespace DressMySlugcat.Hooks
                             playerGraphicsData.SpriteNames[i] = "Face" + (sLeaser.sprites[i].scaleX < 0f ? "C" : "D") + playerGraphicsData.SpriteNames[i].Substring(5);
                         }
 
-                        if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
+                        if (sLeaser.sprites[i] != null)
                         {
-                            if (sLeaser.sprites[i] != null)
+                            if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
                             {
                                 sLeaser.sprites[i].element = replacement;
+                            }
+
+                            if (playerGraphicsData.SpriteColors.TryGetValue(playerGraphicsData.SpriteNames[i], out var customColor))
+                            {
+                                if (playerGraphics.malnourished > 0f)
+                                {
+                                    float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
+                                    customColor = Color.Lerp(customColor, Color.gray, 0.4f * num);
+                                }
+
+                                sLeaser.sprites[i].color = playerGraphics.HypothermiaColorBlend(customColor);
                             }
                         }
                     }
@@ -358,14 +384,21 @@ namespace DressMySlugcat.Hooks
                 self.bodyParts = bp.ToArray();
             }
 
+            playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+
+            if (customization.CustomTail.Color != default && customization.CustomTail.Color.a != 0 && customization.CustomTail.Color != Utils.DefaultBodyColor(name))
+            {
+                playerGraphicsData.tailColor = customization.CustomTail.Color;
+            }
+
             foreach (var customSprite in customization.CustomSprites)
             {
-                if (customSprite.SpriteSheetID == "rainworld.default")
-                {
-                    continue;
-                }
 
-                playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
+                Color customColor = default;
+                if (customSprite.Color != default && customSprite.Color.a != 0 && customSprite.Color != Utils.DefaultColorForSprite(name, customSprite.Sprite))
+                {
+                    customColor = customSprite.Color;
+                }
 
                 var sheet = customSprite.SpriteSheet;
                 if (sheet != null)
@@ -382,7 +415,15 @@ namespace DressMySlugcat.Hooks
                                 specificSprite = specificReplacement.SpecificName;
                             }
 
-                            playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
+                            if (customSprite.SpriteSheetID != "rainworld.default")
+                            {
+                                playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
+                            }
+
+                            if (customColor != default)
+                            {
+                                playerGraphicsData.SpriteColors[specificSprite] = customColor;
+                            }
                         }
                     }
                 }
