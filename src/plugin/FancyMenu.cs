@@ -247,7 +247,7 @@ namespace DressMySlugcat
                     sheet = SpriteSheet.Get("rainworld.default");
                 }
 
-                selectSpriteButtons[key].menuLabel.text = sheet.Name;
+                //selectSpriteButtons[key].menuLabel.text = sheet.Name;
             }
         }
 
@@ -475,16 +475,16 @@ namespace DressMySlugcat
             public FancyMenu owner;
             public MenuTabWrapper tabWrapper;
             
-            public Configurable<float> lengthConf;
+            public Configurable<int> lengthConf;
             public Configurable<float> widenessConf;
             public Configurable<float> roundnessConf;
-            public Configurable<float> liftConf;
+            public Configurable<int> offsetConf;
             public Configurable<Color> colorConf;
 
-            public OpFloatSlider lengthOp;
+            public OpSlider lengthOp;
             public OpFloatSlider widenessOp;
             public OpFloatSlider roundnessOp;
-            public OpFloatSlider liftOp;
+            public OpSlider offsetOp;
             public OpColorPicker colorOp;
 
             public Customization customization;
@@ -517,26 +517,30 @@ namespace DressMySlugcat
                 tabWrapper = new MenuTabWrapper(this, pages[0]);
                 pages[0].subObjects.Add(tabWrapper);
 
-                liftConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                liftOp = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180);
-                new UIelementWrapper(tabWrapper, liftOp);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", liftOp.pos + new Vector2(0, 40), new Vector2(liftOp.size.x, 20), true));
+                #region madechangestosliders
 
-                roundnessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                offsetConf = new Configurable<int>(6, new ConfigAcceptableRange<int>(2, 15));
+                offsetOp = new OpSlider(offsetConf, cancelButton.pos + new Vector2(0, 40), 180);
+                new UIelementWrapper(tabWrapper, offsetOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Offset", offsetOp.pos + new Vector2(0, 40), new Vector2(offsetOp.size.x, 20), true));
+
+                roundnessConf = new Configurable<float>(1, new ConfigAcceptableRange<float>(1, 3.6f));
                 roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180);
                 new UIelementWrapper(tabWrapper, roundnessOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, 40), new Vector2(roundnessOp.size.x, 20), true));
+                //Roundness is completely unused, but might be able to be repurposed for some extra sliders later
 
-                widenessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
+                widenessConf = new Configurable<float>(8.6f, new ConfigAcceptableRange<float>(0.1f, 14.1f));
                 widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180);
                 new UIelementWrapper(tabWrapper, widenessOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, 40), new Vector2(widenessOp.size.x, 20), true));
 
-                lengthConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                lengthOp = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
+                lengthConf = new Configurable<int>(8, new ConfigAcceptableRange<int>(4, 17));
+                lengthOp = new OpSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
                 new UIelementWrapper(tabWrapper, lengthOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, 40), new Vector2(lengthOp.size.x, 20), true));
 
+                #endregion
 
                 colorConf = new Configurable<Color>(default);
                 colorOp = new OpColorPicker(colorConf, new Vector2(resetButton.pos.x + resetButton.size.x + 14, border.pos.y));
@@ -545,7 +549,7 @@ namespace DressMySlugcat
                 lengthOp.value = customization.CustomTail.Length.ToString();
                 widenessOp.value = customization.CustomTail.Wideness.ToString();
                 roundnessOp.value = customization.CustomTail.Roundness.ToString();
-                liftOp.value = customization.CustomTail.Lift.ToString();
+                offsetOp.value = customization.CustomTail.Lift.ToString();
                 colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
             }
 
@@ -553,10 +557,10 @@ namespace DressMySlugcat
             {
                 if (message == "BACK")
                 {
-                    customization.CustomTail.Length = float.Parse(lengthOp.value);
+                    customization.CustomTail.Length = int.Parse(lengthOp.value);
                     customization.CustomTail.Wideness = float.Parse(widenessOp.value);
                     customization.CustomTail.Roundness = float.Parse(roundnessOp.value);
-                    customization.CustomTail.Lift = float.Parse(liftOp.value);
+                    customization.CustomTail.Lift = int.Parse(offsetOp.value);
                     customization.CustomTail.Color = colorOp.valueColor;
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
@@ -567,7 +571,7 @@ namespace DressMySlugcat
                     lengthOp.value = "0";
                     widenessOp.value = "0";
                     roundnessOp.value = "0";
-                    liftOp.value = "0";
+                    offsetOp.value = "0";
                     colorOp.valueColor = Utils.DefaultBodyColor(owner.selectedSlugcat);
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
