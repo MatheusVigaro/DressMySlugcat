@@ -252,43 +252,7 @@ namespace DressMySlugcat.Hooks
                         {
                             tailSprite.MoveVertice(i * 4 + 2, segmentPos - camPos);
                         }
-                        //HERE
-                        //self.player.room.AddObject(new Spark(self.tail[i].pos, new Vector2(5,1), Color.cyan, null, 10, 20));
-                        //Enable to make the player 'heavier' based on tail width and length
-                        /*if (self.player.room != null) {
-                            self.player.customPlayerGravity = self.player.room.gravity * Mathf.Max(1f,(width + self.tail.Length)/20f);
-                        }*/
-
-                        var newObject = new FireParticle(self?.player?.room, new Vector2(-10,-10), self.player.room.GetWorldCoordinate(self.tail[i].pos), self.player.room.GetWorldCoordinate(self.tail[i].pos + Vector2.up), Color.red, 5);
-                        if (effectsList.Length < 34) {
-                            self?.player?.room?.AddObject(newObject);
-                            Array.Resize<UpdatableAndDeletable>(ref effectsList, effectsList.Length+1);
-                            Array.Resize<int>(ref effectsListTimer, effectsListTimer.Length+1);
-                            effectsList[effectsList.Length-1] = newObject;
-                            effectsListTimer[effectsListTimer.Length-1] = 60;
-                        }
-
-                        width = self.tail[i].StretchedRad;
-                        verticiesGroupCenter = segmentPos;
                     }
-                    for (int i = 0; i < effectsListTimer.Length; i++) {
-                        if (effectsListTimer[i] > 0) {
-                            effectsListTimer[i] -= 1;
-                        }
-                        else {
-                            effectsList[i].Destroy();
-                        }
-                    }
-                    UpdatableAndDeletable[] newEffectList = new UpdatableAndDeletable[effectsList.Length];
-                    int[] newEffectTimerList = new int[effectsListTimer.Length];
-                    for (int j = 0; j < effectsList.Length && j < effectsListTimer.Length; j++) {
-                        if (effectsList[j] != null || effectsListTimer[j] > 0) {
-                            newEffectList[j] = effectsList[j];
-                            newEffectTimerList[j] = effectsListTimer[j];
-                        }
-                    }
-                    effectsList = newEffectList;
-                    effectsListTimer = newEffectTimerList;
                     return true;
                 });
 
