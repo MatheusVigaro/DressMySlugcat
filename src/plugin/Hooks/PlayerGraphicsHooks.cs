@@ -27,8 +27,6 @@ namespace DressMySlugcat.Hooks
 {
     public class PlayerGraphicsHooks
     {
-        public static UpdatableAndDeletable[] effectsList = new UpdatableAndDeletable[0];
-        public static int[] effectsListTimer = new int[0];
         public static ConditionalWeakTable<PlayerGraphics, PlayerGraphicsEx> PlayerGraphicsData = new();
 
         public static void Init()
@@ -252,6 +250,15 @@ namespace DressMySlugcat.Hooks
                         {
                             tailSprite.MoveVertice(i * 4 + 2, segmentPos - camPos);
                         }
+                        //HERE
+                        //self.player.room.AddObject(new Spark(self.tail[i].pos, new Vector2(5,1), Color.cyan, null, 10, 20));
+                        //Enable to make the player 'heavier' based on tail width and length
+                        /*if (self.player.room != null) {
+                            self.player.customPlayerGravity = self.player.room.gravity * Mathf.Max(1f,(width + self.tail.Length)/20f);
+                        }*/
+
+                        width = self.tail[i].StretchedRad;
+                        verticiesGroupCenter = segmentPos;
                     }
                     return true;
                 });
@@ -400,13 +407,13 @@ namespace DressMySlugcat.Hooks
                 {
                     var k = length-i;
                     float radiusWidth = 0f;
-                    if (k >= offset) {
+                    if (k > offset) {
                         radiusWidth = (wideness/1.743f)+Mathf.Sqrt(((length-k)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
                     }
                     else {
                         float num = ((1+0.04f*(offset-6)*Mathf.Min(1,roundness-1)))*Mathf.Sqrt((roundness*Mathf.Pow(k,1/roundness)*Mathf.Pow(wideness,2f))/offset);
                         float num2 = (wideness/1.743f)+Mathf.Sqrt(((length-offset)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
-                        radiusWidth = num > num2? num2-(num-num2):num;
+                        radiusWidth = ((num > num2)&&(offset<=5)&&(roundness>2))? num2-(num-num2):num;
                     }
                     //Debug.Log("Is the condition true?: " + (k >= offset));
                     //Debug.LogFormat("'i' is: " + i);
