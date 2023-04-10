@@ -36,13 +36,34 @@ namespace DressMySlugcat
                 IsInit = true;
 
                 On.Menu.MainMenu.ctor += MainMenu_ctor;
-    
+
                 SpriteDefinitions.Init();
                 AtlasHooks.Init();
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
+                On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
+
+                SpriteDefinitions.AddSlugcatDefault(new Customization()
+                {
+                    Slugcat = "Yellow",
+                    PlayerNumber = 3,
+                    CustomSprites = new List<CustomSprite> { new CustomSprite() { Sprite = "HEAD", SpriteSheetID = "dressmyslugcat.template", ColorHex = "#FF0000" } }
+                });
 
                 Debug.Log($"Plugin DressMySlugcat is loaded!");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        private void RainWorld_OnModsEnabled(On.RainWorld.orig_OnModsEnabled orig, RainWorld self, ModManager.Mod[] newlyEnabledMods)
+        {
+            orig(self, newlyEnabledMods);
+            try
+            {
+                SpriteSheet.UpdateDefaults();
             }
             catch (Exception ex)
             {
@@ -61,6 +82,7 @@ namespace DressMySlugcat
                 if (IsPostInit) return;
                 IsPostInit = true;
 
+                SpriteSheet.UpdateDefaults();
                 AtlasHooks.LoadAtlases();
                 SaveManager.Load();
             }

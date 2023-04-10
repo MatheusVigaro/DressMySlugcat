@@ -27,8 +27,22 @@ namespace DressMySlugcat
         public List<string> AvailableSpriteNames = new();
         public Dictionary<string, Color> DefaultColors = new();
 
-        public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
         public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();
+
+        public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
+        public static SpriteSheet GetDefault() => Get(DefaultName);
+        public static SpriteSheet GetEmpty() => Get(EmptyName);
+
+        public static readonly string DefaultName = "rainworld.default";
+        public static readonly string EmptyName = "dressmyslugcat.empty";
+
+        public static FAtlas EmptyAtlas;
+        public static FAtlasElement EmptyElement;
+
+        public static FAtlas TailAtlas;
+        public static FAtlasElement TailElement;
+
+        public static Texture2D RainWorldTexture;
 
         public void ParseAtlases()
         {
@@ -51,9 +65,20 @@ namespace DressMySlugcat
             }
         }
 
-        private FAtlasElement TrimElement(FAtlasElement element)
+        public static FAtlasElement TrimElement(FAtlasElement element)
         {
             var texture = element.atlas.texture as Texture2D;
+
+            if (texture.name == "rainWorld")
+            {
+                if (RainWorldTexture == null)
+                {
+                    RainWorldTexture = new Texture2D(texture.width, texture.height, texture.format, false);
+                    Graphics.ConvertTexture(texture, RainWorldTexture);
+                }
+
+                texture = RainWorldTexture;
+            }
 
             var pos = Vector2Int.RoundToInt(element.uvRect.position * element.atlas.textureSize);
             var size = Vector2Int.RoundToInt(element.uvRect.size * element.atlas.textureSize);
@@ -91,6 +116,83 @@ namespace DressMySlugcat
             topRight.y++;
 
             return element.atlas.CreateUnnamedElement(bottomLeft.x, bottomLeft.y, topRight.x - bottomLeft.x, topRight.y - bottomLeft.y);
+        }
+
+        public static void UpdateDefaults()
+        {
+            if (EmptyAtlas == null)
+            {
+                var texture = new Texture2D(1, 1);
+                texture.SetPixel(0, 0, Color.clear);
+                texture.Apply();
+                EmptyAtlas = Futile.atlasManager.LoadAtlasFromTexture(Plugin.BaseName + "__emptyatlas", texture, false);
+                EmptyElement = EmptyAtlas.elements[0];
+            }
+
+            if (TailAtlas == null)
+            {
+                var texture = new Texture2D(150, 75);
+                var pixels = new Color[texture.width * texture.height];
+
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    pixels[i] = Color.white;
+                }
+
+                texture.SetPixels(pixels);
+                texture.Apply();
+
+                TailAtlas = Futile.atlasManager.LoadAtlasFromTexture("TailTexture", texture, false);
+                TailElement = TailAtlas.elements[0];
+            }
+
+            var defaults = GetDefault();
+
+            if (defaults == null)
+            {
+                defaults = new SpriteSheet
+                {
+                    ID = DefaultName,
+                    Name = "Default",
+                    Author = "DressMySlugcat"
+                };
+                Plugin.SpriteSheets.Insert(0, defaults);
+            }
+
+            var empty = GetEmpty();
+            if (empty == null)
+            {
+                empty = new SpriteSheet
+                {
+                    ID = EmptyName,
+                    Name = "Empty",
+                    Author = "DressMySlugcat"
+                };
+                Plugin.SpriteSheets.Insert(1, empty);
+            }
+
+            foreach (var definition in SpriteDefinitions.AvailableSprites)
+            {
+                foreach (var sprite in definition.RequiredSprites)
+                {
+                    var element = Futile.atlasManager.GetElementWithName(sprite);
+                    defaults.Elements[sprite] = element;
+                    defaults.TrimmedElements[sprite] = TrimElement(element);
+
+                    empty.Elements[sprite] = EmptyElement;
+                    empty.TrimmedElements[sprite] = EmptyElement;
+                }
+
+                if (!defaults.AvailableSpriteNames.Contains(definition.Name))
+                {
+                    defaults.AvailableSpriteNames.Add(definition.Name);
+                }
+
+                if (!empty.AvailableSpriteNames.Contains(definition.Name))
+                {
+                    empty.AvailableSpriteNames.Add(definition.Name);
+                }
+            }
         }
     }
 }

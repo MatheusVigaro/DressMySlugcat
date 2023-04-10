@@ -65,6 +65,8 @@ namespace DressMySlugcat
             {
                 customization.CustomTail ??= new();
             }
+
+            Customization.CleanDefaults();
         }
 
         public static void Save()

@@ -7,9 +7,28 @@ namespace DressMySlugcat
     public static class SpriteDefinitions
     {
         public static List<AvailableSprite> AvailableSprites = new();
+        public static List<Customization> SlugcatDefaults = new();
         public static AvailableSprite Get(string name) => AvailableSprites.FirstOrDefault(x => x.Name == name);
 
         public static bool IsInit;
+
+        public static void AddSprite(AvailableSprite sprite)
+        {
+            if (AvailableSprites.Any(x => x.Name == sprite.Name))
+            {
+                return;
+            }
+
+            AvailableSprites.Add(sprite);
+            SpriteSheet.UpdateDefaults();
+        }
+
+        public static void AddSlugcatDefault(Customization customization)
+        {
+            SlugcatDefaults.Add(customization);
+        }
+
+        public static Customization GetSlugcatDefault(string slugcat, int playerNumber) => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber).LastOrDefault();
 
         public static void Init()
         {

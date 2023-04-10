@@ -172,15 +172,7 @@ namespace DressMySlugcat.Hooks
                             spriteSheet.Atlases.Add(atlas);
                         }
 
-                        //-- TODO: This is dirty and should be replaced with something internal...
-                        if (spriteSheet.ID == "rainworld.default")
-                        {
-                            Plugin.SpriteSheets.Insert(0, spriteSheet);
-                        }
-                        else
-                        {
-                            Plugin.SpriteSheets.Add(spriteSheet);
-                        }
+                        Plugin.SpriteSheets.Add(spriteSheet);
 
                         try
                         {
