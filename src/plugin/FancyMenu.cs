@@ -66,7 +66,7 @@ namespace DressMySlugcat
             darkSprite.scaleY = 770f;
             darkSprite.x = -1f;
             darkSprite.y = -1f;
-            darkSprite.alpha = 0.85f;
+            darkSprite.alpha = 0.5f;
             pages[0].Container.AddChild(darkSprite);
 
             backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(15f, 50f), new Vector2(220f, 30f));
@@ -234,17 +234,15 @@ namespace DressMySlugcat
 
         public void UpdateSpriteButtonsText()
         {
-            var customization = Customization.For(selectedSlugcat, selectedPlayerIndex);
+            var customization = Customization.For(selectedSlugcat, selectedPlayerIndex, false);
             foreach (var key in selectSpriteButtons.Keys)
             {
-                if (key.StartsWith("__INTERNAL_BUTTON")) continue;
-
                 var customSprite = customization.CustomSprite(key);
                 SpriteSheet sheet = customSprite?.SpriteSheet;
 
                 if (sheet == null)
                 {
-                    sheet = SpriteSheet.Get("rainworld.default");
+                    sheet = SpriteSheet.GetDefault();
                 }
 
                 //selectSpriteButtons[key].menuLabel.text = sheet.Name;
@@ -307,6 +305,7 @@ namespace DressMySlugcat
                 manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 PlaySound(SoundID.MENU_Switch_Page_Out);
 
+                Customization.CleanDefaults();
                 SaveManager.Save();
             }
 
@@ -385,9 +384,6 @@ namespace DressMySlugcat
             public Configurable<Color> colorConf;
             public OpColorPicker colorOp;
 
-            public Customization customization;
-            public CustomSprite customSprite;
-
             public SpriteCustomizer(FancyMenu owner, string sprite) : base(owner.manager)
             {
                 this.owner = owner;
@@ -412,32 +408,18 @@ namespace DressMySlugcat
                 resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
                 pages[0].subObjects.Add(resetButton);
 
-                tabWrapper = new MenuTabWrapper(this, pages[0]);
-                pages[0].subObjects.Add(tabWrapper);
-
-                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
-                customSprite = customization.CustomSprite(sprite);
-
-                if (customSprite == null)
-                {
-                    customSprite = new()
-                    {
-                        Sprite = sprite,
-                        Enforce = true,
-                        SpriteSheetID = "rainworld.default",
-                        Color = Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite)
-                    };
-
-                    customization.CustomSprites.Add(customSprite);
-                }
+                var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
+                var customSprite = customization.CustomSprite(sprite, true);
 
                 tabWrapper = new MenuTabWrapper(this, pages[0]);
                 pages[0].subObjects.Add(tabWrapper);
 
                 colorConf = new Configurable<Color>(default);
                 colorOp = new OpColorPicker(colorConf, cancelButton.pos + new Vector2(0, 40));
+
                 var onValueChanged = typeof(UIconfig).GetEvent("OnValueChanged");
                 onValueChanged.AddEventHandler(colorOp, Delegate.CreateDelegate(onValueChanged.EventHandlerType, this, typeof(SpriteCustomizer).GetMethod("OnColorChanged")));
+
                 new UIelementWrapper(tabWrapper, colorOp);
 
                 colorOp.valueColor = customSprite.Color != default ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite);
@@ -445,7 +427,7 @@ namespace DressMySlugcat
 
             public void OnColorChanged(UIconfig sender, string oldValue, string newValue)
             {
-                customSprite.Color = (sender as OpColorPicker).valueColor;
+                Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = (sender as OpColorPicker).valueColor;
                 owner.slugcatDummy.UpdateSprites();
             }
 
@@ -453,7 +435,7 @@ namespace DressMySlugcat
             {
                 if (message == "BACK")
                 {
-                    customSprite.Color = colorOp.valueColor;
+                    Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = colorOp.valueColor;
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     owner.slugcatDummy.UpdateSprites();
@@ -494,7 +476,7 @@ namespace DressMySlugcat
                 this.owner = owner;
                 var tailButton = owner.customizeSpriteButtons["TAIL"];
 
-                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
+                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false);
 
                 var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
 
@@ -756,7 +738,18 @@ namespace DressMySlugcat
                             var size = new Vector2(boxSize, boxSize);
 
                             var sprite = gallerySprites[spritePosition];
-                            sprite.element = spriteSheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+
+                            var slugcatDefault = SpriteDefinitions.GetSlugcatDefault(owner.selectedSlugcat, owner.selectedPlayerIndex)?.CustomSprite(spriteName); 
+
+                            if (spriteSheet == SpriteSheet.GetDefault() && slugcatDefault != null)
+                            {
+                                var defaulSpritesheet = SpriteSheet.Get(slugcatDefault.SpriteSheetID);
+                                sprite.element = defaulSpritesheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+                            }
+                            else
+                            {
+                                sprite.element = spriteSheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+                            }
 
                             sprite.x = pos.x + 2 + ((size.x - 4) / 2);
                             sprite.y = pos.y + 2 + ((size.x - 4) / 2);
@@ -792,7 +785,7 @@ namespace DressMySlugcat
 
                             galleryLabels[spritePosition].text = spriteSheet.Name;
 
-                            if (Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex).CustomSprite(spriteName)?.SpriteSheetID == spriteSheet.ID)
+                            if (Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false).CustomSprite(spriteName)?.SpriteSheetID == spriteSheet.ID)
                             {
                                 currentSelection = spritePosition;
                             }
@@ -829,25 +822,14 @@ namespace DressMySlugcat
                     {
                         currentSelection = to;
                         var spriteSheet = spriteSheets[(currentPageNumber * columns * rows) + to];
-                        var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
+                        var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false);
 
                         if (owner.useEntireSet)
                         {
                             var slugcatSprites = spriteSheet.AvailableSprites.Where(x => x.Slugcats.Count == 0 || x.Slugcats.Contains(owner.selectedSlugcat)).ToList();
                             foreach (var sprite in slugcatSprites)
                             {
-                                var customSprite = customization.CustomSprite(sprite.Name);
-
-                                if (customSprite == null)
-                                {
-                                    customSprite = new()
-                                    {
-                                        Sprite = sprite.Name,
-                                        Enforce = true
-                                    };
-
-                                    customization.CustomSprites.Add(customSprite);
-                                }
+                                var customSprite = customization.CustomSprite(sprite.Name, true);
 
                                 if (owner.useDefaults && spriteSheet.DefaultColors.TryGetValue(sprite.Name, out var color) && color != default && color.a != 0)
                                 {
@@ -859,18 +841,7 @@ namespace DressMySlugcat
                         }
                         else
                         {
-                            var customSprite = customization.CustomSprite(spriteName);
-
-                            if (customSprite == null)
-                            {
-                                customSprite = new()
-                                {
-                                    Sprite = spriteName,
-                                    Enforce = true
-                                };
-
-                                customization.CustomSprites.Add(customSprite);
-                            }
+                            var customSprite = customization.CustomSprite(spriteName, true);
 
                             if (owner.useDefaults && spriteSheet.DefaultColors.TryGetValue(spriteName, out var color) && color != default && color.a != 0)
                             {

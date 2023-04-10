@@ -468,7 +468,7 @@ namespace DressMySlugcat.Hooks
                                 specificSprite = specificReplacement.SpecificName;
                             }
 
-                            if (customSprite.SpriteSheetID != "rainworld.default")
+                            if (customSprite.SpriteSheetID != SpriteSheet.DefaultName)
                             {
                                 playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
                                 if (customColor != default)

@@ -38,27 +38,35 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\BepInEx.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="HOOKS-Assembly-CSharp">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\plugins\HOOKS-Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\MonoMod.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod.Utils">
       <HintPath>F:\Steam\steamapps\common\Rain World\BepInEx\core\MonoMod.Utils.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.dll</HintPath>
