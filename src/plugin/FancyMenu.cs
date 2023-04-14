@@ -847,6 +847,22 @@ namespace DressMySlugcat
                             customSprite.SpriteSheetID = spriteSheet.ID;
                         }
 
+                        if (owner.useDefaults)
+                        {
+                            if (spriteSheet.DefaultTail.IsCustom)
+                            {
+                                customization.CustomTail.Length = spriteSheet.DefaultTail.Length;
+                                customization.CustomTail.Wideness = spriteSheet.DefaultTail.Wideness;
+                                customization.CustomTail.Roundness = spriteSheet.DefaultTail.Roundness;
+                                customization.CustomTail.Lift = spriteSheet.DefaultTail.Lift;
+                            }
+
+                            if (spriteSheet.DefaultTail.Color != default)
+                            {
+                                customization.CustomTail.Color = spriteSheet.DefaultTail.Color;
+                            }
+                        }
+
                         owner.UpdateControls();
                         owner.slugcatDummy.UpdateSprites();
                     }

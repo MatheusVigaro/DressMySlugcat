@@ -116,13 +116,53 @@ namespace DressMySlugcat.Hooks
                                 var defaultsDict = sprite.Value as Dictionary<string, object>;
                                 foreach (KeyValuePair<string, object> def in defaultsDict)
                                 {
-                                    switch (def.Key.ToLower())
+                                    if ("tail".Equals(sprite.Key, StringComparison.CurrentCultureIgnoreCase))
                                     {
-                                        case "color":
-                                            if (ColorUtility.TryParseHtmlString((string)def.Value, out var color)) {
-                                                spriteSheet.DefaultColors.Add(sprite.Key, color);
-                                            }
-                                            break;
+                                        switch (def.Key.ToLower())
+                                        {
+                                            case "color":
+                                                if (ColorUtility.TryParseHtmlString((string)def.Value, out var color))
+                                                {
+                                                    spriteSheet.DefaultTail.Color = color;
+                                                }
+                                                break;
+                                            case "length":
+                                                if (def.Value is double length)
+                                                {
+                                                    spriteSheet.DefaultTail.Length = (float)length;
+                                                }
+                                                break;
+                                            case "wideness":
+                                                if (def.Value is double wideness)
+                                                {
+                                                    spriteSheet.DefaultTail.Wideness = (float)wideness;
+                                                }
+                                                break;
+                                            case "roundness":
+                                                if (def.Value is double roundness)
+                                                {
+                                                    spriteSheet.DefaultTail.Roundness = (float)roundness;
+                                                }
+                                                break;
+                                            case "lift":
+                                                if (def.Value is double lift)
+                                                {
+                                                    spriteSheet.DefaultTail.Lift = (float)lift;
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        switch (def.Key.ToLower())
+                                        {
+                                            case "color":
+                                                if (ColorUtility.TryParseHtmlString((string)def.Value, out var color))
+                                                {
+                                                    spriteSheet.DefaultColors.Add(sprite.Key.ToUpper(), color);
+                                                }
+                                                break;
+                                        }
                                     }
                                 }
                             }

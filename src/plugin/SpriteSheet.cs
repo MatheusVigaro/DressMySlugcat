@@ -26,6 +26,7 @@ namespace DressMySlugcat
         public List<FAtlas> Atlases = new();
         public List<string> AvailableSpriteNames = new();
         public Dictionary<string, Color> DefaultColors = new();
+        public CustomTail DefaultTail = new();
 
         public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();
 

@@ -302,20 +302,6 @@ namespace DressMySlugcat.Hooks
             {
                 if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
-                    #region TailColor
-                    if (playerGraphicsData.tailColor != default && playerGraphicsData.tailColor.a != 0 && sLeaser.sprites[2] != null)
-                    {
-                        var color = playerGraphicsData.tailColor;
-                        if (playerGraphics.malnourished > 0f)
-                        {
-                            float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
-                            color = Color.Lerp(color, Color.gray, 0.4f * num);
-                        }
-
-                        sLeaser.sprites[2].color = playerGraphics.HypothermiaColorBlend(color);
-                    }
-                    #endregion
-
                     #region SpriteColors
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
@@ -342,6 +328,20 @@ namespace DressMySlugcat.Hooks
                                 sLeaser.sprites[i].color = playerGraphics.HypothermiaColorBlend(customColor);
                             }
                         }
+                    }
+                    #endregion
+
+                    #region TailColor
+                    if (playerGraphicsData.tailColor != default && playerGraphicsData.tailColor.a != 0 && sLeaser.sprites[2] != null)
+                    {
+                        var color = playerGraphicsData.tailColor;
+                        if (playerGraphics.malnourished > 0f)
+                        {
+                            float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
+                            color = Color.Lerp(color, Color.gray, 0.4f * num);
+                        }
+
+                        sLeaser.sprites[2].color = playerGraphics.HypothermiaColorBlend(color);
                     }
                     #endregion
 
