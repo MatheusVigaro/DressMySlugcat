@@ -427,7 +427,7 @@ namespace DressMySlugcat
 
             public void OnColorChanged(UIconfig sender, string oldValue, string newValue)
             {
-                Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = (sender as OpColorPicker).valueColor;
+                Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false).CustomSprite(sprite, true).Color = (sender as OpColorPicker).valueColor;
                 owner.slugcatDummy.UpdateSprites();
             }
 
@@ -435,7 +435,7 @@ namespace DressMySlugcat
             {
                 if (message == "BACK")
                 {
-                    Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = colorOp.valueColor;
+                    Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false).CustomSprite(sprite, true).Color = colorOp.valueColor;
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     owner.slugcatDummy.UpdateSprites();

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{48F17CFB-D4AF-4EAA-9C4E-6EB3A4081D8A}"
+	ProjectSection(SolutionItems) = preProject
+		mod\modinfo.json = mod\modinfo.json
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DressMySlugcat", "src\plugin\DressMySlugcat.csproj", "{0BFFAE55-B0EF-4C23-BEE7-4CB6789FFDFE}"
 EndProject
