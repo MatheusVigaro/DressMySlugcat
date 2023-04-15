@@ -312,7 +312,32 @@ namespace DressMySlugcat.Hooks
 
                         if (sLeaser.sprites[i] != null)
                         {
-                            if (playerGraphicsData.SpriteReplacements.TryGetValue(playerGraphicsData.SpriteNames[i], out var replacement))
+                            string spriteName = playerGraphicsData.SpriteNames[i];
+                            switch (i)
+                            {
+                                case 0:
+                                    spriteName = "BodyA";
+                                    break;
+                                case 1:
+                                    spriteName = "HipsA";
+                                    break;
+                            }
+
+                            FAtlasElement replacement = null;
+
+                            if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand || playerGraphics.player.bodyMode == Player.BodyModeIndex.Crawl)
+                            {
+                                if (playerGraphics.player.bodyChunks[1].vel.x > 0.05f)
+                                {
+                                    playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                }
+                                else if (playerGraphics.player.bodyChunks[1].vel.x < -0.05f)
+                                {
+                                    playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                }
+                            }
+
+                            if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
                             {
                                 sLeaser.sprites[i].element = replacement;
                             }
@@ -442,6 +467,13 @@ namespace DressMySlugcat.Hooks
                             if (customSprite.SpriteSheetID != SpriteSheet.DefaultName)
                             {
                                 playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
+
+                                if (sheet.HasAsymmetry(definition.Name))
+                                {
+                                    playerGraphicsData.LeftSpriteReplacements[specificSprite] = sheet.LeftElements[sprite];
+                                    playerGraphicsData.RightSpriteReplacements[specificSprite] = sheet.RightElements[sprite];
+                                }
+
                                 if (customColor != default)
                                 {
                                     playerGraphicsData.SpriteColors[sheet.Elements[sprite].name] = customColor;
