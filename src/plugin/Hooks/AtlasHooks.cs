@@ -72,6 +72,24 @@ namespace DressMySlugcat.Hooks
             Debug.LogWarning("DressMySlugcat: " + friendly);
         }
 
+        public static void ReloadAtlases()
+        {
+            SpriteSheet.EmptyAtlas = null;
+            SpriteSheet.TailAtlas = null;
+            foreach (var sheet in Plugin.SpriteSheets)
+            {
+                foreach (var atlas in sheet.Atlases)
+                {
+                    Futile.atlasManager.UnloadAtlas(atlas.name);
+                }
+            }
+
+            Plugin.SpriteSheets.Clear();
+
+            LoadAtlases();
+            SpriteSheet.UpdateDefaults();
+        }
+
         public static void LoadAtlases(string directory = Plugin.BaseName)
         {
             Errors.Clear();

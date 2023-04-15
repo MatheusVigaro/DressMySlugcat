@@ -318,18 +318,7 @@ namespace DressMySlugcat
             }
             else if (message == "RELOAD_ATLASES")
             {
-                foreach (var sheet in Plugin.SpriteSheets)
-                {
-                    foreach (var atlas in sheet.Atlases)
-                    {
-                        Futile.atlasManager.UnloadAtlas(atlas.name);
-                    }
-                }
-
-                Plugin.SpriteSheets.Clear();
-
-                AtlasHooks.LoadAtlases();
-
+                AtlasHooks.ReloadAtlases();
                 slugcatDummy.UpdateSprites();
                 PlaySound(SoundID.MENU_Player_Join_Game);
             }
