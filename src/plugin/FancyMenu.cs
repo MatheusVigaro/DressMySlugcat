@@ -489,22 +489,22 @@ namespace DressMySlugcat
                 pages[0].subObjects.Add(tabWrapper);
 
                 liftConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                liftOp = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180);
+                liftOp = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180, 2);
                 new UIelementWrapper(tabWrapper, liftOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", liftOp.pos + new Vector2(0, 40), new Vector2(liftOp.size.x, 20), true));
 
                 roundnessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180);
+                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180, 2);
                 new UIelementWrapper(tabWrapper, roundnessOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, 40), new Vector2(roundnessOp.size.x, 20), true));
 
                 widenessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180);
+                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180, 2);
                 new UIelementWrapper(tabWrapper, widenessOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, 40), new Vector2(widenessOp.size.x, 20), true));
 
                 lengthConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                lengthOp = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180);
+                lengthOp = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180, 2);
                 new UIelementWrapper(tabWrapper, lengthOp);
                 pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, 40), new Vector2(lengthOp.size.x, 20), true));
 
