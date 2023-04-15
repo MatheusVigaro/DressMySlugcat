@@ -298,7 +298,8 @@ namespace DressMySlugcat.Hooks
 
 
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser) =>
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser, float timeStacker) =>
             {
                 if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
@@ -325,16 +326,43 @@ namespace DressMySlugcat.Hooks
 
                             FAtlasElement replacement = null;
 
-                            if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand || playerGraphics.player.bodyMode == Player.BodyModeIndex.Crawl)
+                            //-- Sprite asymmetry
+                            if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand)
                             {
-                                if (i == 5 || playerGraphics.player.bodyChunks[1].vel.x < -0.05f)
+                                if (playerGraphics.player.bodyChunks[1].vel.x < -3f)
                                 {
                                     playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
-                                else if (i == 6 || playerGraphics.player.bodyChunks[1].vel.x > 0.05f)
+                                else if (playerGraphics.player.bodyChunks[1].vel.x > 3f)
                                 {
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
+                            }
+                            else if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Crawl || playerGraphics.player.bodyMode == Player.BodyModeIndex.CorridorClimb || playerGraphics.player.bodyMode == Player.BodyModeIndex.ClimbIntoShortCut)
+                            {
+                                var headPos = Vector2.Lerp(playerGraphics.drawPositions[0, 1], playerGraphics.drawPositions[0, 0], timeStacker);
+                                var legsPos = Vector2.Lerp(playerGraphics.drawPositions[1, 1], playerGraphics.drawPositions[1, 0], timeStacker);
+                                var bodyAngle = Custom.AimFromOneVectorToAnother(legsPos, headPos);
+
+                                if (bodyAngle < -30 && bodyAngle > -150)
+                                {
+                                    playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                }
+                                else if (bodyAngle > 30 &&  bodyAngle < 150)
+                                {
+                                    playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                }
+                            }
+
+                            //-- Forcing arm asymmetry when enabled
+                            switch (i)
+                            {
+                                case 5:
+                                    playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                    break;
+                                case 6:
+                                    playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                    break;
                             }
 
                             if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
