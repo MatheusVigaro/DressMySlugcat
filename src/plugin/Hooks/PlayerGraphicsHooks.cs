@@ -327,11 +327,11 @@ namespace DressMySlugcat.Hooks
 
                             if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand || playerGraphics.player.bodyMode == Player.BodyModeIndex.Crawl)
                             {
-                                if (playerGraphics.player.bodyChunks[1].vel.x > 0.05f)
+                                if (i == 5 || playerGraphics.player.bodyChunks[1].vel.x < -0.05f)
                                 {
                                     playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
-                                else if (playerGraphics.player.bodyChunks[1].vel.x < -0.05f)
+                                else if (i == 6 || playerGraphics.player.bodyChunks[1].vel.x > 0.05f)
                                 {
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
