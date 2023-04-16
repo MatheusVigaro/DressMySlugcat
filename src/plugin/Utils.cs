@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 using DressMySlugcat.Hooks;
 using System.IO;
 using Menu;
+using RWCustom;
 
 namespace DressMySlugcat
 {
@@ -83,6 +84,49 @@ namespace DressMySlugcat
             }
 
             return PlayerGraphics.DefaultBodyPartColorHex(name as SlugcatStats.Name);
+        }
+
+        public static string[] ListDirectory(string path, bool directories = false, bool includeAll = false)
+        {
+            if (!Plugin.LoadInactiveMods)
+            {
+                return AssetManager.ListDirectory(path, directories, includeAll);
+            }
+            List<string> list = new List<string>();
+            List<string> list2 = new List<string>();
+            List<string> list3 = new List<string>();
+            list3.Add(Path.Combine(Custom.RootFolderDirectory(), "mergedmods"));
+            for (int i = 0; i < ModManager.InstalledMods.Count; i++)
+            {
+                list3.Add(ModManager.InstalledMods[i].path);
+            }
+
+            list3.Add(Custom.RootFolderDirectory());
+            foreach (string item in list3)
+            {
+                string path2 = Path.Combine(item, path.ToLowerInvariant());
+                if (!Directory.Exists(path2))
+                {
+                    continue;
+                }
+
+                string[] array = (directories ? Directory.GetDirectories(path2) : Directory.GetFiles(path2));
+                for (int j = 0; j < array.Length; j++)
+                {
+                    string text = array[j].ToLowerInvariant();
+                    string fileName = Path.GetFileName(text);
+                    if (!list2.Contains(fileName) || includeAll)
+                    {
+                        list.Add(text);
+                        if (!includeAll)
+                        {
+                            list2.Add(fileName);
+                        }
+                    }
+                }
+            }
+
+            return list.ToArray();
         }
     }
 }

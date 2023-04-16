@@ -98,7 +98,7 @@ namespace DressMySlugcat.Hooks
 
         public static void LoadAtlasesInternal(string directory = Plugin.BaseName)
         {
-            var files = AssetManager.ListDirectory(directory, includeAll: true).Distinct().ToList();
+            var files = Utils.ListDirectory(directory, includeAll: true).Distinct().ToList();
 
             var metaFile = files.FirstOrDefault(f => "metadata.json".Equals(Path.GetFileName(f), StringComparison.InvariantCultureIgnoreCase));
 
@@ -252,7 +252,7 @@ namespace DressMySlugcat.Hooks
 
             finally
             {
-                var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();
+                var subDirectories = Utils.ListDirectory(directory, true, true).Distinct().ToList();
                 foreach (var subDir in subDirectories)
                 {
                     LoadAtlases(subDir);
