@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Json;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using System.Threading;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -28,9 +29,10 @@ namespace DressMySlugcat
         public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
         public const string BaseName = "dressmyslugcat";
 
+        public static DMSOptions Options;
+
         private bool IsInit;
         private bool IsPostInit;
-        public static bool LoadInactiveMods;
 
         private void OnEnable()
         {
@@ -46,13 +48,8 @@ namespace DressMySlugcat
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
                 On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
-
-                LoadInactiveMods = File.Exists(Path.Combine(Custom.RootFolderDirectory(), "dms_loadinactive.txt"));
-
-                if (LoadInactiveMods)
-                {
-                    IL.ProcessManager.CreateValidationLabel += ProcessManager_CreateValidationLabel;
-                }
+                On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
 
                 Debug.Log($"Plugin DressMySlugcat is loaded!");
             }
@@ -62,41 +59,17 @@ namespace DressMySlugcat
             }
         }
 
-        private void ProcessManager_CreateValidationLabel(ILContext il)
+        private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
-            var cursor = new ILCursor(il);
-
+            orig(self);
             try
             {
-                int mod = -1;
-                if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdloc(out mod),
-                                                        i => i.MatchLdfld<ModManager.Mod>(nameof(ModManager.Mod.id)),
-                                                        i => i.MatchCallOrCallvirt(nameof(MachineConnector), nameof(MachineConnector.GetRegisteredOI))) || mod == -1)
-                {
-                    throw new Exception("Failed to match IL for ProcessManager_CreateValidationLabel!");
-                }
-
-                cursor.MoveAfterLabels();
-                cursor.Emit(OpCodes.Ldloc, mod);
-                cursor.EmitDelegate((OptionInterface oi, ModManager.Mod mod) =>
-                {
-                    if (BaseName.Equals(mod.id))
-                    {
-                        return new DummyOptionsInterface() { mod = mod };
-                    }
-
-                    return oi;
-                });
+                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
             }
-
             catch (Exception ex)
             {
-                Debug.LogError("Exception when matching IL for ProcessManager_CreateValidationLabel!");
                 Debug.LogException(ex);
-                Debug.LogError(il);
-                throw;
             }
-
         }
 
         private void RainWorld_OnModsEnabled(On.RainWorld.orig_OnModsEnabled orig, RainWorld self, ModManager.Mod[] newlyEnabledMods)
