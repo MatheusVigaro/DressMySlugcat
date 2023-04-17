@@ -354,14 +354,25 @@ namespace DressMySlugcat.Hooks
                                 }
                             }
 
-                            //-- Forcing arm asymmetry when enabled
                             switch (i)
                             {
+                                //-- Forcing arm asymmetry when enabled
                                 case 5:
                                     playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                                     break;
                                 case 6:
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                    break;
+                                //-- Forcing left/right sprites based on face sprite scale
+                                case 9:
+                                    if (sLeaser.sprites[i].scaleX < 0)
+                                    {
+                                        playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                    }
+                                    else
+                                    {
+                                        playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
+                                    }
                                     break;
                             }
 
