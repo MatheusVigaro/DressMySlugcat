@@ -86,6 +86,8 @@ namespace DressMySlugcat
             return PlayerGraphics.DefaultBodyPartColorHex(name as SlugcatStats.Name);
         }
 
+        public static List<string> ValidSlugcatNames => SlugcatStats.Name.values.entries.Where(x => !SlugcatStats.HiddenOrUnplayableSlugcat(new SlugcatStats.Name(x)) || "Slugpup".Equals(x) || "Inv".Equals(x)).ToList();
+
         public static string[] ListDirectory(string path, bool directories = false, bool includeAll = false)
         {
             if (!Plugin.Options?.LoadInactiveMods?.Value ?? false)

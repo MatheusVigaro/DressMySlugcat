@@ -48,7 +48,8 @@ namespace DressMySlugcat
 
         public FancyMenu(ProcessManager manager) : base(manager, Plugin.FancyMenu)
         {
-            slugcatNames = SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList();
+            SaveManager.InitSlugcatCustomizations();
+            slugcatNames = Utils.ValidSlugcatNames;
             pageCount = Mathf.CeilToInt((float)slugcatNames.Count / slugcatsPerPage);
 
             selectedSlugcat = slugcatNames.FirstOrDefault();
