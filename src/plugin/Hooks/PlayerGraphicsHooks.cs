@@ -363,8 +363,8 @@ namespace DressMySlugcat.Hooks
                                 case 6:
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                                     break;
-                                //-- Forcing left/right sprites based on face sprite scale
-                                case 9:
+                                //-- Forcing left/right sprites based on sprite scale for the legs, head and face
+                                case 3 or 4 or 9:
                                     if (sLeaser.sprites[i].scaleX < 0)
                                     {
                                         playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
