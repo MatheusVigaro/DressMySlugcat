@@ -47,6 +47,7 @@ namespace DressMySlugcat
                 AtlasHooks.Init();
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
+                PauseMenuHooks.Init();
                 On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
                 On.RainWorld.OnModsInit += RainWorld_OnModsInit;
                 MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());

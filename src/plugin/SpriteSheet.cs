@@ -70,7 +70,10 @@ namespace DressMySlugcat
                     else
                     {
                         Elements[name] = element;
-                        TrimmedElements[name] = TrimElement(element);
+                        if (SpriteDefinitions.AvailableSprites.Any(x => element.name.EndsWith(x.GallerySprite, StringComparison.InvariantCultureIgnoreCase)))
+                        {
+                            TrimmedElements[name] = TrimElement(element);
+                        }
                     }
                 }
             }

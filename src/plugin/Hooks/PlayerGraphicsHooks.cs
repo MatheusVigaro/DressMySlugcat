@@ -31,7 +31,6 @@ namespace DressMySlugcat.Hooks
 
         public static void Init()
         {
-            On.PlayerGraphics.ctor += PlayerGraphics_ctor;
             On.RoomCamera.SpriteLeaser.ctor += SpriteLeaser_ctor;
             On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainer;
             IL.RoomCamera.SpriteLeaser.Update += SpriteLeaser_Update;
@@ -48,60 +47,7 @@ namespace DressMySlugcat.Hooks
                 return;
             }
 
-            if (!PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) || playerGraphicsData == null)
-            {
-                InitiateCustomGraphics(playerGraphics);
-            }
-
-            if (sLeaser.sprites[2] is TriangleMesh tail && PlayerGraphicsData.TryGetValue(playerGraphics, out playerGraphicsData))
-            {
-                if (playerGraphicsData.Customization.CustomTail.IsCustom)
-                {
-                    sLeaser.sprites[2].RemoveFromContainer();
-
-                    Triangle[] array = new Triangle[(playerGraphics.tail.Length - 1) * 4 + 1];
-                    for (int i = 0; i < playerGraphics.tail.Length - 1; i++)
-                    {
-                        int num = i * 4;
-                        for (int j = 0; j < 4; j++)
-                        {
-                            array[num + j] = new Triangle(num + j, num + j + 1, num + j + 2);
-                        }
-                    }
-                    array[(playerGraphics.tail.Length - 1) * 4] = new Triangle((playerGraphics.tail.Length - 1) * 4, (playerGraphics.tail.Length - 1) * 4 + 1, (playerGraphics.tail.Length - 1) * 4 + 2);
-                    tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
-                    sLeaser.sprites[2] = tail;
-                    playerGraphicsData.tailRef = tail;
-
-                    rCam.ReturnFContainer("Midground").AddChild(tail);
-                    tail.MoveBehindOtherNode(sLeaser.sprites[4]);
-                }
-
-                if (playerGraphicsData.SpriteReplacements.TryGetValue("TailTexture", out var tailTexture) && tailTexture != null)
-                {
-                    tail.element = tailTexture;
-                    for (int i = tail.vertices.Length - 1; i >= 0; i--)
-                    {
-                        float perc = i / 2 / (float)(tail.vertices.Length / 2);
-                        Vector2 uv;
-                        if (i % 2 == 0)
-                            uv = new Vector2(perc, 0f);
-                        else if (i < tail.vertices.Length - 1)
-                            uv = new Vector2(perc, 1f);
-                        else
-                            uv = new Vector2(1f, 0f);
-
-                        // Map UV values to the element
-                        uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
-                        uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
-
-                        tail.UVvertices[i] = uv;
-
-                    }
-                }
-            }
-
-            playerGraphics.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+            InitiateCustomGraphics(playerGraphics, sLeaser, rCam);
         }
 
         private static void PlayerGraphics_AddToContainer(On.PlayerGraphics.orig_AddToContainer orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
@@ -296,13 +242,18 @@ namespace DressMySlugcat.Hooks
                 throw;
             }
 
-
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.Emit(OpCodes.Ldarg_1);
-            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser, float timeStacker) =>
+            cursor.Emit(OpCodes.Ldarg_2);
+            cursor.EmitDelegate((RoomCamera.SpriteLeaser sLeaser, float timeStacker, RoomCamera rCam) =>
             {
                 if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
                 {
+                    if (playerGraphicsData.ScheduleForRecreation)
+                    {
+                        playerGraphicsData = InitiateCustomGraphics(playerGraphics, sLeaser, rCam);
+                    }
+
                     #region SpriteColors
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
@@ -423,20 +374,28 @@ namespace DressMySlugcat.Hooks
             });
         }
 
-        private static void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        public static PlayerGraphicsEx InitiateCustomGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
-            orig(self, ow);
-            InitiateCustomGraphics(self);
-        }
-
-        public static void InitiateCustomGraphics(PlayerGraphics self)
-        {
-            if (PlayerGraphicsData.TryGetValue(self, out var _))
+            var playerGraphicsData = new PlayerGraphicsEx();
+            if (PlayerGraphicsData.TryGetValue(self, out var oldData))
             {
+                if (oldData.orignalTail != null)
+                {
+                    playerGraphicsData.orignalTail = oldData.orignalTail;
+                    playerGraphicsData.orignalTailUVs = oldData.orignalTailUVs;
+                    playerGraphicsData.orignalTailElement = oldData.orignalTailElement;
+                    playerGraphicsData.SpriteNames = oldData.SpriteNames;
+                }
                 PlayerGraphicsData.Remove(self);
             }
 
-            var playerGraphicsData = new PlayerGraphicsEx();
+            if (playerGraphicsData.orignalTail == null) {
+                var tailSprite = sLeaser.sprites[2] as TriangleMesh;
+                playerGraphicsData.orignalTail = self.tail;
+                playerGraphicsData.orignalTailUVs = tailSprite.UVvertices;
+                playerGraphicsData.orignalTailElement = tailSprite.element;
+            }
+
             PlayerGraphicsData.Add(self, playerGraphicsData);
 
             var name = self.player.slugcatStats.name.value;
@@ -444,6 +403,7 @@ namespace DressMySlugcat.Hooks
             var customization = Customization.For(self);
             playerGraphicsData.Customization = customization;
 
+            TailSegment[] oldTail;
             if (customization.CustomTail.IsCustom)
             {
                 var length = customization.CustomTail.EffectiveLength;
@@ -452,17 +412,42 @@ namespace DressMySlugcat.Hooks
                 //var offset = customization.CustomTail.EffectiveOffset;
                 var pup = self.player.playerState.isPup;
 
+                oldTail = self.tail;
                 self.tail = new TailSegment[length];
                 for (var i = 0; i < length; i++)
                 {
                     self.tail[i] = new TailSegment(self, Mathf.Lerp(6f, 1f, Mathf.Pow((float)(i + 1) / (float)length, wideness)) * (1f + Mathf.Sin((float)i / (float)length * (float)Math.PI) * roundness), (float)((i == 0) ? 4 : 7) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, true);
                 }
 
-                var bp = self.bodyParts.ToList();
-                bp.RemoveAll(x => x is TailSegment);
-                bp.AddRange(self.tail);
-                self.bodyParts = bp.ToArray();
             }
+            else
+            {
+                oldTail = self.tail;
+                for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
+                {
+                    self.tail[i].pos = oldTail[i].pos;
+                    self.tail[i].lastPos = oldTail[i].lastPos;
+                    self.tail[i].vel = oldTail[i].vel;
+                    self.tail[i].terrainContact = oldTail[i].terrainContact;
+                    self.tail[i].stretched = oldTail[i].stretched;
+                }
+
+                self.tail = playerGraphicsData.orignalTail;
+            }
+
+            for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
+            {
+                self.tail[i].pos = oldTail[i].pos;
+                self.tail[i].lastPos = oldTail[i].lastPos;
+                self.tail[i].vel = oldTail[i].vel;
+                self.tail[i].terrainContact = oldTail[i].terrainContact;
+                self.tail[i].stretched = oldTail[i].stretched;
+            }
+
+            var bp = self.bodyParts.ToList();
+            bp.RemoveAll(x => x is TailSegment);
+            bp.AddRange(self.tail);
+            self.bodyParts = bp.ToArray();
 
             playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
 
@@ -527,6 +512,59 @@ namespace DressMySlugcat.Hooks
                     }
                 }
             }
+
+            if (sLeaser.sprites[2] is TriangleMesh tail)
+            {
+                sLeaser.sprites[2].RemoveFromContainer();
+
+                Triangle[] array = new Triangle[(self.tail.Length - 1) * 4 + 1];
+                for (int i = 0; i < self.tail.Length - 1; i++)
+                {
+                    int num = i * 4;
+                    for (int j = 0; j < 4; j++)
+                    {
+                        array[num + j] = new Triangle(num + j, num + j + 1, num + j + 2);
+                    }
+                }
+                array[(self.tail.Length - 1) * 4] = new Triangle((self.tail.Length - 1) * 4, (self.tail.Length - 1) * 4 + 1, (self.tail.Length - 1) * 4 + 2);
+                tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
+                sLeaser.sprites[2] = tail;
+                playerGraphicsData.tailRef = tail;
+
+                rCam.ReturnFContainer("Midground").AddChild(tail);
+                tail.MoveBehindOtherNode(sLeaser.sprites[4]);
+
+                if (playerGraphicsData.SpriteReplacements.TryGetValue("TailTexture", out var tailTexture) && tailTexture != null)
+                {
+                    tail.element = tailTexture;
+                    for (int i = tail.vertices.Length - 1; i >= 0; i--)
+                    {
+                        float perc = i / 2 / (float)(tail.vertices.Length / 2);
+                        Vector2 uv;
+                        if (i % 2 == 0)
+                            uv = new Vector2(perc, 0f);
+                        else if (i < tail.vertices.Length - 1)
+                            uv = new Vector2(perc, 1f);
+                        else
+                            uv = new Vector2(1f, 0f);
+
+                        // Map UV values to the element
+                        uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
+                        uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
+
+                        tail.UVvertices[i] = uv;
+
+                    }
+                }
+                else
+                {
+                    tail.UVvertices = playerGraphicsData.orignalTailUVs;
+                    tail.element = playerGraphicsData.orignalTailElement;
+                }
+            }
+
+            self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+            return playerGraphicsData;
         }
     }
 }

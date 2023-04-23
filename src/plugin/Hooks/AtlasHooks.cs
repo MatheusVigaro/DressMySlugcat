@@ -134,7 +134,7 @@ namespace DressMySlugcat.Hooks
                                 var defaultsDict = sprite.Value as Dictionary<string, object>;
                                 foreach (KeyValuePair<string, object> def in defaultsDict)
                                 {
-                                    if ("tail".Equals(sprite.Key, StringComparison.CurrentCultureIgnoreCase))
+                                    if ("tail".Equals(sprite.Key, StringComparison.InvariantCultureIgnoreCase))
                                     {
                                         switch (def.Key.ToLower())
                                         {
