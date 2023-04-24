@@ -146,9 +146,10 @@ namespace DressMySlugcat.Hooks
 
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldarg_1);
+                cursor.Emit(OpCodes.Ldarg_2);
                 cursor.Emit(OpCodes.Ldarg_3);
                 cursor.Emit(OpCodes.Ldarg, 4);
-                cursor.EmitDelegate((PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, float timeStacker, Vector2 camPos) =>
+                cursor.EmitDelegate((PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos) =>
                 {
                     if (sLeaser.sprites[2] is not TriangleMesh tailSprite)
                     {
@@ -160,9 +161,14 @@ namespace DressMySlugcat.Hooks
                         return false;
                     }
 
-                    if (!playerGraphicsData.Customization.CustomTail.IsCustom || !playerGraphicsData.TailIntegrity(sLeaser))
+                    /*if (!playerGraphicsData.Customization.CustomTail.IsCustom || !playerGraphicsData.TailIntegrity(sLeaser))
                     {
                         return false;
+                    }*/
+
+                    if (!playerGraphicsData.TailIntegrity(sLeaser))
+                    {
+                        ReplaceTailGraphics(self, sLeaser, rCam);
                     }
 
                     float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f);
@@ -191,7 +197,7 @@ namespace DressMySlugcat.Hooks
                         }
                         tailSprite.MoveVertice(i * 4, val4 - val7 * num4 * num3 + normalized * num5 - camPos);
                         tailSprite.MoveVertice(i * 4 + 1, val4 + val7 * num4 * num3 + normalized * num5 - camPos);
-                        if (i < self.tail.Length - 1)
+                        if (i < self.tail.Length - 1 && i * 4 + 3 < tailSprite.vertices.Length)
                         {
                             tailSprite.MoveVertice(i * 4 + 2, val5 - val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
                             tailSprite.MoveVertice(i * 4 + 3, val5 + val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
@@ -379,21 +385,21 @@ namespace DressMySlugcat.Hooks
             var playerGraphicsData = new PlayerGraphicsEx();
             if (PlayerGraphicsData.TryGetValue(self, out var oldData))
             {
-                if (oldData.orignalTail != null)
+                if (oldData.originalTail != null)
                 {
-                    playerGraphicsData.orignalTail = oldData.orignalTail;
-                    playerGraphicsData.orignalTailUVs = oldData.orignalTailUVs;
-                    playerGraphicsData.orignalTailElement = oldData.orignalTailElement;
+                    playerGraphicsData.originalTailElement = oldData.originalTailElement;
+                    playerGraphicsData.originalTailColors = oldData.originalTailColors;
                     playerGraphicsData.SpriteNames = oldData.SpriteNames;
+                    playerGraphicsData.originalTail = oldData.originalTail;
                 }
                 PlayerGraphicsData.Remove(self);
             }
 
-            if (playerGraphicsData.orignalTail == null) {
+            if (playerGraphicsData.originalTail == null) {
                 var tailSprite = sLeaser.sprites[2] as TriangleMesh;
-                playerGraphicsData.orignalTail = self.tail;
-                playerGraphicsData.orignalTailUVs = tailSprite.UVvertices;
-                playerGraphicsData.orignalTailElement = tailSprite.element;
+                playerGraphicsData.originalTailElement = tailSprite.element;
+                playerGraphicsData.originalTailColors = tailSprite.verticeColors;
+                playerGraphicsData.originalTail = self.tail;
             }
 
             PlayerGraphicsData.Add(self, playerGraphicsData);
@@ -432,7 +438,7 @@ namespace DressMySlugcat.Hooks
                     self.tail[i].stretched = oldTail[i].stretched;
                 }
 
-                self.tail = playerGraphicsData.orignalTail;
+                self.tail = playerGraphicsData.originalTail;
             }
 
             for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
@@ -448,6 +454,8 @@ namespace DressMySlugcat.Hooks
             bp.RemoveAll(x => x is TailSegment);
             bp.AddRange(self.tail);
             self.bodyParts = bp.ToArray();
+
+            playerGraphicsData.tailSegmentRef = self.tail;
 
             playerGraphicsData.IsArtificer = self.player.slugcatStats.name == MoreSlugcatsEnums.SlugcatStatsName.Artificer;
 
@@ -513,8 +521,23 @@ namespace DressMySlugcat.Hooks
                 }
             }
 
+            ReplaceTailGraphics(self, sLeaser, rCam);
+
+            self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+            return playerGraphicsData;
+        }
+
+        public static void ReplaceTailGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            if (!PlayerGraphicsData.TryGetValue(self, out var playerGraphicsData))
+            {
+                return;
+            }
+
             if (sLeaser.sprites[2] is TriangleMesh tail)
             {
+                playerGraphicsData.tailSegmentRef = self.tail;
+
                 sLeaser.sprites[2].RemoveFromContainer();
 
                 Triangle[] array = new Triangle[(self.tail.Length - 1) * 4 + 1];
@@ -537,34 +560,35 @@ namespace DressMySlugcat.Hooks
                 if (playerGraphicsData.SpriteReplacements.TryGetValue("TailTexture", out var tailTexture) && tailTexture != null)
                 {
                     tail.element = tailTexture;
-                    for (int i = tail.vertices.Length - 1; i >= 0; i--)
-                    {
-                        float perc = i / 2 / (float)(tail.vertices.Length / 2);
-                        Vector2 uv;
-                        if (i % 2 == 0)
-                            uv = new Vector2(perc, 0f);
-                        else if (i < tail.vertices.Length - 1)
-                            uv = new Vector2(perc, 1f);
-                        else
-                            uv = new Vector2(1f, 0f);
-
-                        // Map UV values to the element
-                        uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
-                        uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
-
-                        tail.UVvertices[i] = uv;
-
-                    }
                 }
                 else
                 {
-                    tail.UVvertices = playerGraphicsData.orignalTailUVs;
-                    tail.element = playerGraphicsData.orignalTailElement;
+                    tail.element = playerGraphicsData.originalTailElement;
+                }
+
+                for (int i = tail.vertices.Length - 1; i >= 0; i--)
+                {
+                    float perc = i / 2 / (float)(tail.vertices.Length / 2);
+                    Vector2 uv;
+                    if (i % 2 == 0)
+                        uv = new Vector2(perc, 0f);
+                    else if (i < tail.vertices.Length - 1)
+                        uv = new Vector2(perc, 1f);
+                    else
+                        uv = new Vector2(1f, 0f);
+
+                    // Map UV values to the element
+                    uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
+                    uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
+
+                    tail.UVvertices[i] = uv;
+                    if (tail.verticeColors != null && playerGraphicsData.originalTailColors != null)
+                    {
+                        var colorIndex = i % playerGraphicsData.originalTailColors.Length;
+                        tail.verticeColors[i] = playerGraphicsData.originalTailColors[colorIndex];
+                    }
                 }
             }
-
-            self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
-            return playerGraphicsData;
         }
     }
 }
