@@ -314,10 +314,10 @@ namespace DressMySlugcat.Hooks
                             switch (i)
                             {
                                 //-- Forcing arm asymmetry when enabled
-                                case 5:
+                                case 5 or 7:
                                     playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                                     break;
-                                case 6:
+                                case 6 or 8:
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                                     break;
                                 //-- Forcing left/right sprites based on sprite scale for the legs, head and face
