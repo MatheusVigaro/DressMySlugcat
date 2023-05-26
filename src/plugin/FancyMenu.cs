@@ -14,12 +14,12 @@ using Menu.Remix;
 using System.CodeDom;
 using IL.MoreSlugcats;
 using UnityEngine.UIElements;
+using RWCustom;
 
 namespace DressMySlugcat
 {
-    public class FancyMenu : Menu.Menu, SelectOneButton.SelectOneButtonOwner
+    public class FancyMenu : Dialog, SelectOneButton.SelectOneButtonOwner
     {
-        public FSprite darkSprite;
         public SimpleButton backButton;
         public SimpleButton resetButton;
         public RoundedRect textBoxBorder;
@@ -31,6 +31,9 @@ namespace DressMySlugcat
         public string selectedSlugcat;
         public bool useDefaults = true;
         public bool useEntireSet = false;
+
+        public PauseMenu owner;
+        public bool InGame => owner != null;
 
         public SelectOneButton[] slugcatButtons;
         public int selectedSlugcatIndex;
@@ -46,19 +49,25 @@ namespace DressMySlugcat
         public SymbolButton rightPage;
         public MenuLabel pageLabel;
 
-        public FancyMenu(ProcessManager manager) : base(manager, Plugin.FancyMenu)
+        public FancyMenu(ProcessManager manager, PauseMenu owner = null) : base(manager)
         {
-            slugcatNames = SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList();
+            this.owner = owner;
+            SaveManager.InitSlugcatCustomizations();
+            slugcatNames = Utils.ValidSlugcatNames;
             pageCount = Mathf.CeilToInt((float)slugcatNames.Count / slugcatsPerPage);
 
             selectedSlugcat = slugcatNames.FirstOrDefault();
 
             pages.Add(new Page(this, null, "main", 0));
-            scene = new InteractiveMenuScene(this, pages[0], manager.rainWorld.options.subBackground);
-            pages[0].subObjects.Add(scene);
-            mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
-            darkSprite = new FSprite("pixel");
+            if (!InGame)
+            {
+                scene = new InteractiveMenuScene(this, pages[0], manager.rainWorld.options.subBackground);
+                pages[0].subObjects.Add(scene);
+
+                mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
+            }
+
             darkSprite.color = new Color(0f, 0f, 0f);
             darkSprite.anchorX = 0f;
             darkSprite.anchorY = 0f;
@@ -66,7 +75,14 @@ namespace DressMySlugcat
             darkSprite.scaleY = 770f;
             darkSprite.x = -1f;
             darkSprite.y = -1f;
-            darkSprite.alpha = 0.5f;
+            if (InGame)
+            {
+                darkSprite.alpha = 0f;
+            }
+            else
+            {
+                darkSprite.alpha = 0.5f;
+            }
             pages[0].Container.AddChild(darkSprite);
 
             backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(15f, 50f), new Vector2(220f, 30f));
@@ -109,6 +125,18 @@ namespace DressMySlugcat
 
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) - new Vector2(160, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            if (InGame)
+            {
+                if (RWInput.CheckPauseButton(0, owner.game.rainWorld))
+                {
+                    Singal(backObject, "BACK");
+                }
+            }
         }
 
         public void SetupSlugcatPages()
@@ -302,11 +330,30 @@ namespace DressMySlugcat
         {
             if (message == "BACK")
             {
-                manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                PlaySound(SoundID.MENU_Switch_Page_Out);
-
                 Customization.CleanDefaults();
                 SaveManager.Save();
+
+                PlaySound(SoundID.MENU_Switch_Page_Out);
+                if (InGame)
+                {
+                    foreach (var abstractPlayer in owner.game.Players)
+                    {
+                        if (abstractPlayer.realizedCreature is Player player && player.graphicsModule is PlayerGraphics pg)
+                        {
+                            if (PlayerGraphicsHooks.PlayerGraphicsData.TryGetValue(pg, out var playerGraphicsData))
+                            {
+                                playerGraphicsData.ScheduleForRecreation = true;
+                            }
+                        }
+                    }
+
+                    owner.container.alpha = 1;
+                    manager.StopSideProcess(this);
+                }
+                else
+                {
+                    manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                }
             }
 
             else if (message.StartsWith("SPRITE_SELECTOR_"))
@@ -318,18 +365,7 @@ namespace DressMySlugcat
             }
             else if (message == "RELOAD_ATLASES")
             {
-                foreach (var sheet in Plugin.SpriteSheets)
-                {
-                    foreach (var atlas in sheet.Atlases)
-                    {
-                        Futile.atlasManager.UnloadAtlas(atlas.name);
-                    }
-                }
-
-                Plugin.SpriteSheets.Clear();
-
-                AtlasHooks.LoadAtlases();
-
+                AtlasHooks.ReloadAtlases();
                 slugcatDummy.UpdateSprites();
                 PlaySound(SoundID.MENU_Player_Join_Game);
             }
@@ -427,7 +463,7 @@ namespace DressMySlugcat
 
             public void OnColorChanged(UIconfig sender, string oldValue, string newValue)
             {
-                Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = (sender as OpColorPicker).valueColor;
+                Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false).CustomSprite(sprite, true).Color = (sender as OpColorPicker).valueColor;
                 owner.slugcatDummy.UpdateSprites();
             }
 
@@ -435,7 +471,7 @@ namespace DressMySlugcat
             {
                 if (message == "BACK")
                 {
-                    Customization.For(owner.selectedSlugcat, owner.selectedSlugcatIndex, false).CustomSprite(sprite, true).Color = colorOp.valueColor;
+                    Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false).CustomSprite(sprite, true).Color = colorOp.valueColor;
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     owner.slugcatDummy.UpdateSprites();
@@ -445,6 +481,19 @@ namespace DressMySlugcat
                 {
                     colorOp.valueColor = Utils.DefaultColorForSprite(owner.selectedSlugcat, sprite);
                     PlaySound(SoundID.MENU_Switch_Page_Out);
+                }
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                if (owner.InGame)
+                {
+                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    {
+                        owner.Singal(owner.backObject, "BACK");
+                        manager.StopSideProcess(this);
+                    }
                 }
             }
         }
@@ -557,6 +606,19 @@ namespace DressMySlugcat
                     colorOp.valueColor = Utils.DefaultBodyColor(owner.selectedSlugcat);
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
+                }
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                if (owner.InGame)
+                {
+                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    {
+                        owner.Singal(owner.backObject, "BACK");
+                        manager.StopSideProcess(this);
+                    }
                 }
             }
         }
@@ -672,6 +734,19 @@ namespace DressMySlugcat
                     var ownerButton = owner.playerButtons[i];
                     var button = new SelectOneButton(this, pages[0], ownerButton.menuLabel.text, ownerButton.signalText, ownerButton.pos, ownerButton.size, playerButtons, i);
                     pages[0].subObjects.Add(button);
+                }
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                if (owner.InGame)
+                {
+                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    {
+                        owner.Singal(owner.backObject, "BACK");
+                        manager.StopSideProcess(this);
+                    }
                 }
             }
 
@@ -849,6 +924,22 @@ namespace DressMySlugcat
                             }
 
                             customSprite.SpriteSheetID = spriteSheet.ID;
+                        }
+
+                        if (owner.useDefaults)
+                        {
+                            if (spriteSheet.DefaultTail.IsCustom)
+                            {
+                                customization.CustomTail.Length = spriteSheet.DefaultTail.Length;
+                                customization.CustomTail.Wideness = spriteSheet.DefaultTail.Wideness;
+                                customization.CustomTail.Roundness = spriteSheet.DefaultTail.Roundness;
+                                customization.CustomTail.Lift = spriteSheet.DefaultTail.Lift;
+                            }
+
+                            if (spriteSheet.DefaultTail.Color != default)
+                            {
+                                customization.CustomTail.Color = spriteSheet.DefaultTail.Color;
+                            }
                         }
 
                         owner.UpdateControls();

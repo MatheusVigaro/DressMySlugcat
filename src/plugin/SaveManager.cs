@@ -50,7 +50,19 @@ namespace DressMySlugcat
                 Customizations = (List<Customization>)formatter.Deserialize(fs);
             }
 
-            foreach (var name in SlugcatStats.Name.values.entries.Where(x => !x.StartsWith("JollyPlayer")).ToList())
+            InitSlugcatCustomizations();
+
+            foreach (var customization in Customizations)
+            {
+                customization.CustomTail ??= new();
+            }
+
+            Customization.CleanDefaults();
+        }
+
+        public static void InitSlugcatCustomizations()
+        {
+            foreach (var name in Utils.ValidSlugcatNames)
             {
                 for (var i = 0; i < 4; i++)
                 {
@@ -60,13 +72,6 @@ namespace DressMySlugcat
                     }
                 }
             }
-
-            foreach (var customization in Customizations)
-            {
-                customization.CustomTail ??= new();
-            }
-
-            Customization.CleanDefaults();
         }
 
         public static void Save()

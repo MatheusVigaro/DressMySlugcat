@@ -201,10 +201,20 @@ namespace DressMySlugcat
             if (customSprite?.SpriteSheet != null)
             {
                 var sheet = customSprite.SpriteSheet;
-                Sprites[5].element = sheet.Elements["PlayerArm12"];
-                Sprites[6].element = sheet.Elements["PlayerArm12"];
-                Sprites[7].element = sheet.Elements["OnTopOfTerrainHand"];
-                Sprites[8].element = sheet.Elements["OnTopOfTerrainHand"];
+                if (sheet.HasAsymmetry("ARMS"))
+                {
+                    Sprites[5].element = sheet.LeftElements["PlayerArm12"];
+                    Sprites[6].element = sheet.RightElements["PlayerArm12"];
+                    Sprites[7].element = sheet.LeftElements["OnTopOfTerrainHand"];
+                    Sprites[8].element = sheet.RightElements["OnTopOfTerrainHand"];
+                }
+                else
+                {
+                    Sprites[5].element = sheet.Elements["PlayerArm12"];
+                    Sprites[6].element = sheet.Elements["PlayerArm12"];
+                    Sprites[7].element = sheet.Elements["OnTopOfTerrainHand"];
+                    Sprites[8].element = sheet.Elements["OnTopOfTerrainHand"];
+                }
             }
             else
             {

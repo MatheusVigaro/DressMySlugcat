@@ -72,6 +72,24 @@ namespace DressMySlugcat.Hooks
             Debug.LogWarning("DressMySlugcat: " + friendly);
         }
 
+        public static void ReloadAtlases()
+        {
+            SpriteSheet.EmptyAtlas = null;
+            SpriteSheet.TailAtlas = null;
+            foreach (var sheet in Plugin.SpriteSheets)
+            {
+                foreach (var atlas in sheet.Atlases)
+                {
+                    Futile.atlasManager.UnloadAtlas(atlas.name);
+                }
+            }
+
+            Plugin.SpriteSheets.Clear();
+
+            LoadAtlases();
+            SpriteSheet.UpdateDefaults();
+        }
+
         public static void LoadAtlases(string directory = Plugin.BaseName)
         {
             Errors.Clear();
@@ -80,7 +98,7 @@ namespace DressMySlugcat.Hooks
 
         public static void LoadAtlasesInternal(string directory = Plugin.BaseName)
         {
-            var files = AssetManager.ListDirectory(directory, includeAll: true).Distinct().ToList();
+            var files = Utils.ListDirectory(directory, includeAll: true).Distinct().ToList();
 
             var metaFile = files.FirstOrDefault(f => "metadata.json".Equals(Path.GetFileName(f), StringComparison.InvariantCultureIgnoreCase));
 
@@ -116,13 +134,53 @@ namespace DressMySlugcat.Hooks
                                 var defaultsDict = sprite.Value as Dictionary<string, object>;
                                 foreach (KeyValuePair<string, object> def in defaultsDict)
                                 {
-                                    switch (def.Key.ToLower())
+                                    if ("tail".Equals(sprite.Key, StringComparison.InvariantCultureIgnoreCase))
                                     {
-                                        case "color":
-                                            if (ColorUtility.TryParseHtmlString((string)def.Value, out var color)) {
-                                                spriteSheet.DefaultColors.Add(sprite.Key, color);
-                                            }
-                                            break;
+                                        switch (def.Key.ToLower())
+                                        {
+                                            case "color":
+                                                if (ColorUtility.TryParseHtmlString((string)def.Value, out var color))
+                                                {
+                                                    spriteSheet.DefaultTail.Color = color;
+                                                }
+                                                break;
+                                            case "length":
+                                                if (def.Value is double length)
+                                                {
+                                                    spriteSheet.DefaultTail.Length = (float)length;
+                                                }
+                                                break;
+                                            case "wideness":
+                                                if (def.Value is double wideness)
+                                                {
+                                                    spriteSheet.DefaultTail.Wideness = (float)wideness;
+                                                }
+                                                break;
+                                            case "roundness":
+                                                if (def.Value is double roundness)
+                                                {
+                                                    spriteSheet.DefaultTail.Roundness = (float)roundness;
+                                                }
+                                                break;
+                                            case "lift":
+                                                if (def.Value is double lift)
+                                                {
+                                                    spriteSheet.DefaultTail.Lift = (float)lift;
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        switch (def.Key.ToLower())
+                                        {
+                                            case "color":
+                                                if (ColorUtility.TryParseHtmlString((string)def.Value, out var color))
+                                                {
+                                                    spriteSheet.DefaultColors.Add(sprite.Key.ToUpper(), color);
+                                                }
+                                                break;
+                                        }
                                     }
                                 }
                             }
@@ -194,7 +252,7 @@ namespace DressMySlugcat.Hooks
 
             finally
             {
-                var subDirectories = AssetManager.ListDirectory(directory, true, true).Distinct().ToList();
+                var subDirectories = Utils.ListDirectory(directory, true, true).Distinct().ToList();
                 foreach (var subDir in subDirectories)
                 {
                     LoadAtlases(subDir);

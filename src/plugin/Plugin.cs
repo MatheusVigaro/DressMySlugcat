@@ -10,6 +10,10 @@ using DressMySlugcat.Hooks;
 using System.IO;
 using HUD;
 using System.Runtime.Serialization.Json;
+using RWCustom;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
+using System.Threading;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -19,11 +23,13 @@ using System.Runtime.Serialization.Json;
 namespace DressMySlugcat
 {
     [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin("dressmyslugcat", "Dress My Slugcat", "1.0.0")]
+    [BepInPlugin(BaseName, "Dress My Slugcat", "1.0.0")]
     public partial class Plugin : BaseUnityPlugin
     {
         public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
         public const string BaseName = "dressmyslugcat";
+
+        public static DMSOptions Options;
 
         private bool IsInit;
         private bool IsPostInit;
@@ -41,16 +47,25 @@ namespace DressMySlugcat
                 AtlasHooks.Init();
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
+                PauseMenuHooks.Init();
                 On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
-
-                SpriteDefinitions.AddSlugcatDefault(new Customization()
-                {
-                    Slugcat = "Yellow",
-                    PlayerNumber = 3,
-                    CustomSprites = new List<CustomSprite> { new CustomSprite() { Sprite = "HEAD", SpriteSheetID = "dressmyslugcat.template", ColorHex = "#FF0000" } }
-                });
+                On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
 
                 Debug.Log($"Plugin DressMySlugcat is loaded!");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
+        {
+            orig(self);
+            try
+            {
+                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
             }
             catch (Exception ex)
             {

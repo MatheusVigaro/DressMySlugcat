@@ -22,12 +22,17 @@ namespace DressMySlugcat
         public string Prefix;
 
         public Dictionary<string, FAtlasElement> Elements = new();
+        public Dictionary<string, FAtlasElement> LeftElements = new();
+        public Dictionary<string, FAtlasElement> RightElements = new();
         public Dictionary<string, FAtlasElement> TrimmedElements = new();
         public List<FAtlas> Atlases = new();
         public List<string> AvailableSpriteNames = new();
+        public List<string> AvailableAsymmetrySpriteNames = new();
         public Dictionary<string, Color> DefaultColors = new();
+        public CustomTail DefaultTail = new();
 
         public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();
+        public bool HasAsymmetry(string name) => AvailableAsymmetrySpriteNames.Contains(name);
 
         public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
         public static SpriteSheet GetDefault() => Get(DefaultName);
@@ -35,6 +40,8 @@ namespace DressMySlugcat
 
         public static readonly string DefaultName = "rainworld.default";
         public static readonly string EmptyName = "dressmyslugcat.empty";
+        public static readonly string LeftPrefix = "Left";
+        public static readonly string RightPrefix = "Right";
 
         public static FAtlas EmptyAtlas;
         public static FAtlasElement EmptyElement;
@@ -50,8 +57,24 @@ namespace DressMySlugcat
             {
                 foreach (var element in atlas.elements)
                 {
-                    Elements[element.name.Substring(Prefix.Length)] = element;
-                    TrimmedElements[element.name.Substring(Prefix.Length)] = TrimElement(element);
+                    var name = element.name.Substring(Prefix.Length);
+
+                    if (name.StartsWith(LeftPrefix))
+                    {
+                        LeftElements[name.Substring(LeftPrefix.Length)] = element;
+                    }
+                    else if (name.StartsWith(RightPrefix))
+                    {
+                        RightElements[name.Substring(RightPrefix.Length)] = element;
+                    }
+                    else
+                    {
+                        Elements[name] = element;
+                        if (SpriteDefinitions.AvailableSprites.Any(x => element.name.EndsWith(x.GallerySprite, StringComparison.InvariantCultureIgnoreCase)))
+                        {
+                            TrimmedElements[name] = TrimElement(element);
+                        }
+                    }
                 }
             }
 
@@ -62,6 +85,10 @@ namespace DressMySlugcat
                 {
                     AvailableSpriteNames.Add(group.Name);
                 }
+                if (required.All(sprite => LeftElements.ContainsKey(sprite) && RightElements.ContainsKey(sprite)))
+                {
+                    AvailableAsymmetrySpriteNames.Add(group.Name);
+                }   
             }
         }
 

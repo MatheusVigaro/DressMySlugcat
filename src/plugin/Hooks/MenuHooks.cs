@@ -26,6 +26,7 @@ namespace DressMySlugcat.Hooks
         public static void Init()
         {
             On.Menu.MainMenu.ctor += MainMenu_ctor;
+            IL.Menu.MainMenu.AddMainMenuButton += MainMenu_AddMainMenuButton;
             IL.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
         }
 
@@ -66,6 +67,29 @@ namespace DressMySlugcat.Hooks
 
         }
 
+        private static void MainMenu_AddMainMenuButton(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            try
+            {
+                if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdcI4(8)))
+                {
+                    throw new Exception("Failed to match IL for MainMenu_ctor1!");
+                }
+
+                cursor.MoveAfterLabels();
+                cursor.EmitDelegate((int _) => 9);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Exception when matching IL for MainMenu_ctor1!");
+                Debug.LogException(ex);
+                Debug.LogError(il);
+                throw;
+            }
+        }
+
         private static void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
             orig(self, manager, showRegionSpecificBkg);
@@ -77,7 +101,7 @@ namespace DressMySlugcat.Hooks
             self.AddMainMenuButton(new SimpleButton(self, self.pages[0], "GET FANCY", "GETFANCY", pos, size), () => {
                 manager.RequestMainProcessSwitch(Plugin.FancyMenu);
                 self.PlaySound(SoundID.MENU_Switch_Page_In);
-            }, 0);
+            }, 50);
         }
     }
 }
