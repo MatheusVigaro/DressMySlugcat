@@ -1,0 +1,12 @@
+{
+	"id": "dressmyslugcat",
+	"name": "Dress My Slugcat",
+	"version": "1.5.2",
+	"hide_version": false,
+	"authors": "Vigaro, Frithuritaks",
+	"description": "Dress My Slugcat",
+	"requirements": [],
+	"requirements_names": [],
+	"checksum_override_version": false,
+	"tags": ["Cosmetics", "Dependency", "Tools"]
+}

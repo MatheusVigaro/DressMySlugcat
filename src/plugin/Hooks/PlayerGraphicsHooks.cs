@@ -419,7 +419,7 @@ namespace DressMySlugcat.Hooks
                 int length = customization.CustomTail.EffectiveLength;
                 float wideness = customization.CustomTail.EffectiveWideness;
                 float roundness = customization.CustomTail.EffectiveRoundness;
-                int offset = customization.CustomTail.EffectiveLift;
+                int offset = (int)customization.CustomTail.EffectiveLift;
                 var pup = self.player.playerState.isPup;
                 
                 //Debug.LogFormat("\n");
@@ -431,14 +431,13 @@ namespace DressMySlugcat.Hooks
                 
                 //Debug.Log("The condition k should be greater then or equal to is: " + offset);
                 //Debug.LogFormat("\n");
-                var doubleLength = 2*length;
                 self.tail = new TailSegment[length];
                 for (var i = 0; i < length; i++)
                 {
                     var k = length-i;
                     float radiusWidth = 0f;
                     if (k > offset) {
-                        radiusWidth = (wideness/1.743f)+Mathf.Sqrt(((length-k)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
+                        radiusWidth = (wideness/1.743f)+Mathf.Sqrt(((i)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
                     }
                     else {
                         float num = ((1+0.04f*(offset-6)*Mathf.Min(1,roundness-1)))*Mathf.Sqrt((roundness*Mathf.Pow(k,1/roundness)*Mathf.Pow(wideness,2f))/offset);
@@ -469,14 +468,14 @@ namespace DressMySlugcat.Hooks
                 self.tail = playerGraphicsData.originalTail;
             }
 
-            for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
+            /*for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
             {
                 self.tail[i].pos = oldTail[i].pos;
                 self.tail[i].lastPos = oldTail[i].lastPos;
                 self.tail[i].vel = oldTail[i].vel;
                 self.tail[i].terrainContact = oldTail[i].terrainContact;
                 self.tail[i].stretched = oldTail[i].stretched;
-            }
+            }*/
 
             var bp = self.bodyParts.ToList();
             bp.RemoveAll(x => x is TailSegment);
