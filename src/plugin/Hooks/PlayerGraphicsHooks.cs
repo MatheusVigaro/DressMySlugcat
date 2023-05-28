@@ -172,8 +172,8 @@ namespace DressMySlugcat.Hooks
                     }
 
                     float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f);
-                    float num3 = 1f - 0.2f * self.malnourished;
-                    float num4 = self.tail[0].rad;
+                    float malnourishedAmount = 1f - 0.2f * self.malnourished;
+                    float width = self.tail[0].rad;
 
                     Vector2 val = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
                     Vector2 val2 = Vector2.Lerp(self.drawPositions[1, 1], self.drawPositions[1, 0], timeStacker);
@@ -182,32 +182,35 @@ namespace DressMySlugcat.Hooks
                         val += Custom.DirVec(val2, val) * Mathf.Lerp(-1f, 1f, num) * Mathf.InverseLerp(0.5f, 1f, self.player.aerobicLevel) * 0.5f;
 
                     }
-                    Vector2 val4 = (val2 * 3f + val) / 4f;
+                    Vector2 verticiesGroupCenter = (val2 * 3f + val) / 4f;
 
                     for (int i = 0; i < self.tail.Length; i++)
                     {
-                        Vector2 val5 = Vector2.Lerp(self.tail[i].lastPos, self.tail[i].pos, timeStacker);
-                        Vector2 val6 = val5 - val4;
+                        Vector2 segmentPos = Vector2.Lerp(self.tail[i].lastPos, self.tail[i].pos, timeStacker);
+                        Vector2 val6 = segmentPos - verticiesGroupCenter;
                         Vector2 normalized = val6.normalized;
-                        Vector2 val7 = Custom.PerpendicularVector(normalized);
-                        float num5 = Vector2.Distance(val5, val4) / 5f;
-                        if (i == 0)
+                        Vector2 perpendicular = Custom.PerpendicularVector(normalized);
+                        float distToVertGroupCenter = i==0? 0f : Vector2.Distance(segmentPos, verticiesGroupCenter) / 5f;
+                        tailSprite.MoveVertice(i * 4, verticiesGroupCenter - perpendicular * width * malnourishedAmount + normalized * distToVertGroupCenter - camPos);
+                        tailSprite.MoveVertice(i * 4 + 1, verticiesGroupCenter + perpendicular * width * malnourishedAmount + normalized * distToVertGroupCenter - camPos);
+                        if (i < self.tail.Length - 1)
                         {
-                            num5 = 0f;
-                        }
-                        tailSprite.MoveVertice(i * 4, val4 - val7 * num4 * num3 + normalized * num5 - camPos);
-                        tailSprite.MoveVertice(i * 4 + 1, val4 + val7 * num4 * num3 + normalized * num5 - camPos);
-                        if (i < self.tail.Length - 1 && i * 4 + 3 < tailSprite.vertices.Length)
-                        {
-                            tailSprite.MoveVertice(i * 4 + 2, val5 - val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
-                            tailSprite.MoveVertice(i * 4 + 3, val5 + val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
+                            tailSprite.MoveVertice(i * 4 + 2, segmentPos - perpendicular * self.tail[i].StretchedRad * malnourishedAmount - normalized * distToVertGroupCenter - camPos);
+                            tailSprite.MoveVertice(i * 4 + 3, segmentPos + perpendicular * self.tail[i].StretchedRad * malnourishedAmount - normalized * distToVertGroupCenter - camPos);
                         }
                         else
                         {
-                            tailSprite.MoveVertice(i * 4 + 2, val5 - camPos);
+                            tailSprite.MoveVertice(i * 4 + 2, segmentPos - camPos);
                         }
-                        num4 = self.tail[i].StretchedRad;
-                        val4 = val5;
+                        //HERE
+                        //self.player.room.AddObject(new Spark(self.tail[i].pos, new Vector2(5,1), Color.cyan, null, 10, 20));
+                        //Enable to make the player 'heavier' based on tail width and length
+                        /*if (self.player.room != null) {
+                            self.player.customPlayerGravity = self.player.room.gravity * Mathf.Max(1f,(width + self.tail.Length)/20f);
+                        }*/
+
+                        width = self.tail[i].StretchedRad;
+                        verticiesGroupCenter = segmentPos;
                     }
                     return true;
                 });
@@ -412,17 +415,41 @@ namespace DressMySlugcat.Hooks
             TailSegment[] oldTail;
             if (customization.CustomTail.IsCustom)
             {
-                var length = customization.CustomTail.EffectiveLength;
-                var wideness = customization.CustomTail.EffectiveWideness;
-                var roundness = customization.CustomTail.EffectiveRoundness;
-                //var offset = customization.CustomTail.EffectiveOffset;
+                //HERE
+                int length = customization.CustomTail.EffectiveLength;
+                float wideness = customization.CustomTail.EffectiveWideness;
+                float roundness = customization.CustomTail.EffectiveRoundness;
+                int offset = (int)customization.CustomTail.EffectiveLift;
                 var pup = self.player.playerState.isPup;
+                
+                //Debug.LogFormat("\n");
+                //Debug.LogFormat("Length: " + length + " Offset: " + offset);
 
-                oldTail = self.tail;
+                offset = (offset > length-2)? (length-2) : offset;  //Detects if the offset is too big compared to the length, and if it is decreases it
+
+                //Debug.Log("New Offset: " + offset);
+                
+                //Debug.Log("The condition k should be greater then or equal to is: " + offset);
+                //Debug.LogFormat("\n");
                 self.tail = new TailSegment[length];
                 for (var i = 0; i < length; i++)
                 {
-                    self.tail[i] = new TailSegment(self, Mathf.Lerp(6f, 1f, Mathf.Pow((float)(i + 1) / (float)length, wideness)) * (1f + Mathf.Sin((float)i / (float)length * (float)Math.PI) * roundness), (float)((i == 0) ? 4 : 7) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, true);
+                    var k = length-i;
+                    float radiusWidth = 0f;
+                    if (k > offset) {
+                        radiusWidth = (wideness/1.743f)+Mathf.Sqrt(((i)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
+                    }
+                    else {
+                        float num = ((1+0.04f*(offset-6)*Mathf.Min(1,roundness-1)))*Mathf.Sqrt((roundness*Mathf.Pow(k,1/roundness)*Mathf.Pow(wideness,2f))/offset);
+                        float num2 = (wideness/1.743f)+Mathf.Sqrt(((length-offset)*(Mathf.Pow(wideness,2)))/(5.5f*(length-offset)));
+                        radiusWidth = ((num > num2)&&(offset<=5)&&(roundness>2))? num2-(num-num2):num;
+                    }
+                    //Debug.Log("Is the condition true?: " + (k >= offset));
+                    //Debug.LogFormat("'i' is: " + i);
+                    //Debug.LogFormat("'k' is: " + k);
+                    //Debug.LogFormat("RD: " + rd);
+                    //Debug.LogFormat("\n");
+                    self.tail[i] = new TailSegment(self, radiusWidth, (float)((i == 0) ? 4 : 3) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, false);
                 }
 
             }
@@ -441,14 +468,14 @@ namespace DressMySlugcat.Hooks
                 self.tail = playerGraphicsData.originalTail;
             }
 
-            for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
+            /*for (var i = 0; i < self.tail.Length && i < oldTail.Length; i++)
             {
                 self.tail[i].pos = oldTail[i].pos;
                 self.tail[i].lastPos = oldTail[i].lastPos;
                 self.tail[i].vel = oldTail[i].vel;
                 self.tail[i].terrainContact = oldTail[i].terrainContact;
                 self.tail[i].stretched = oldTail[i].stretched;
-            }
+            }*/
 
             var bp = self.bodyParts.ToList();
             bp.RemoveAll(x => x is TailSegment);
