@@ -15,6 +15,7 @@ using System.CodeDom;
 using IL.MoreSlugcats;
 using UnityEngine.UIElements;
 using RWCustom;
+using System.Security.Cryptography;
 
 namespace DressMySlugcat
 {
@@ -505,21 +506,31 @@ namespace DressMySlugcat
             public RoundedRect border;
             public FancyMenu owner;
             public MenuTabWrapper tabWrapper;
-            
-            public Configurable<float> lengthConf;
+
+            public Configurable<int> lengthConf;
             public Configurable<float> widenessConf;
             public Configurable<float> roundnessConf;
-            public Configurable<float> liftConf;
+            public Configurable<int> offsetConf;
             public Configurable<Color> colorConf;
+            public Configurable<bool> custTailShape; //-WW
 
-            public OpFloatSlider lengthOp;
+            public OpSlider lengthOp;
             public OpFloatSlider widenessOp;
             public OpFloatSlider roundnessOp;
-            public OpFloatSlider liftOp;
+            public OpSlider offsetOp;
             public OpColorPicker colorOp;
+            public OpCheckBox custTailOp; //-WW
+
+            public MenuLabel opMenuLbl1;
+            public MenuLabel opMenuLbl2;
+            public MenuLabel opMenuLbl3;
+            public MenuLabel opMenuLbl4;
+            public MenuLabel opTailLbl;
 
             public Customization customization;
 
+            //OLD MENU
+            /*
             public TailCustomizer(FancyMenu owner) : base(owner.manager)
             {
                 this.owner = owner;
@@ -529,7 +540,7 @@ namespace DressMySlugcat
 
                 var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
 
-                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 300), true);
+                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 320), true); //300
 
                 darkSprite.anchorX = 0f;
                 darkSprite.anchorY = 0f;
@@ -548,25 +559,52 @@ namespace DressMySlugcat
                 tabWrapper = new MenuTabWrapper(this, pages[0]);
                 pages[0].subObjects.Add(tabWrapper);
 
-                liftConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                liftOp = new OpFloatSlider(liftConf, cancelButton.pos + new Vector2(0, 40), 180, 2);
-                new UIelementWrapper(tabWrapper, liftOp);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Lift", liftOp.pos + new Vector2(0, 40), new Vector2(liftOp.size.x, 20), true));
+                #region madechangestosliders
 
-                roundnessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(0, 100), 180, 2);
+                int btnY = 40;
+                int btnPad = 65; //FROM 60 -WW
+                int barLngt = 180;
+                int lblYpad = 50; //FROM 40 -WW
+                offsetConf = new Configurable<int>(6, new ConfigAcceptableRange<int>(2, 15));
+                offsetOp = new OpSlider(offsetConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
+                new UIelementWrapper(tabWrapper, offsetOp);
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Offset", offsetOp.pos + new Vector2(0, lblYpad), new Vector2(offsetOp.size.x, 20), true));
+
+                btnY += btnPad;
+                roundnessConf = new Configurable<float>(1, new ConfigAcceptableRange<float>(1, 3.6f));
+                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, roundnessOp);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, 40), new Vector2(roundnessOp.size.x, 20), true));
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, lblYpad), new Vector2(roundnessOp.size.x, 20), true));
+                //Roundness is completely unused, but might be able to be repurposed for some extra sliders later
 
-                widenessConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(0, 160), 180, 2);
+                btnY += btnPad;
+                widenessConf = new Configurable<float>(8.6f, new ConfigAcceptableRange<float>(0.1f, 14.1f));
+                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, widenessOp);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, 40), new Vector2(widenessOp.size.x, 20), true));
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, lblYpad), new Vector2(widenessOp.size.x, 20), true));
 
-                lengthConf = new Configurable<float>(0, new ConfigAcceptableRange<float>(0, 1));
-                lengthOp = new OpFloatSlider(lengthConf, cancelButton.pos + new Vector2(0, 220), 180, 2);
+                btnY += btnPad;
+                lengthConf = new Configurable<int>(8, new ConfigAcceptableRange<int>(4, 17));
+                lengthOp = new OpSlider(lengthConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, lengthOp);
-                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, 40), new Vector2(lengthOp.size.x, 20), true));
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, lblYpad), new Vector2(lengthOp.size.x, 20), true));
+
+                #endregion
+
+                custTailShape = new Configurable<bool>(false);
+                Vector2 checkPos = new Vector2(cancelButton.pos.x + 14, border.pos.y + border.size.y + 12);
+                custTailOp = new OpCheckBox(custTailShape, checkPos);
+                new UIelementWrapper(tabWrapper, custTailOp);
+                //            {
+                //                description = dsc
+                //            },
+                //new OpLabel(45f, lineCount, BPTranslate("Allow Player-1 Character Change"))
+                //            {
+                //                description = dsc  //bumpBehav = chkBox5.bumpBehav, 
+                //            }
+                //pages[0].subObjects.Add(new OpLabel(custTailOp.pos + new Vector2(20, 0), lineCount, BPTranslate("Allow Player-1 Character Change")));
+                pages[0].subObjects.Add(new MenuLabel(this, pages[0], "Custom Tail Size", custTailOp.pos + new Vector2(10, 5), new Vector2(lengthOp.size.x, 20), true));
+                
 
 
                 colorConf = new Configurable<Color>(default);
@@ -576,34 +614,253 @@ namespace DressMySlugcat
                 lengthOp.value = customization.CustomTail.Length.ToString();
                 widenessOp.value = customization.CustomTail.Wideness.ToString();
                 roundnessOp.value = customization.CustomTail.Roundness.ToString();
-                liftOp.value = customization.CustomTail.Lift.ToString();
+                offsetOp.value = customization.CustomTail.Lift.ToString();
                 colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
+                custTailOp.value = customization.CustomTail.CustTailShape.ToString().ToLower(); //-WW 
+                //custTailOp.
+                Debug.LogFormat("IS CUSTOM TAIL?: " + custTailOp.value);
+
+                UpdateSliderVis(); //-WW
             }
+            */
+
+
+
+            public TailCustomizer(FancyMenu owner) : base(owner.manager)
+            {
+                this.owner = owner;
+                var tailButton = owner.customizeSpriteButtons["TAIL"];
+
+                customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false);
+
+                var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
+
+                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 300), true); //300
+
+                darkSprite.anchorX = 0f;
+                darkSprite.anchorY = 0f;
+                darkSprite.scaleX = border.size.x - 12f;
+                darkSprite.scaleY = border.size.y - 12f;
+                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.y = border.pos.y + 6f;
+                darkSprite.alpha = 1f;
+
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(50f, 30f));
+                pages[0].subObjects.Add(cancelButton);
+
+                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
+                pages[0].subObjects.Add(resetButton);
+
+                tabWrapper = new MenuTabWrapper(this, pages[0]);
+                pages[0].subObjects.Add(tabWrapper);
+
+                #region madechangestosliders
+
+                int btnY = 40;
+                int btnPad = 65; //FROM 60 -WW
+                int barLngt = 180;
+                int lblYpad = 50; //FROM 40 -WW
+                offsetConf = new Configurable<int>(6, new ConfigAcceptableRange<int>(2, 15));
+                /*
+                offsetOp = new OpSlider(offsetConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
+                new UIelementWrapper(tabWrapper, offsetOp);
+                pages[0].subObjects.Add(opMenuLbl1 = new MenuLabel(this, pages[0], "Offset", offsetOp.pos + new Vector2(0, lblYpad), new Vector2(offsetOp.size.x, 20), true));
+                //THIS WAS MOON'S NEW SLIDER, BUT UNTIL THE FORMULAS ARE FIXED, IT IS STAYING UNUSED
+                offsetOp.Hidden = true;
+                offsetOp.Hide();
+                opMenuLbl1.label.isVisible = false;
+                offsetOp._rect.isHidden = true;
+                offsetOp._rect.Hide();
+                offsetOp._label.isVisible = false;
+                for (int i = 0; i < offsetOp._lineSprites.Length; i++)
+                {
+                    offsetOp._lineSprites[i].isVisible = false;
+                }
+                */
+                //GOOD LORD OKAY YOU WIN. I CAN'T MAKE IT DISSAPEAR. I'LL JUST DESTROY IT
+
+                //btnY += btnPad;
+                roundnessConf = new Configurable<float>(0.1f, new ConfigAcceptableRange<float>(0.1f, 1.5f)); //(1, 3.6f) -MOON'S
+                roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
+                new UIelementWrapper(tabWrapper, roundnessOp);
+                pages[0].subObjects.Add(opMenuLbl2 =new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, lblYpad), new Vector2(roundnessOp.size.x, 20), true));
+                //Roundness is completely unused, but might be able to be repurposed for some extra sliders later
+
+                btnY += btnPad; //-WW - Shhh the wideness slider was way too big. Reducing the cap to 6 for a cleaner UI. No one will even notice it's been changed
+                widenessConf = new Configurable<float>(1f, new ConfigAcceptableRange<float>(0.3f, 6f)); //(0.1f, 14.1f) -MOON'S
+                widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
+                new UIelementWrapper(tabWrapper, widenessOp);
+                pages[0].subObjects.Add(opMenuLbl3 = new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, lblYpad), new Vector2(widenessOp.size.x, 20), true));
+
+                btnY += btnPad;
+                lengthConf = new Configurable<int>(4, new ConfigAcceptableRange<int>(2, 12)); //4, 17
+                lengthOp = new OpSlider(lengthConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
+                new UIelementWrapper(tabWrapper, lengthOp);
+                pages[0].subObjects.Add(opMenuLbl4 = new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, lblYpad), new Vector2(lengthOp.size.x, 20), true));
+
+                #endregion
+
+                btnY += btnPad + 15;
+                custTailShape = new Configurable<bool>(false);
+                Vector2 checkPos = new Vector2(cancelButton.pos.x + 0, cancelButton.pos.y + btnY); //border.pos.y + border.size.y - 35
+                custTailOp = new OpCheckBox(custTailShape, checkPos);
+                new UIelementWrapper(tabWrapper, custTailOp);
+                pages[0].subObjects.Add(opTailLbl = new MenuLabel(this, pages[0], "Custom Tail Size", custTailOp.pos + new Vector2(15, 5), new Vector2(lengthOp.size.x, 20), true));
+
+
+                //-WW -CHECK IF WE ARE A CUSTOM SLUGCAT WITH CUSTOM DEFAULT TAIL VALUES WE CAN RESET TO
+                bool lockTailSize = false;
+                var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
+                if (defaults != null && defaults.CustomTail.ForbidTailResize)
+                {
+                    lockTailSize = true;
+                    customization.CustomTail.CustTailShape = false;
+                }
+
+                //Debug.LogFormat("IS CUSTOM TAIL?: " + customization.CustomTail.ForbidTailResize);
+                //THAT'S IT. DON'T LET THEM CHANGE THIS IN-GAME
+                if (owner.InGame || lockTailSize)
+                {
+                    custTailOp.greyedOut = true;
+                    opTailLbl.label.alpha = 0.5f;
+                    string msgWarn = "(Change from main menu)";
+                    if (lockTailSize) //ALLOW SLUGCAT CONFIGS TO PREVENT CUSTOM TAIL SHAPES
+                        msgWarn = "(Not available for this slugcat)";
+                    pages[0].subObjects.Add(new MenuLabel(this, pages[0], msgWarn, custTailOp.pos + new Vector2(12, 45 * (lockTailSize ? -0.5f : 1f)), new Vector2(lengthOp.size.x, 20), false));
+                }
+                else
+                {
+                    opTailLbl.label.alpha = 1f;
+                }
+                
+
+
+                colorConf = new Configurable<Color>(default);
+                colorOp = new OpColorPicker(colorConf, new Vector2(resetButton.pos.x + resetButton.size.x + 14, border.pos.y));
+                new UIelementWrapper(tabWrapper, colorOp);
+
+                lengthOp.value = customization.CustomTail.Length.ToString();
+                widenessOp.value = customization.CustomTail.Wideness.ToString();
+                roundnessOp.value = customization.CustomTail.Roundness.ToString();
+                //offsetOp.value = customization.CustomTail.Lift.ToString();
+                colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
+                custTailOp.value = customization.CustomTail.CustTailShape.ToString().ToLower(); //-WW  THIS HAS TO BE LOWERCASE
+                //Debug.LogFormat("IS CUSTOM TAIL?: " + custTailOp.value);
+
+                //CATCH ANY OUTDATED DEFAULT SETUPS AND RESET THEM 
+                if (customization.CustomTail.Length.ToString() == "0")
+                {
+                    Debug.LogFormat("LEGACY DEFAULT VALUES DETECTED ");
+                    Singal(owner.backObject, "RESET");
+                    //Singal(owner.backObject, "RESET");
+                }
+
+                UpdateSliderVis(); //-WW
+            }
+
+
 
             public override void Singal(MenuObject sender, string message)
             {
                 if (message == "BACK")
                 {
-                    customization.CustomTail.Length = float.Parse(lengthOp.value);
+                    customization.CustomTail.Length = int.Parse(lengthOp.value);
                     customization.CustomTail.Wideness = float.Parse(widenessOp.value);
                     customization.CustomTail.Roundness = float.Parse(roundnessOp.value);
-                    customization.CustomTail.Lift = float.Parse(liftOp.value);
+                    customization.CustomTail.Lift = 0; // int.Parse(offsetOp.value);
                     customization.CustomTail.Color = colorOp.valueColor;
-
+                    customization.CustomTail.CustTailShape = bool.Parse(custTailOp.value); //-WW 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.StopSideProcess(this);
                 }
                 else if (message == "RESET")
                 {
-                    lengthOp.value = "0";
-                    widenessOp.value = "0";
-                    roundnessOp.value = "0";
-                    liftOp.value = "0";
+                    //Debug.LogFormat("RESET ");
+                    lengthOp.value = "4"; //-WW - DEFAULTS ACTUALLY GO TO A NORMAL TAIL VALUE
+                    widenessOp.value = "1";
+                    roundnessOp.value = "0.1";
+                    //offsetOp.value = "0";
                     colorOp.valueColor = Utils.DefaultBodyColor(owner.selectedSlugcat);
+
+                    //-WW -CHECK IF WE ARE A CUSTOM SLUGCAT WITH CUSTOM DEFAULT TAIL VALUES WE CAN RESET TO
+                    var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
+                    if (defaults != null)
+                    {
+                        lengthOp.value = defaults.CustomTail.Length.ToString();
+                        widenessOp.value = defaults.CustomTail.Wideness.ToString();
+                        roundnessOp.value = defaults.CustomTail.Roundness.ToString();
+                        //offsetOp.value = defaults.CustomTail.Lift.ToString();
+                    }
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                 }
             }
+
+            //-WW
+            public void UpdateSliderVis()
+            {
+                if (custTailOp != null)
+                {
+                    //Debug.LogFormat("UPDATING SLIDER VISUALS!: " + custTailOp.value);
+                    if (custTailOp.value.ToLower() == "false")
+                    {
+                        //offsetOp.greyedOut = true;
+                        lengthOp.greyedOut = true;
+                        widenessOp.greyedOut = true;
+                        roundnessOp.greyedOut = true;
+                        //opMenuLbl1.label.isVisible = false;
+                        lengthOp._rect.Hide();
+                        widenessOp._rect.Hide();
+                        roundnessOp._rect.Hide();
+                        opMenuLbl2.label.isVisible = false;
+                        opMenuLbl3.label.isVisible = false;
+                        opMenuLbl4.label.isVisible = false;
+                        owner.slugcatDummy.DefaultDummyTailDisplay(); //REVERT THE TAIL PREVIEW TO IT'S DEFAULT SIZE
+                    }
+                    else
+                    {
+                        //offsetOp.greyedOut = false;
+                        lengthOp.greyedOut = false;
+                        widenessOp.greyedOut = false;
+                        roundnessOp.greyedOut = false;
+                        //opMenuLbl1.label.isVisible = true; //NOT THIS ONE
+                        lengthOp._rect.Show();
+                        widenessOp._rect.Show();
+                        roundnessOp._rect.Show();
+                        opMenuLbl2.label.isVisible = true;
+                        opMenuLbl3.label.isVisible = true;
+                        opMenuLbl4.label.isVisible = true;
+                        UpdateDummyTailDisplay(); //UPDATE THE PREVIEW BASED ON SLIDERS
+                    }
+
+                }
+            }
+
+
+            public void UpdateDummyTailDisplay()
+            {
+                //THIS DOESN'T RUN IF CUSTOM IS SET TO FALSE
+                int length = int.Parse(lengthOp.value);
+                float wideness = float.Parse(widenessOp.value);
+                float roundness = float.Parse(roundnessOp.value);
+                int offset = 0; // int.Parse(offsetOp.value);
+                bool pup = false;
+                
+                for (var i = 0; i < owner.slugcatDummy.TailSprites.Length; i++)
+                {
+                    if (i > int.Parse(lengthOp.value) - 1)
+                    {
+                        owner.slugcatDummy.TailSprites[i].isVisible = false;
+                    }
+                    else
+                    {
+                        owner.slugcatDummy.TailSprites[i].isVisible = true;
+                        float radX = PlayerGraphicsHooks.GetSegmentRadius(i, length, wideness, roundness, offset, pup);
+                        owner.slugcatDummy.TailSprites[i].scaleX = PlayerGraphicsDummy.tailXScale * radX;
+                    }
+                }
+            }
+
 
             public override void Update()
             {
@@ -616,6 +873,8 @@ namespace DressMySlugcat
                         manager.StopSideProcess(this);
                     }
                 }
+
+                UpdateSliderVis();
             }
         }
 

@@ -10,13 +10,16 @@ using DressMySlugcat.Hooks;
 using System.IO;
 using Menu;
 using IL.Menu.Remix;
+using UnityEngine.UIElements;
 
 namespace DressMySlugcat
 {
     public class PlayerGraphicsDummy
     {
         public FSprite[] Sprites;
+        public FSprite[] TailSprites; //-WW
         public FContainer Container;
+        public static readonly float tailXScale = 0.15f;
         public Vector2 SlugcatPosition
         {
             get
@@ -71,6 +74,13 @@ namespace DressMySlugcat
 
             Sprites[9].color = new Color(0.1f, 0.1f, 0.1f);
 
+            //-WW -AN ATTEMPT AT TAIL SPRITES
+            TailSprites = new FSprite[15];
+            for (var i = 0; i < TailSprites.Length; i++)
+            {
+                TailSprites[i] = new FSprite("Futile_White");
+            }
+
             UpdateSprites();
 
             AddToContainer();
@@ -78,6 +88,11 @@ namespace DressMySlugcat
 
         public void AddToContainer()
         {
+            foreach (var sprite in TailSprites) // -WW 
+            {
+                Container.AddChild(sprite);
+            }
+
             foreach (var sprite in Sprites)
             {
                 Container.AddChild(sprite);
@@ -147,6 +162,20 @@ namespace DressMySlugcat
             Sprites[9].scaleX = 1;
             Sprites[9].scaleY = 1;
             Sprites[9].rotation = 0;
+
+
+            for (var i = 0; i < TailSprites.Length; i++)
+            {
+                TailSprites[i].x = -1.000122f + baseSprite.x;
+                TailSprites[i].y = (-17.0f - ((i) * 8)) + baseSprite.y;
+                TailSprites[i].anchorX = 0.5f;
+                TailSprites[i].anchorY = 0.5f;
+                //TailSprites[i].scaleX = 0.3f;
+                TailSprites[i].scaleY = 0.3f;
+                TailSprites[i].rotation = 0;
+                //TailSprites[i].alpha = 0.5f;
+            }
+            
         }
 
         internal void UpdateSprites()
@@ -238,6 +267,65 @@ namespace DressMySlugcat
                 Sprites[9].element = Futile.atlasManager.GetElementWithName("FaceA0");
             }
             Sprites[9].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "FACE");
+
+            //-WW
+            for (var i = 0; i < TailSprites.Length; i++)
+            {
+                TailSprites[i].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
+                TailSprites[i].alpha = 0.5f;
+                bool pup = false;
+                float radX = PlayerGraphicsHooks.GetSegmentRadius(i, (int)customization.CustomTail.Length, customization.CustomTail.Wideness, customization.CustomTail.Roundness, (int)customization.CustomTail.Lift, pup);
+                TailSprites[i].scaleX = tailXScale * radX;
+                //Debug.LogFormat("UPDATE VISIBLE SEGMENTS. ");
+                if (i <= (int)customization.CustomTail.Length -1)
+                    TailSprites[i].isVisible = true;
+                else
+                    TailSprites[i].isVisible = false;
+            }
+            if (customization.CustomTail.CustTailShape == false)
+            {
+                DefaultDummyTailDisplay();
+            }
+        }
+
+        static readonly float[] defaultTailChart = { 5.8f, 4f, 2.5f, 1f};
+
+        public void DefaultDummyTailDisplay()
+        {
+            //HIDE THE WHOLE TAIL FIRST
+            for (var i = 0; i < TailSprites.Length; i++)
+            {
+                TailSprites[i].isVisible = false;
+            }
+
+            //-WW CHECK IF WE'RE A CUSTOM SLUGCAT WITH CUSTOM TAIL DEFAULT DEFINITIONS
+            Customization customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false);
+            var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
+            if (defaults != null)
+            {
+                int length = (int)defaults.CustomTail.Length;
+                float wideness = defaults.CustomTail.Wideness;
+                float roundness = defaults.CustomTail.Roundness;
+                //float lift = defaults.CustomTail.Lift;
+                var pup = false;
+
+                for (var i = 0; i < length; i++)
+                {
+                    float segRad = PlayerGraphicsHooks.GetSegmentRadius(i, length, wideness, roundness, 0, pup);
+                    TailSprites[i].scaleX = tailXScale * segRad;
+                    TailSprites[i].isVisible = true;
+                }
+                return;
+            }
+            else
+            {   //BASE-GAME SLUGCAT. TAKE THE TRUE, HARDCODED TAIL SIZE DEFINITION
+                for (var i = 0; i < 4; i++)
+                {
+                    float rad = defaultTailChart[i];
+                    TailSprites[i].isVisible = true;
+                    TailSprites[i].scaleX = tailXScale * rad;
+                }
+            }
         }
     }
 }

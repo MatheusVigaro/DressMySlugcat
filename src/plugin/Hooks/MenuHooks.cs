@@ -79,7 +79,7 @@ namespace DressMySlugcat.Hooks
                 }
 
                 cursor.MoveAfterLabels();
-                cursor.EmitDelegate((int _) => 9);
+                cursor.EmitDelegate((int _) => 12); //BENSON WISHES FOR MORE THAN 9...
             }
             catch (Exception ex)
             {
