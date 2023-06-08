@@ -14,6 +14,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Collections;
 using static DressMySlugcat.SaveManager;
+using RWCustom;
 
 namespace DressMySlugcat
 {
@@ -64,7 +65,8 @@ namespace DressMySlugcat
         {
             foreach (var name in Utils.ValidSlugcatNames)
             {
-                for (var i = 0; i < 4; i++)
+                //for (var i = 0; i < 4; i++)
+                for (var i = 0; i < Custom.rainWorld.options.controls.Length; i++) //-WW -DYNAMIC LENGTH
                 {
                     if (!Customizations.Any(x => x.Slugcat == name && x.PlayerNumber == i))
                     {

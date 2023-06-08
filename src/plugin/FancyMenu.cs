@@ -111,7 +111,8 @@ namespace DressMySlugcat
             slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
             slugcatDummy.Container.scale = 8f;
 
-            playerButtons = new SelectOneButton[4];
+            //playerButtons = new SelectOneButton[4];
+            playerButtons = new SelectOneButton[this.manager.rainWorld.options.controls.Length]; //-WW -DYNAMIC LENGTH
             for (int i = 0; i < 4; i++)
             {
                 var playerButton = new SelectOneButton(this, pages[0], "Player " + (i + 1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
@@ -680,20 +681,19 @@ namespace DressMySlugcat
                 //GOOD LORD OKAY YOU WIN. I CAN'T MAKE IT DISSAPEAR. I'LL JUST DESTROY IT
 
                 //btnY += btnPad;
-                roundnessConf = new Configurable<float>(0.1f, new ConfigAcceptableRange<float>(0.1f, 1.5f)); //(1, 3.6f) -MOON'S
+                roundnessConf = new Configurable<float>(0.1f, new ConfigAcceptableRange<float>(0.1f, 1.5f));
                 roundnessOp = new OpFloatSlider(roundnessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, roundnessOp);
                 pages[0].subObjects.Add(opMenuLbl2 =new MenuLabel(this, pages[0], "Roundness", roundnessOp.pos + new Vector2(0, lblYpad), new Vector2(roundnessOp.size.x, 20), true));
-                //Roundness is completely unused, but might be able to be repurposed for some extra sliders later
 
-                btnY += btnPad; //-WW - Shhh the wideness slider was way too big. Reducing the cap to 6 for a cleaner UI. No one will even notice it's been changed
-                widenessConf = new Configurable<float>(1f, new ConfigAcceptableRange<float>(0.3f, 6f)); //(0.1f, 14.1f) -MOON'S
+                btnY += btnPad;
+                widenessConf = new Configurable<float>(1f, new ConfigAcceptableRange<float>(0.1f, 10f));
                 widenessOp = new OpFloatSlider(widenessConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, widenessOp);
                 pages[0].subObjects.Add(opMenuLbl3 = new MenuLabel(this, pages[0], "Wideness", widenessOp.pos + new Vector2(0, lblYpad), new Vector2(widenessOp.size.x, 20), true));
 
                 btnY += btnPad;
-                lengthConf = new Configurable<int>(4, new ConfigAcceptableRange<int>(2, 12)); //4, 17
+                lengthConf = new Configurable<int>(4, new ConfigAcceptableRange<int>(2, 15));
                 lengthOp = new OpSlider(lengthConf, cancelButton.pos + new Vector2(5, btnY), barLngt);
                 new UIelementWrapper(tabWrapper, lengthOp);
                 pages[0].subObjects.Add(opMenuLbl4 = new MenuLabel(this, pages[0], "Length", lengthOp.pos + new Vector2(0, lblYpad), new Vector2(lengthOp.size.x, 20), true));
@@ -748,11 +748,18 @@ namespace DressMySlugcat
                 //Debug.LogFormat("IS CUSTOM TAIL?: " + custTailOp.value);
 
                 //CATCH ANY OUTDATED DEFAULT SETUPS AND RESET THEM 
-                if (customization.CustomTail.Length.ToString() == "0")
+                if (customization.CustomTail.Length.ToString() == "0" && customization.CustomTail.Wideness.ToString() == "0")
                 {
                     Debug.LogFormat("LEGACY DEFAULT VALUES DETECTED ");
                     Singal(owner.backObject, "RESET");
                     //Singal(owner.backObject, "RESET");
+                }
+                //SECOND PASS TO CLEAN UP LEGACY CUSTOM TAIL VALUES. (we can only really check Length, because all legacy wideness values are legal. and roundness is the same)
+                if (customization.CustomTail.Length <= 1)
+                {
+                    Debug.LogFormat("LEGACY TAIL LENGTH DETECTED ");
+                    lengthOp.value = Mathf.Lerp(2, 15, customization.CustomTail.Length).ToString();
+                    widenessOp.value = (customization.CustomTail.Wideness / 10f).ToString();
                 }
 
                 UpdateSliderVis(); //-WW
