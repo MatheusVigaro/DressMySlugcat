@@ -178,6 +178,14 @@ namespace DressMySlugcat
                 RequiredSprites = new() { "guardEye", "WormEye" },
                 Slugcats = new() { "Saint" }
             });
+
+            AvailableSprites.Add(new()
+            {
+                Name = "PIXEL",
+                Description = "The Mark",
+                GallerySprite = "pixel",
+                RequiredSprites = new() { "pixel" }
+            });
         }
 
         public class AvailableSprite

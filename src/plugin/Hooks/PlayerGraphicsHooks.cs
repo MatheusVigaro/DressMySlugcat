@@ -263,6 +263,23 @@ namespace DressMySlugcat.Hooks
                         playerGraphicsData = InitiateCustomGraphics(playerGraphics, sLeaser, rCam);
                     }
 
+                    //for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
+                    //{
+                    //    if (sLeaser.sprites[i] != null)
+                    //    {
+                    //        var sprite = SpriteSheet.GetDefault();
+                    //        if (sprite.Name == "rainworld.default")
+                    //        {
+                    //            sLeaser.sprites[11].scale = 5f;
+                    //        }
+                    //        if (sprite.Name != "rainworld.default")
+                    //        {
+                    //            sLeaser.sprites[11].scale = 1f;
+                    //        }
+                    //       
+                    //    }
+                    //}
+
                     #region SpriteColors
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
@@ -285,6 +302,9 @@ namespace DressMySlugcat.Hooks
                             }
 
                             FAtlasElement replacement = null;
+
+
+
 
                             //-- Sprite asymmetry
                             if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand)
@@ -335,10 +355,21 @@ namespace DressMySlugcat.Hooks
                                     }
                                     break;
                             }
+                            
 
                             if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
                             {
                                 sLeaser.sprites[i].element = replacement;
+
+                                if (replacement != null)
+                                {
+                                    sLeaser.sprites[11].scale = 1f;
+                                }
+
+                                if (replacement == null)
+                                {
+                                    sLeaser.sprites[11].scale = 5f;
+                                }
                             }
 
                             if (playerGraphicsData.SpriteColors.TryGetValue(playerGraphicsData.SpriteNames[i], out var customColor))
