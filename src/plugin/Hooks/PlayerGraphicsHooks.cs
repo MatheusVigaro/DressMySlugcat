@@ -162,6 +162,15 @@ namespace DressMySlugcat.Hooks
                     }
 
 
+                    //-FB so asymmetry isn't reliant on the custom tail option
+                    bool uvMapped = false;
+
+                    //-FB force this UV to update
+                    if (Customization.For(self).CustomTail.IsAsym)
+                    {
+                        MapTailUV(self, playerGraphicsData, tailSprite);
+                        uvMapped = true;
+                    }
 
                     /*if (!playerGraphicsData.Customization.CustomTail.IsCustom || !playerGraphicsData.TailIntegrity(sLeaser))
                     {
@@ -174,11 +183,7 @@ namespace DressMySlugcat.Hooks
                     }
 
                     if (!playerGraphicsData.TailIntegrity(sLeaser))
-                        ReplaceTailGraphics(self, sLeaser, rCam);
-
-                    //-FB force this UV to update
-                    else if (Customization.For(self).CustomTail.IsAsym)
-                        MapTailUV(self, playerGraphicsData, tailSprite);
+                        ReplaceTailGraphics(self, sLeaser, rCam, uvMapped);
 
 
                     float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f);
@@ -642,13 +647,13 @@ namespace DressMySlugcat.Hooks
             }
 
             //if (customization.CustomTail.IsCustom) //-WW ADDING THIS CHECK BECAUSE WHY WOULD WE UPDATE IT IF IT ISN'T CUSTOM?
-            ReplaceTailGraphics(self, sLeaser, rCam); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
+            ReplaceTailGraphics(self, sLeaser, rCam, false); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
 
             self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
             return playerGraphicsData;
         }
 
-        public static void ReplaceTailGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        public static void ReplaceTailGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, bool uvMapped)
         {
             if (!PlayerGraphicsData.TryGetValue(self, out var playerGraphicsData))
             {
@@ -692,7 +697,8 @@ namespace DressMySlugcat.Hooks
                     tail.element = playerGraphicsData.originalTailElement;
                 }
 
-                MapTailUV(self, playerGraphicsData, tail);
+                if (!uvMapped)
+                    MapTailUV(self, playerGraphicsData, tail);
             }
         }
 
