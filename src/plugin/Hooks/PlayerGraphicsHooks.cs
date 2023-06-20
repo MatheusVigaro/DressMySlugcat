@@ -364,19 +364,22 @@ namespace DressMySlugcat.Hooks
                                     break;
                             }
                             
-
-                            if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
+                            //-FB fix for the custom mark
+                            if (i == 11)
                             {
-                                sLeaser.sprites[i].element = replacement;
-
-                                if (replacement != null)
+                                if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
                                 {
-                                    sLeaser.sprites[11].scale = 1f;
-                                }
+                                    sLeaser.sprites[i].element = replacement;
 
-                                if (replacement == null)
-                                {
-                                    sLeaser.sprites[11].scale = 5f;
+                                    if (replacement != null)
+                                    {
+                                        sLeaser.sprites[11].scale = 1f;
+                                    }
+
+                                    if (replacement == null)
+                                    {
+                                        sLeaser.sprites[11].scale = 5f;
+                                    }
                                 }
                             }
 
