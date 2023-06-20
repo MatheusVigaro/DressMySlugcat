@@ -14,424 +14,323 @@
     <Authors>Vigaro</Authors>
     <Company>Vigaro</Company>
   </PropertyGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\..\game\RainWorld_Data\StreamingAssets\mods\$(SolutionName)\plugins</OutputPath>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="0Harmony20">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\0Harmony20.dll</HintPath>
+    <PackageReference Include="BepInEx.Analyzers" Version="1.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\game\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\BepInEx.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\BepInEx.Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="BepInEx.Preloader">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\BepInEx.Preloader.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="GalaxyCSharp">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\GalaxyCSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="GoKit">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\GoKit.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="HarmonyXInterop">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\HarmonyXInterop.dll</HintPath>
+      <HintPath>..\..\game\BepInEx\core\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="HOOKS-Assembly-CSharp">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\plugins\HOOKS-Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\plugins\HOOKS-Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Mono.Cecil.Mdb.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\core\Mono.Cecil.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Mono.Cecil.Rocks.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Security">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Mono.Security.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\core\Mono.Cecil.Rocks.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\core\MonoMod.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.Common">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\MonoMod.Common.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\core\MonoMod.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\MonoMod.RuntimeDetour.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\core\MonoMod.RuntimeDetour.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoMod.Utils">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\MonoMod.Utils.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="mscorlib">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\mscorlib.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="netstandard">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\netstandard.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Rewired_Core">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Rewired_Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Rewired_Windows">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\Rewired_Windows.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SonyNP">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\SonyNP.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SonyPS4SaveData">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\SonyPS4SaveData.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="StovePCSDK.NET">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\StovePCSDK.NET.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.ComponentModel.Composition.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Configuration">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.Configuration.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Diagnostics.StackTrace">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.Diagnostics.StackTrace.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.EnterpriseServices">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.EnterpriseServices.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Globalization.Extensions">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.Globalization.Extensions.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net.Http">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization.Xml">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.ServiceModel.Internals">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.ServiceModel.Internals.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Transactions">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.Transactions.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Xml.XPath.XDocument">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\System.Xml.XPath.XDocument.dll</HintPath>
+      <HintPath>..\..\game\\BepInEx\core\MonoMod.Utils.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AccessibilityModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AccessibilityModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AccessibilityModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AIModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AndroidJNIModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AndroidJNIModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AndroidJNIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ARModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ARModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ARModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ClothModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ClusterInputModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ClusterInputModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ClusterInputModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ClusterRendererModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CrashReportingModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.CrashReportingModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.CrashReportingModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.DirectorModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.DSPGraphModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.DSPGraphModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.DSPGraphModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.GameCenterModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.GameCenterModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.GameCenterModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.GIModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.GIModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.GIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.GridModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.GridModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.GridModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.HotReloadModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.HotReloadModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.HotReloadModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.InputModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.LocalizationModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.PerformanceReportingModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.PerformanceReportingModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.PerformanceReportingModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.Physics2DModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ProfilerModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ProfilerModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ProfilerModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ScreenCaptureModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.ScreenCaptureModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.SharedInternalsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.SharedInternalsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.SharedInternalsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.SpriteMaskModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.SpriteShapeModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.SpriteShapeModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.SpriteShapeModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.StreamingModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.StreamingModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.StreamingModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.SubstanceModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.SubsystemsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.SubsystemsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.SubsystemsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TerrainModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TerrainPhysicsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TextCoreModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TilemapModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TLSModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.TLSModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.TLSModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIElementsNativeModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UIElementsNativeModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UIElementsNativeModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UIModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UmbraModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UmbraModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UmbraModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UNETModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UNETModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UNETModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityAnalyticsModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityConnectModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityConnectModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityConnectModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityCurlModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityCurlModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityCurlModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityTestProtocolModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestAudioModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestTextureModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.VehiclesModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.VFXModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.VideoModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.VirtualTexturingModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.VirtualTexturingModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.VirtualTexturingModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.VRModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.VRModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.VRModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.WindModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.WindModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.WindModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.XRModule">
-      <HintPath>..\..\..\Backups\Rain World\Rain World References\RainWorld_Data\Managed\UnityEngine.XRModule.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\game\RainWorld_Data\Managed\UnityEngine.XRModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 
@@ -463,7 +362,11 @@
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\dressmyslugcat\plugins&quot;" />
+    <Exec Command="xcopy /s ..\..\mod ..\..\game\RainWorld_Data\StreamingAssets\mods\$(SolutionName) /Y" Condition="'$(OS)' != 'Unix'" />
+    <Exec Command="cp -rf ../../mod/. ../../game/RainWorld_Data/StreamingAssets/mods/$(SolutionName)" Condition="'$(OS)' == 'Unix'" />
+    <Exec Command="xcopy /s /i ..\..\game\RainWorld_Data\StreamingAssets\mods\$(SolutionName) ..\..\build\remix\$(SolutionName) /Y" Condition="'$(OS)' != 'Unix'" />
+    <Exec Command="mkdir -p ../../build/remix" Condition="'$(OS)' == 'Unix'" />
+    <Exec Command="cp -rf ../../game/RainWorld_Data/StreamingAssets/mods/$(SolutionName)/. ../../build/remix" Condition="'$(OS)' == 'Unix'" />
   </Target>
   
   <ProjectExtensions>
@@ -473,59 +376,5 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
-  
-  <ItemGroup>
-    <Reference Update="System">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Core">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Data">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Drawing">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.IO.Compression.FileSystem">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Numerics">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Runtime.Serialization">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Xml">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Update="System.Xml.Linq">
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
   
 </Project>
