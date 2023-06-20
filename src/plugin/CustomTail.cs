@@ -14,6 +14,7 @@ namespace DressMySlugcat
         public float Lift;
         public string ColorHex;
         public bool CustTailShape; //-WW
+        public bool AsymTail;
         public bool ForbidTailResize;
 
         //public float EffectiveRoundness => (Roundness * 1.4f) + 0.01f;
@@ -43,5 +44,7 @@ namespace DressMySlugcat
 
         //public bool IsCustom => Roundness > 0 || Wideness > 0 || Length > 0;
         public bool IsCustom => EffectiveCustTailShape;
+
+        public bool IsAsym => AsymTail; //-FB i'm not sure why IsCustom has that many steps but i won't question it
     }
 }
