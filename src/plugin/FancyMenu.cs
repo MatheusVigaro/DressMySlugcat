@@ -640,7 +640,7 @@ namespace DressMySlugcat
 
                 var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
 
-                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 375), true); //300
+                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 335), true); //300
 
                 darkSprite.anchorX = 0f;
                 darkSprite.anchorY = 0f;
@@ -713,7 +713,7 @@ namespace DressMySlugcat
 
 
                 //-FB tail asymmetry option
-                btnY += btnPad + 15;
+                btnY += (btnPad / 3) + 20;
                 asymTail = new Configurable<bool>(false);
                 var asymCheckPos = new Vector2(cancelButton.pos.x + 0, cancelButton.pos.y + btnY);
                 asymTailOp = new OpCheckBox(asymTail, asymCheckPos);
@@ -755,7 +755,7 @@ namespace DressMySlugcat
                     string msgWarn = "(Change from main menu)";
                     if (lockTailSize) //ALLOW SLUGCAT CONFIGS TO PREVENT CUSTOM TAIL SHAPES
                         msgWarn = "(Not available for this slugcat)";
-                    pages[0].subObjects.Add(new MenuLabel(this, pages[0], msgWarn, custTailOp.pos + new Vector2(12, 45 * (lockTailSize ? -0.5f : 1f)), new Vector2(lengthOp.size.x, 20), false));
+                    pages[0].subObjects.Add(new MenuLabel(this, pages[0], msgWarn, custTailOp.pos + new Vector2(13, 45 * 0.45f), new Vector2(lengthOp.size.x, 20), false));
                 }
                 else
                 {
