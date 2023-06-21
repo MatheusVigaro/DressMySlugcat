@@ -1,0 +1,10 @@
+[h1]Please be aware that this mod is currently still in beta. We are doing our best at improving the mod and squashing any eggbugs that may appear, but that will take time and effort. Thank you for your understanding and support![/h1]
+
+[b]Dress My Slugcat[/b] aims to bring a new way to customize your Slugcats within Rain World! Choose a Slugcat to edit from the built-in gallery and personalize your avatar with cosmetics! You can even make your own cosmetics for your mods appear in game thanks to DMS being able to detect dedicated folders for your sprites!
+
+Here's a nifty [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2902555797]guide[/url] to get started on custom Slugcat sprite modding!
+
+You can also join the [url=https://discord.gg/Syms6dqqFD]Dress my Slugcat Discord Server[/url] if you have any issues, for discussions and hands on support by the creators and other modders!
+
+GitHub link for non Steam users:
+https://github.com/MatheusVigaro/DressMySlugcat/releases
