@@ -14,6 +14,7 @@ using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using System.Threading;
+using BepInEx.Logging;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -26,6 +27,8 @@ namespace DressMySlugcat
     [BepInPlugin(BaseName, "Dress My Slugcat", "1.0.0")]
     public partial class Plugin : BaseUnityPlugin
     {
+        public static new ManualLogSource Logger { get; private set; } = null!;
+
         public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
         public const string BaseName = "dressmyslugcat";
 
@@ -40,6 +43,8 @@ namespace DressMySlugcat
             {
                 if (IsInit) return;
                 IsInit = true;
+
+                Logger = base.Logger;
 
                 On.Menu.MainMenu.ctor += MainMenu_ctor;
 

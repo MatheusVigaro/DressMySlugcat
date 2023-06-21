@@ -161,6 +161,17 @@ namespace DressMySlugcat.Hooks
                         return false;
                     }
 
+
+                    //-FB so asymmetry isn't reliant on the custom tail option
+                    bool uvMapped = false;
+
+                    //-FB force this UV to update
+                    if (Customization.For(self).CustomTail.IsAsym)
+                    {
+                        MapTailUV(self, playerGraphicsData, tailSprite);
+                        uvMapped = true;
+                    }
+
                     /*if (!playerGraphicsData.Customization.CustomTail.IsCustom || !playerGraphicsData.TailIntegrity(sLeaser))
                     {
                         return false;
@@ -172,7 +183,8 @@ namespace DressMySlugcat.Hooks
                     }
 
                     if (!playerGraphicsData.TailIntegrity(sLeaser))
-                        ReplaceTailGraphics(self, sLeaser, rCam);
+                        ReplaceTailGraphics(self, sLeaser, rCam, uvMapped);
+
 
                     float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f);
                     float num3 = 1f - 0.2f * self.malnourished;
@@ -186,6 +198,7 @@ namespace DressMySlugcat.Hooks
 
                     }
                     Vector2 val4 = (val2 * 3f + val) / 4f;
+
 
                     for (int i = 0; i < self.tail.Length; i++)
                     {
@@ -335,13 +348,14 @@ namespace DressMySlugcat.Hooks
                                     }
                                     break;
                             }
-
-                            if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
+                            
+                            //-FB fix for the custom mark
+                            if (i == 11)
                             {
-                                sLeaser.sprites[i].element = replacement;
-
-                                if (i == 11)
+                                if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
                                 {
+                                    sLeaser.sprites[i].element = replacement;
+
                                     if (replacement != null)
                                     {
                                         sLeaser.sprites[11].scale = 1f;
@@ -639,13 +653,13 @@ namespace DressMySlugcat.Hooks
             }
 
             //if (customization.CustomTail.IsCustom) //-WW ADDING THIS CHECK BECAUSE WHY WOULD WE UPDATE IT IF IT ISN'T CUSTOM?
-            ReplaceTailGraphics(self, sLeaser, rCam); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
+            ReplaceTailGraphics(self, sLeaser, rCam, false); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
 
             self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
             return playerGraphicsData;
         }
 
-        public static void ReplaceTailGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        public static void ReplaceTailGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, bool uvMapped)
         {
             if (!PlayerGraphicsData.TryGetValue(self, out var playerGraphicsData))
             {
@@ -689,27 +703,62 @@ namespace DressMySlugcat.Hooks
                     tail.element = playerGraphicsData.originalTailElement;
                 }
 
-                for (int i = tail.vertices.Length - 1; i >= 0; i--)
+                if (!uvMapped)
+                    MapTailUV(self, playerGraphicsData, tail);
+            }
+        }
+
+        private static void MapTailUV(PlayerGraphics self, PlayerGraphicsEx playerGraphicsData, TriangleMesh tail)
+        {
+            float uvYOffset = 0.0f;
+            const float TRUE_SIZE_MULT = 3.0f; //-FB asymmetric tail is 3 times as wide as normal
+
+            //-FB copy pasted from pearlcat, what could go wrong?
+            if (Customization.For(self).CustomTail.IsAsym)
+            {
+                Vector2 legsPos = self.legs.pos;
+                Vector2 tailPos = self.tail[0].pos;
+
+                // Find the difference between the x positions and convert it into a 0.0 - 1.0 ratio between the two
+                float difference = tailPos.x - legsPos.x;
+
+
+                const float minEffectiveOffset = -15.0f;
+                const float maxEffectiveOffset = 15.0f;
+
+                float leftRightRatio = Mathf.InverseLerp(minEffectiveOffset, maxEffectiveOffset, difference);
+
+
+                // Multiplier determines how many times larger the texture is vertically relative to the displayed portion
+                uvYOffset = Mathf.Lerp(0.0f, tail.element.uvTopRight.y - (tail.element.uvTopRight.y / TRUE_SIZE_MULT), leftRightRatio);
+            }
+
+            for (int vertex = tail.vertices.Length - 1; vertex >= 0; vertex--)
+            {
+                float interpolation = (vertex / 2.0f) / (tail.vertices.Length / 2.0f);
+                Vector2 uvInterpolation;
+
+                // Even vertexes
+                if (vertex % 2 == 0)
+                    uvInterpolation = new Vector2(interpolation, 0.0f);
+
+                // Last vertex
+                else if (vertex == tail.vertices.Length - 1)
+                    uvInterpolation = new Vector2(1.0f, 0.0f);
+
+                else
+                    uvInterpolation = new Vector2(interpolation, 1.0f);
+
+                Vector2 uv;
+                uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uvInterpolation.x);
+                uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y + uvYOffset, (tail.element.uvTopRight.y / TRUE_SIZE_MULT) + uvYOffset, uvInterpolation.y);
+
+                tail.UVvertices[vertex] = uv;
+
+                if (tail.verticeColors != null && playerGraphicsData.originalTailColors != null)
                 {
-                    float perc = i / 2 / (float)(tail.vertices.Length / 2);
-                    Vector2 uv;
-                    if (i % 2 == 0)
-                        uv = new Vector2(perc, 0f);
-                    else if (i < tail.vertices.Length - 1)
-                        uv = new Vector2(perc, 1f);
-                    else
-                        uv = new Vector2(1f, 0f);
-
-                    // Map UV values to the element
-                    uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uv.x);
-                    uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y, tail.element.uvTopRight.y, uv.y);
-
-                    tail.UVvertices[i] = uv;
-                    if (tail.verticeColors != null && playerGraphicsData.originalTailColors != null)
-                    {
-                        var colorIndex = i % playerGraphicsData.originalTailColors.Length;
-                        tail.verticeColors[i] = playerGraphicsData.originalTailColors[colorIndex];
-                    }
+                    var colorIndex = vertex % playerGraphicsData.originalTailColors.Length;
+                    tail.verticeColors[vertex] = playerGraphicsData.originalTailColors[colorIndex];
                 }
             }
         }

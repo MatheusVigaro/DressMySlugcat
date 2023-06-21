@@ -515,6 +515,7 @@ namespace DressMySlugcat
             public Configurable<int> offsetConf;
             public Configurable<Color> colorConf;
             public Configurable<bool> custTailShape; //-WW
+            public Configurable<bool> asymTail;
 
             public OpSlider lengthOp;
             public OpFloatSlider widenessOp;
@@ -522,12 +523,14 @@ namespace DressMySlugcat
             public OpSlider offsetOp;
             public OpColorPicker colorOp;
             public OpCheckBox custTailOp; //-WW
+            public OpCheckBox asymTailOp;
 
             public MenuLabel opMenuLbl1;
             public MenuLabel opMenuLbl2;
             public MenuLabel opMenuLbl3;
             public MenuLabel opMenuLbl4;
             public MenuLabel opTailLbl;
+            public MenuLabel opAsymTailLbl;
 
             public Customization customization;
 
@@ -637,7 +640,7 @@ namespace DressMySlugcat
 
                 var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
 
-                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 300), true); //300
+                border = new RoundedRect(this, pages[0], pos, new Vector2(204, 375), true); //300
 
                 darkSprite.anchorX = 0f;
                 darkSprite.anchorY = 0f;
@@ -709,6 +712,15 @@ namespace DressMySlugcat
                 pages[0].subObjects.Add(opTailLbl = new MenuLabel(this, pages[0], "Custom Tail Size", custTailOp.pos + new Vector2(15, 5), new Vector2(lengthOp.size.x, 20), true));
 
 
+                //-FB tail asymmetry option
+                btnY += btnPad + 15;
+                asymTail = new Configurable<bool>(false);
+                var asymCheckPos = new Vector2(cancelButton.pos.x + 0, cancelButton.pos.y + btnY);
+                asymTailOp = new OpCheckBox(asymTail, asymCheckPos);
+                new UIelementWrapper(tabWrapper, asymTailOp);
+                pages[0].subObjects.Add(opAsymTailLbl = new MenuLabel(this, pages[0], "Asymmetry", asymTailOp.pos + new Vector2(15, 5), new Vector2(lengthOp.size.x, 20), true));
+
+
                 //-WW -CHECK IF WE ARE A CUSTOM SLUGCAT WITH CUSTOM DEFAULT TAIL VALUES WE CAN RESET TO
                 bool lockTailSize = false;
                 var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
@@ -762,7 +774,8 @@ namespace DressMySlugcat
                 //offsetOp.value = customization.CustomTail.Lift.ToString();
                 colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
                 custTailOp.value = customization.CustomTail.CustTailShape.ToString().ToLower(); //-WW  THIS HAS TO BE LOWERCASE
-                Debug.LogFormat("IS CUSTOM TAIL?: " + customization.CustomTail.Length.ToString());
+                asymTailOp.value = customization.CustomTail.AsymTail.ToString().ToLower(); //-FB noted lol
+                //Debug.LogFormat("IS CUSTOM TAIL?: " + custTailOp.value);
 
                 //CATCH ANY OUTDATED DEFAULT SETUPS AND RESET THEM 
                 if (customization.CustomTail.Length.ToString() == "0" && customization.CustomTail.Wideness.ToString() == "0")
@@ -794,6 +807,7 @@ namespace DressMySlugcat
                     customization.CustomTail.Lift = 0; // int.Parse(offsetOp.value);
                     customization.CustomTail.Color = colorOp.valueColor;
                     customization.CustomTail.CustTailShape = bool.Parse(custTailOp.value); //-WW 
+                    customization.CustomTail.AsymTail = bool.Parse(asymTailOp.value);
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.StopSideProcess(this);
                 }
