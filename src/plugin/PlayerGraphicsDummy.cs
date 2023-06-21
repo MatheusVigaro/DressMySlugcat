@@ -307,6 +307,19 @@ namespace DressMySlugcat
                 float wideness = defaults.CustomTail.Wideness;
                 float roundness = defaults.CustomTail.Roundness;
                 //float lift = defaults.CustomTail.Lift;
+
+                if (length == 0)
+                {
+                    //Debug.Log("LENGTH = 0");
+                    length = 4;
+                }
+
+                if (wideness == 0)
+                    wideness = 1;
+                if (roundness == 0)
+                    roundness = 0.1f;
+
+
                 var pup = false;
 
                 for (var i = 0; i < length; i++)

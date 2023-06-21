@@ -186,7 +186,7 @@ namespace DressMySlugcat.Hooks
 
                     }
                     Vector2 val4 = (val2 * 3f + val) / 4f;
-                    
+
                     for (int i = 0; i < self.tail.Length; i++)
                     {
                         Vector2 val5 = Vector2.Lerp(self.tail[i].lastPos, self.tail[i].pos, timeStacker);
@@ -263,23 +263,6 @@ namespace DressMySlugcat.Hooks
                         playerGraphicsData = InitiateCustomGraphics(playerGraphics, sLeaser, rCam);
                     }
 
-                    //for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
-                    //{
-                    //    if (sLeaser.sprites[i] != null)
-                    //    {
-                    //        var sprite = SpriteSheet.GetDefault();
-                    //        if (sprite.Name == "rainworld.default")
-                    //        {
-                    //            sLeaser.sprites[11].scale = 5f;
-                    //        }
-                    //        if (sprite.Name != "rainworld.default")
-                    //        {
-                    //            sLeaser.sprites[11].scale = 1f;
-                    //        }
-                    //       
-                    //    }
-                    //}
-
                     #region SpriteColors
                     for (var i = 0; i < sLeaser.sprites.Length && i < playerGraphicsData.SpriteNames.Length; i++)
                     {
@@ -303,9 +286,6 @@ namespace DressMySlugcat.Hooks
 
                             FAtlasElement replacement = null;
 
-
-
-
                             //-- Sprite asymmetry
                             if (playerGraphics.player.bodyMode == Player.BodyModeIndex.Stand)
                             {
@@ -328,7 +308,7 @@ namespace DressMySlugcat.Hooks
                                 {
                                     playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
-                                else if (bodyAngle > 30 &&  bodyAngle < 150)
+                                else if (bodyAngle > 30 && bodyAngle < 150)
                                 {
                                     playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                                 }
@@ -355,20 +335,22 @@ namespace DressMySlugcat.Hooks
                                     }
                                     break;
                             }
-                            
 
                             if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
                             {
                                 sLeaser.sprites[i].element = replacement;
 
-                                if (replacement != null)
+                                if (i == 11)
                                 {
-                                    sLeaser.sprites[11].scale = 1f;
-                                }
+                                    if (replacement != null)
+                                    {
+                                        sLeaser.sprites[11].scale = 1f;
+                                    }
 
-                                if (replacement == null)
-                                {
-                                    sLeaser.sprites[11].scale = 5f;
+                                    if (replacement == null)
+                                    {
+                                        sLeaser.sprites[11].scale = 5f;
+                                    }
                                 }
                             }
 
@@ -472,7 +454,8 @@ namespace DressMySlugcat.Hooks
                 PlayerGraphicsData.Remove(self);
             }
 
-            if (playerGraphicsData.originalTail == null) {
+            if (playerGraphicsData.originalTail == null)
+            {
                 var tailSprite = sLeaser.sprites[2] as TriangleMesh;
                 playerGraphicsData.originalTailElement = tailSprite.element;
                 playerGraphicsData.originalTailColors = tailSprite.verticeColors;
@@ -485,9 +468,14 @@ namespace DressMySlugcat.Hooks
 
             var customization = Customization.For(self);
             playerGraphicsData.Customization = customization;
+            var tailDefaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
+            //-WW - IF THE CUSTOM TAIL DIDN'T PROVIDE ANY SIZE VALUES, DON'T RESIZE IT
+            bool blankDefaults = false;
+            if (tailDefaults != null)
+                blankDefaults = tailDefaults.CustomTail.Length + tailDefaults.CustomTail.Wideness + tailDefaults.CustomTail.Roundness == 0;
 
             TailSegment[] oldTail;
-            if (customization.CustomTail.IsCustom)
+            if (customization.CustomTail.IsCustom || (tailDefaults != null && !blankDefaults))
             {
                 var length = customization.CustomTail.EffectiveLength;
                 var wideness = customization.CustomTail.EffectiveWideness;
@@ -495,6 +483,25 @@ namespace DressMySlugcat.Hooks
                 //var offset = customization.CustomTail.EffectiveOffset;
                 var pup = self.player.playerState.isPup;
 
+
+                //WW- IF DEFAULTS EXIST FOR THIS SLUGCAT, USE THOSE TO CREATE OUR TAIL SIZE
+                if (customization.CustomTail.IsCustom == false && tailDefaults != null)
+                {
+                    if (tailDefaults.CustomTail.Length != 0)
+                        length = (int)tailDefaults.CustomTail.Length;
+                    if (tailDefaults.CustomTail.Wideness != 0)
+                        wideness = tailDefaults.CustomTail.Wideness;
+                    if (tailDefaults.CustomTail.Roundness != 0)
+                        roundness = tailDefaults.CustomTail.Roundness;
+                    // offsetOp.value = tailDefaults.CustomTail.Lift;
+                }
+
+                //ONE LAST CHECKPOINT TO CLEAR ANY UNPROVIDED VALUES
+                length = (length == 0) ? 4 : length;
+                wideness = (wideness == 0) ? 1 : wideness;
+                roundness = (roundness == 0) ? 0.1f : roundness;
+
+                //Debug.LogFormat("TAIL VALS: " + length + " - " + wideness + " - " + roundness);
                 oldTail = self.tail;
                 self.tail = new TailSegment[length];
                 for (var i = 0; i < length; i++)
@@ -535,6 +542,7 @@ namespace DressMySlugcat.Hooks
                 }
                 */
             }
+            //ELSE, JUST USE WHATEVER TAIL SIZE THE GAME GAVE THEM
             else
             {
                 oldTail = self.tail;
@@ -649,7 +657,7 @@ namespace DressMySlugcat.Hooks
                 playerGraphicsData.tailSegmentRef = self.tail;
 
                 //-WW -ONLY RESIZE THE TAIL IF WE HAVE A CUSTOM TAIL SIZE
-                if (Customization.For(self).CustomTail.IsCustom) 
+                if (Customization.For(self).CustomTail.IsCustom)
                 {
                     sLeaser.sprites[2].RemoveFromContainer();
 

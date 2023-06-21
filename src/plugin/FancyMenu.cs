@@ -16,6 +16,7 @@ using IL.MoreSlugcats;
 using UnityEngine.UIElements;
 using RWCustom;
 using System.Security.Cryptography;
+using UnityEngine.UI;
 
 namespace DressMySlugcat
 {
@@ -113,7 +114,7 @@ namespace DressMySlugcat
 
             //playerButtons = new SelectOneButton[4];
             playerButtons = new SelectOneButton[this.manager.rainWorld.options.controls.Length]; //-WW -DYNAMIC LENGTH
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < playerButtons.Length; i++)
             {
                 var playerButton = new SelectOneButton(this, pages[0], "Player " + (i + 1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
                 pages[0].subObjects.Add(playerButton);
@@ -711,11 +712,27 @@ namespace DressMySlugcat
                 //-WW -CHECK IF WE ARE A CUSTOM SLUGCAT WITH CUSTOM DEFAULT TAIL VALUES WE CAN RESET TO
                 bool lockTailSize = false;
                 var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
-                if (defaults != null && defaults.CustomTail.ForbidTailResize)
+                if (defaults != null)
                 {
-                    lockTailSize = true;
-                    customization.CustomTail.CustTailShape = false;
+                    if (defaults.CustomTail.ForbidTailResize)
+                    {
+                        lockTailSize = true;
+                        customization.CustomTail.CustTailShape = false;
+                    }
+
+                    if (defaults.CustomTail.Length == 0)
+                        Debug.LogFormat("DEFAULT NOT PROVIDED: ");
+
+                    //-WW - IF OUR TEMPLATE DIDN'T PROVIDE THESE VALUES, DEFAULT TO SURVIVORS
+                    if (defaults.CustomTail.Length == 0)
+                        customization.CustomTail.Length = 4;
+                    if (defaults.CustomTail.Wideness == 0)
+                        customization.CustomTail.Wideness = 1;
+                    if (defaults.CustomTail.Roundness == 0)
+                        customization.CustomTail.Roundness = 0.1f;
                 }
+                    
+                
 
                 //Debug.LogFormat("IS CUSTOM TAIL?: " + customization.CustomTail.ForbidTailResize);
                 //THAT'S IT. DON'T LET THEM CHANGE THIS IN-GAME
@@ -745,7 +762,7 @@ namespace DressMySlugcat
                 //offsetOp.value = customization.CustomTail.Lift.ToString();
                 colorOp.valueColor = customization.CustomTail.Color != default ? customization.CustomTail.Color : Utils.DefaultBodyColor(owner.selectedSlugcat);
                 custTailOp.value = customization.CustomTail.CustTailShape.ToString().ToLower(); //-WW  THIS HAS TO BE LOWERCASE
-                //Debug.LogFormat("IS CUSTOM TAIL?: " + custTailOp.value);
+                Debug.LogFormat("IS CUSTOM TAIL?: " + customization.CustomTail.Length.ToString());
 
                 //CATCH ANY OUTDATED DEFAULT SETUPS AND RESET THEM 
                 if (customization.CustomTail.Length.ToString() == "0" && customization.CustomTail.Wideness.ToString() == "0")
@@ -991,7 +1008,7 @@ namespace DressMySlugcat
                 var resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES_GALLERY", owner.resetButton.pos, owner.resetButton.size);
                 pages[0].subObjects.Add(resetButton);
 
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < owner.playerButtons.Length; i++)
                 {
                     var ownerButton = owner.playerButtons[i];
                     var button = new SelectOneButton(this, pages[0], ownerButton.menuLabel.text, ownerButton.signalText, ownerButton.pos, ownerButton.size, playerButtons, i);
