@@ -295,6 +295,9 @@ namespace DressMySlugcat.Hooks
                                 case 1:
                                     spriteName = "HipsA";
                                     break;
+                                case 11:
+                                    spriteName = "pixel";
+                                    break;
                             }
 
                             FAtlasElement replacement = null;
@@ -348,23 +351,24 @@ namespace DressMySlugcat.Hooks
                                     }
                                     break;
                             }
-                            
-                            //-FB fix for the custom mark
+
+
+                            if (replacement != null || playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement))
+                            {
+                                sLeaser.sprites[i].element = replacement;
+                            }
+
+                            //-FB fix for the custom mark (that doesn't break the game this time)
+                            // custom mark is shrunk by 25x to allow more detail (vanilla is literally 1 pixel)
                             if (i == 11)
                             {
-                                if (replacement != null || (playerGraphicsData.SpriteReplacements.TryGetValue(spriteName, out replacement)))
+                                if (replacement != null)
                                 {
-                                    sLeaser.sprites[i].element = replacement;
-
-                                    if (replacement != null)
-                                    {
-                                        sLeaser.sprites[11].scale = 1f;
-                                    }
-
-                                    if (replacement == null)
-                                    {
-                                        sLeaser.sprites[11].scale = 5f;
-                                    }
+                                    sLeaser.sprites[i].scale = 1.0f;
+                                }
+                                else
+                                {
+                                    sLeaser.sprites[i].scale = 5.0f;
                                 }
                             }
 
@@ -652,6 +656,11 @@ namespace DressMySlugcat.Hooks
                 }
             }
 
+            //-FB force reset sprites with only 1 option
+            sLeaser.sprites[0].element = Futile.atlasManager.GetElementWithName("BodyA");
+            sLeaser.sprites[1].element = Futile.atlasManager.GetElementWithName("HipsA");
+            sLeaser.sprites[11].element = Futile.atlasManager.GetElementWithName("pixel");
+
             //if (customization.CustomTail.IsCustom) //-WW ADDING THIS CHECK BECAUSE WHY WOULD WE UPDATE IT IF IT ISN'T CUSTOM?
             ReplaceTailGraphics(self, sLeaser, rCam, false); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
 
@@ -710,12 +719,16 @@ namespace DressMySlugcat.Hooks
 
         private static void MapTailUV(PlayerGraphics self, PlayerGraphicsEx playerGraphicsData, TriangleMesh tail)
         {
+            const float ASYM_SCALE_FAC = 3.0f; //-FB asymmetric tail is 3 times as wide as normal
+            
             float uvYOffset = 0.0f;
-            const float TRUE_SIZE_MULT = 3.0f; //-FB asymmetric tail is 3 times as wide as normal
+            float scaleFac = 1.0f;
 
             //-FB copy pasted from pearlcat, what could go wrong?
             if (Customization.For(self).CustomTail.IsAsym)
             {
+                scaleFac = ASYM_SCALE_FAC;
+
                 Vector2 legsPos = self.legs.pos;
                 Vector2 tailPos = self.tail[0].pos;
 
@@ -730,7 +743,7 @@ namespace DressMySlugcat.Hooks
 
 
                 // Multiplier determines how many times larger the texture is vertically relative to the displayed portion
-                uvYOffset = Mathf.Lerp(0.0f, tail.element.uvTopRight.y - (tail.element.uvTopRight.y / TRUE_SIZE_MULT), leftRightRatio);
+                uvYOffset = Mathf.Lerp(0.0f, tail.element.uvTopRight.y - (tail.element.uvTopRight.y / scaleFac), leftRightRatio);
             }
 
             for (int vertex = tail.vertices.Length - 1; vertex >= 0; vertex--)
@@ -751,7 +764,7 @@ namespace DressMySlugcat.Hooks
 
                 Vector2 uv;
                 uv.x = Mathf.Lerp(tail.element.uvBottomLeft.x, tail.element.uvTopRight.x, uvInterpolation.x);
-                uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y + uvYOffset, (tail.element.uvTopRight.y / TRUE_SIZE_MULT) + uvYOffset, uvInterpolation.y);
+                uv.y = Mathf.Lerp(tail.element.uvBottomLeft.y + uvYOffset, (tail.element.uvTopRight.y / scaleFac) + uvYOffset, uvInterpolation.y);
 
                 tail.UVvertices[vertex] = uv;
 

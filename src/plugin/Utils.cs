@@ -28,6 +28,7 @@ namespace DressMySlugcat
                 case "HIPS":
                 case "LEGS":
                 case "TAIL":
+                case "PIXEL":
                     return DefaultBodyColor(slugcat);
                 default:
                     return DefaultExtraColor(slugcat);

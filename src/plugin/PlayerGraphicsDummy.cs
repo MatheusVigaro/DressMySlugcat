@@ -42,7 +42,7 @@ namespace DressMySlugcat
             Container = new FContainer();
             Futile.stage.AddChild(Container);
 
-            Sprites = new FSprite[10];
+            Sprites = new FSprite[11];
             Sprites[0] = new FSprite("BodyA");
             Sprites[1] = new FSprite("HipsA");
             TriangleMesh.Triangle[] tris = new TriangleMesh.Triangle[13]
@@ -73,6 +73,8 @@ namespace DressMySlugcat
             Sprites[9] = new FSprite("FaceA0");
 
             Sprites[9].color = new Color(0.1f, 0.1f, 0.1f);
+
+            Sprites[10] = new FSprite("pixel");
 
             //-WW -AN ATTEMPT AT TAIL SPRITES
             TailSprites = new FSprite[15];
@@ -162,7 +164,11 @@ namespace DressMySlugcat
             Sprites[9].scaleX = 1;
             Sprites[9].scaleY = 1;
             Sprites[9].rotation = 0;
-
+            Sprites[10].x = baseSprite.x;
+            Sprites[10].y = 16.0f + baseSprite.y;
+            Sprites[10].anchorX = 0.5f;
+            Sprites[10].anchorY = 0.5f;
+            Sprites[10].rotation = 0;
 
             for (var i = 0; i < TailSprites.Length; i++)
             {
@@ -268,10 +274,38 @@ namespace DressMySlugcat
             }
             Sprites[9].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "FACE");
 
+
+            //-FB this was missing for the mark, caused problems switching in game
+            customSprite = customization.CustomSprite("PIXEL");
+            if (customSprite?.SpriteSheet != null)
+            {
+                Sprites[10].element = customSprite.SpriteSheet.Elements["pixel"];
+            }
+            else
+            {
+                Sprites[10].element = Futile.atlasManager.GetElementWithName("pixel");
+            }
+            Sprites[10].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "PIXEL");
+
+            //-FB this hack kinda sucks but whatever
+            if (Sprites[10].element.sourcePixelSize == Vector2.one)
+            {
+                Sprites[10].scaleX = 3.5f;
+                Sprites[10].scaleY = 3.5f;
+            }
+            else
+            {
+                Sprites[10].scaleX = 0.6f;
+                Sprites[10].scaleY = 0.6f;
+            }
+
+
+            var tailColor = customization.CustomTail.Color;
+
             //-WW
             for (var i = 0; i < TailSprites.Length; i++)
             {
-                TailSprites[i].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
+                TailSprites[i].color = tailColor != default && tailColor.a != 0 ? tailColor : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
                 TailSprites[i].alpha = 0.5f;
                 bool pup = false;
                 float radX = PlayerGraphicsHooks.GetSegmentRadius(i, (int)customization.CustomTail.Length, customization.CustomTail.Wideness, customization.CustomTail.Roundness, (int)customization.CustomTail.Lift, pup);

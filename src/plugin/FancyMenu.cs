@@ -808,6 +808,9 @@ namespace DressMySlugcat
                     customization.CustomTail.Color = colorOp.valueColor;
                     customization.CustomTail.CustTailShape = bool.Parse(custTailOp.value); //-WW 
                     customization.CustomTail.AsymTail = bool.Parse(asymTailOp.value);
+                    
+                    owner.slugcatDummy.UpdateSprites(); //-FB fix the tail colour not updating
+
                     PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.StopSideProcess(this);
                 }
