@@ -189,7 +189,7 @@ namespace DressMySlugcat
             var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
 
             var customSprite = customization.CustomSprite("BODY");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("BodyA"))
             {
                 Sprites[0].element = customSprite.SpriteSheet.Elements["BodyA"];
             }
@@ -200,7 +200,7 @@ namespace DressMySlugcat
             Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "BODY");
 
             customSprite = customization.CustomSprite("HIPS");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("HipsA0"))
             {
                 Sprites[1].element = customSprite.SpriteSheet.Elements["HipsA"];
             }
@@ -211,7 +211,7 @@ namespace DressMySlugcat
             Sprites[1].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
 
             customSprite = customization.CustomSprite("HEAD");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("HeadA0"))
             {
                 Sprites[3].element = customSprite.SpriteSheet.Elements["HeadA0"];
             }
@@ -222,7 +222,7 @@ namespace DressMySlugcat
             Sprites[3].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HEAD");
 
             customSprite = customization.CustomSprite("LEGS");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("LegsA0"))
             {
                 Sprites[4].element = customSprite.SpriteSheet.Elements["LegsA0"];
             }
@@ -233,7 +233,16 @@ namespace DressMySlugcat
             Sprites[4].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "LEGS");
 
             customSprite = customization.CustomSprite("ARMS");
+            bool defaultArms = true;
             if (customSprite?.SpriteSheet != null)
+            {
+                var sheet = customSprite.SpriteSheet;
+                //-WW CHECK IF ANY ARM SPRITES ARE THERE, OR WE NEED TO RUN DEFAULT AS BACKUP
+                if ((sheet.HasAsymmetry("ARMS") && sheet.LeftElements.ContainsKey("PlayerArm12")) || sheet.Elements.ContainsKey("PlayerArm12"))
+                    defaultArms = false;
+            }
+
+            if (!defaultArms)
             {
                 var sheet = customSprite.SpriteSheet;
                 if (sheet.HasAsymmetry("ARMS"))
@@ -264,7 +273,7 @@ namespace DressMySlugcat
             Sprites[8].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "ARMS");
 
             customSprite = customization.CustomSprite("FACE");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("FaceA0"))
             {
                 Sprites[9].element = customSprite.SpriteSheet.Elements["FaceA0"];
             }
@@ -277,7 +286,7 @@ namespace DressMySlugcat
 
             //-FB this was missing for the mark, caused problems switching in game
             customSprite = customization.CustomSprite("PIXEL");
-            if (customSprite?.SpriteSheet != null)
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("pixel"))
             {
                 Sprites[10].element = customSprite.SpriteSheet.Elements["pixel"];
             }

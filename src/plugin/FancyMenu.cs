@@ -808,7 +808,7 @@ namespace DressMySlugcat
                     customization.CustomTail.Color = colorOp.valueColor;
                     customization.CustomTail.CustTailShape = bool.Parse(custTailOp.value); //-WW 
                     customization.CustomTail.AsymTail = bool.Parse(asymTailOp.value);
-                    
+
                     owner.slugcatDummy.UpdateSprites(); //-FB fix the tail colour not updating
 
                     PlaySound(SoundID.MENU_Switch_Page_Out);
@@ -1115,7 +1115,15 @@ namespace DressMySlugcat
                             if (spriteSheet == SpriteSheet.GetDefault() && slugcatDefault != null)
                             {
                                 var defaulSpritesheet = SpriteSheet.Get(slugcatDefault.SpriteSheetID);
-                                sprite.element = defaulSpritesheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+                                try
+                                {
+                                    sprite.element = defaulSpritesheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+                                }
+                                catch
+                                {
+                                    Debug.Log("FAILED TO FIND SPRITE! defaulting to backup");
+                                    sprite.element = spriteSheet.TrimmedElements[SpriteDefinitions.AvailableSprites.Where(x => x.Name == spriteName).FirstOrDefault().GallerySprite];
+                                }
                             }
                             else
                             {
