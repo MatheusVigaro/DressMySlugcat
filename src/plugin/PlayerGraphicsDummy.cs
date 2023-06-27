@@ -200,7 +200,7 @@ namespace DressMySlugcat
             Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "BODY");
 
             customSprite = customization.CustomSprite("HIPS");
-            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("HipsA0"))
+            if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("HipsA"))
             {
                 Sprites[1].element = customSprite.SpriteSheet.Elements["HipsA"];
             }
