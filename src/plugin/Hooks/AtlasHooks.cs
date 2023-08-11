@@ -69,7 +69,7 @@ namespace DressMySlugcat.Hooks
         public static void RegisterError(string friendly, Exception exception = null)
         {
             Errors.Add(friendly);
-            Debug.LogWarning("DressMySlugcat: " + friendly);
+            Debug.LogWarning("DressMySlugcat: " + friendly + Environment.NewLine + (exception != null ? StackTraceUtility.ExtractStringFromException(exception) : ""));
         }
 
         public static void ReloadAtlases()
@@ -255,7 +255,7 @@ namespace DressMySlugcat.Hooks
                 var subDirectories = Utils.ListDirectory(directory, true, true).Distinct().ToList();
                 foreach (var subDir in subDirectories)
                 {
-                    LoadAtlases(subDir);
+                    LoadAtlasesInternal(subDir);
                 }
             }
         }

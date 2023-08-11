@@ -91,6 +91,11 @@ namespace DressMySlugcat
 
         public static string[] ListDirectory(string path, bool directories = false, bool includeAll = false)
         {
+            if (Path.IsPathRooted(path))
+            {
+                return (directories ? Directory.GetDirectories(path) : Directory.GetFiles(path));
+            }
+
             if (!Plugin.Options?.LoadInactiveMods?.Value ?? false)
             {
                 return AssetManager.ListDirectory(path, directories, includeAll);
