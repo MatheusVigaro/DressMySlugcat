@@ -1,22 +1,11 @@
-﻿using BepInEx;
-using System.Security.Permissions;
-using System.Security;
-using System;
+﻿using System;
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using Random = UnityEngine.Random;
 using DressMySlugcat.Hooks;
-using System.IO;
 using Menu;
 using Menu.Remix.MixedUI;
 using Menu.Remix;
-using System.CodeDom;
-using IL.MoreSlugcats;
-using UnityEngine.UIElements;
-using RWCustom;
-using System.Security.Cryptography;
-using UnityEngine.UI;
 
 namespace DressMySlugcat
 {
@@ -51,8 +40,14 @@ namespace DressMySlugcat
         public SymbolButton rightPage;
         public MenuLabel pageLabel;
 
+        private readonly float leftAnchor;
+        private readonly float rightAnchor;
+
         public FancyMenu(ProcessManager manager, PauseMenu owner = null) : base(manager)
         {
+            leftAnchor = (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+            rightAnchor = 1366f - leftAnchor;
+            
             this.owner = owner;
             SaveManager.InitSlugcatCustomizations();
             slugcatNames = Utils.ValidSlugcatNames;
@@ -87,13 +82,13 @@ namespace DressMySlugcat
             }
             pages[0].Container.AddChild(darkSprite);
 
-            backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(15f, 50f), new Vector2(220f, 30f));
+            backButton = new SimpleButton(this, pages[0], Translate("BACK"), "BACK", new Vector2(leftAnchor + 15f, 50f), new Vector2(220f, 30f));
             pages[0].subObjects.Add(backButton);
 
             backObject = backButton;
             backButton.nextSelectable[0] = backButton;
             backButton.nextSelectable[2] = backButton;
-            textBoxBorder = new RoundedRect(this, pages[0], new Vector2(255f, 50f), new Vector2(1050f, 700f), true);
+            textBoxBorder = new RoundedRect(this, pages[0], new Vector2(leftAnchor + 255f, 50f), new Vector2(1050f - (1366f - manager.rainWorld.options.ScreenSize.x), 700f), true);
 
             textBoxBack = new FSprite("pixel");
             textBoxBack.color = new Color(0f, 0f, 0f);
@@ -109,7 +104,7 @@ namespace DressMySlugcat
             pages[0].subObjects.Add(textBoxBorder);
 
             slugcatDummy = new PlayerGraphicsDummy(this);
-            slugcatDummy.SlugcatPosition = new Vector2(133f, 70f);
+            slugcatDummy.SlugcatPosition = new Vector2(133f - (leftAnchor / 4f), 70f);
             slugcatDummy.Container.scale = 8f;
 
             //playerButtons = new SelectOneButton[4];
@@ -203,8 +198,8 @@ namespace DressMySlugcat
                     slugcatButtons[i].inactive = false;
                     slugcatButtons[i].menuLabel.text = slugcatDisplayName;
                     slugcatButtons[i].signalText = "SLUGCAT_" + slugcatName;
-                    slugcatButtons[i].pos.x = 15f;
-                    slugcatButtons[i].lastPos.x = 15f;
+                    slugcatButtons[i].pos.x = leftAnchor + 15f;
+                    slugcatButtons[i].lastPos.x = leftAnchor + 15f;
                 }
                 else
                 {
@@ -240,7 +235,7 @@ namespace DressMySlugcat
             }
             customizeSpriteButtons.Clear();
 
-            var internalTopLeft = new Vector2(190f, 710f);
+            var internalTopLeft = new Vector2(leftAnchor + 190f, 710f);
             var availableSprites = SpriteDefinitions.AvailableSprites.Where(x => x.Slugcats.Count == 0 || x.Slugcats.Contains(selectedSlugcat)).ToList();
 
             for (var i = 0; i < availableSprites.Count; i++)
@@ -429,7 +424,7 @@ namespace DressMySlugcat
                 this.sprite = sprite;
                 selectedButton = owner.customizeSpriteButtons[sprite];
 
-                var pos = selectedButton.pos + new Vector2(selectedButton.size.x + 10, -120f);
+                var pos = selectedButton.pos + new Vector2(selectedButton.size.x + 10 - owner.leftAnchor, -120f);
 
                 border = new RoundedRect(this, pages[0], pos, new Vector2(171, 207), true);
 
@@ -437,14 +432,14 @@ namespace DressMySlugcat
                 darkSprite.anchorY = 0f;
                 darkSprite.scaleX = border.size.x - 12f;
                 darkSprite.scaleY = border.size.y - 12f;
-                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.x = border.pos.x + 6f;
                 darkSprite.y = border.pos.y + 6f;
                 darkSprite.alpha = 1f;
 
-                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(50f, 30f));
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5 + owner.leftAnchor, darkSprite.y + 5), new Vector2(50f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
-                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
+                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x + owner.leftAnchor, darkSprite.y + 5), cancelButton.size);
                 pages[0].subObjects.Add(resetButton);
 
                 var customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex);
@@ -638,7 +633,7 @@ namespace DressMySlugcat
 
                 customization = Customization.For(owner.selectedSlugcat, owner.selectedPlayerIndex, false);
 
-                var pos = tailButton.pos + new Vector2(tailButton.size.x + 10, -100f);
+                var pos = tailButton.pos + new Vector2(tailButton.size.x + 10 - owner.leftAnchor, -100f);
 
                 border = new RoundedRect(this, pages[0], pos, new Vector2(204, 335), true); //300
 
@@ -646,14 +641,14 @@ namespace DressMySlugcat
                 darkSprite.anchorY = 0f;
                 darkSprite.scaleX = border.size.x - 12f;
                 darkSprite.scaleY = border.size.y - 12f;
-                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.x = border.pos.x + 6f;
                 darkSprite.y = border.pos.y + 6f;
                 darkSprite.alpha = 1f;
 
-                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(50f, 30f));
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5 + owner.leftAnchor, darkSprite.y + 5), new Vector2(50f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
-                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x, darkSprite.y + 5), cancelButton.size);
+                resetButton = new SimpleButton(this, pages[0], "RESET", "RESET", new Vector2(darkSprite.x + darkSprite.scaleX - 5 - cancelButton.size.x + owner.leftAnchor, darkSprite.y + 5), cancelButton.size);
                 pages[0].subObjects.Add(resetButton);
 
                 tabWrapper = new MenuTabWrapper(this, pages[0]);
@@ -962,16 +957,16 @@ namespace DressMySlugcat
                 darkSprite.anchorY = 0f;
                 darkSprite.scaleX = border.size.x - 12f;
                 darkSprite.scaleY = border.size.y - 12f;
-                darkSprite.x = border.pos.x + 6f - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f;
+                darkSprite.x = border.pos.x + 6f;
                 darkSprite.y = border.pos.y + 6f;
                 darkSprite.alpha = 1f;
 
-                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5, darkSprite.y + 5), new Vector2(110f, 30f));
+                cancelButton = new SimpleButton(this, pages[0], "BACK", "BACK", new Vector2(darkSprite.x + 5 + owner.leftAnchor, darkSprite.y + 5), new Vector2(110f, 30f));
                 pages[0].subObjects.Add(cancelButton);
 
                 spriteBoxes = new RoundedRect[4, 3];
 
-                var label = new MenuLabel(this, pages[0], spriteName, new Vector2((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
+                var label = new MenuLabel(this, pages[0], spriteName, new Vector2(((paddingX + darkSprite.x + darkSprite.scaleX - 200f) * 0.5f) + owner.leftAnchor, (darkSprite.y + darkSprite.scaleY - 30f)), new Vector2(200f, 30f), true);
                 pages[0].subObjects.Add(label);
 
                 spriteSheets = new();
@@ -1057,7 +1052,7 @@ namespace DressMySlugcat
                     for (var x = 0; x < columns; x++)
                     {
                         var n = (y * columns) + x;
-                        var pos = new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x), 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize));
+                        var pos = new Vector2(border.pos.x + paddingX + (boxMargin * x) + (boxSize * x) + owner.leftAnchor, 768 - (paddingY + (boxMargin * y) + (boxSize * y) + (labelHeight * y) + boxSize));
                         var size = new Vector2(boxSize, boxSize);
 
                         galleryLabels[n] = new MenuLabel(this, pages[0], "", pos + new Vector2(0, size.y + 5), new Vector2(size.x, 20f), true);
