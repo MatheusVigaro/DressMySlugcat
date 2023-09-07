@@ -1,27 +1,15 @@
-﻿using HUD;
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
 using RWCustom;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 using static TriangleMesh;
 using Color = UnityEngine.Color;
 using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 namespace DressMySlugcat.Hooks
 {
@@ -682,24 +670,60 @@ namespace DressMySlugcat.Hooks
                 //-WW -ONLY RESIZE THE TAIL IF WE HAVE A CUSTOM TAIL SIZE
                 if (Customization.For(self).CustomTail.IsCustom)
                 {
-                    sLeaser.sprites[2].RemoveFromContainer();
+                    //sLeaser.sprites[2].RemoveFromContainer();
 
-                    Triangle[] array = new Triangle[(self.tail.Length - 1) * 4 + 1];
+                    Triangle[] triangles = new Triangle[(self.tail.Length - 1) * 4 + 1];
                     for (int i = 0; i < self.tail.Length - 1; i++)
                     {
                         int num = i * 4;
                         for (int j = 0; j < 4; j++)
                         {
-                            array[num + j] = new Triangle(num + j, num + j + 1, num + j + 2);
+                            triangles[num + j] = new Triangle(num + j, num + j + 1, num + j + 2);
                         }
                     }
-                    array[(self.tail.Length - 1) * 4] = new Triangle((self.tail.Length - 1) * 4, (self.tail.Length - 1) * 4 + 1, (self.tail.Length - 1) * 4 + 2);
-                    tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
-                    sLeaser.sprites[2] = tail;
+                    triangles[(self.tail.Length - 1) * 4] = new Triangle((self.tail.Length - 1) * 4, (self.tail.Length - 1) * 4 + 1, (self.tail.Length - 1) * 4 + 2);
+                    
+                    //tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
+                    //sLeaser.sprites[2] = tail;
                     playerGraphicsData.tailRef = tail;
 
-                    rCam.ReturnFContainer("Midground").AddChild(tail);
-                    tail.MoveBehindOtherNode(sLeaser.sprites[4]);
+                    //-- This is so wonky, why can't we just create a new tail? I blame SplitScreenCoop
+                    tail.triangles = triangles;
+                    int verticeNum = 2;
+                    for (int i = 0; i < tail.triangles.Length; i++)
+                    {
+                        if (tail.triangles[i].a > verticeNum)
+                        {
+                            verticeNum = tail.triangles[i].a;
+                        }
+                        if (tail.triangles[i].b > verticeNum)
+                        {
+                            verticeNum = tail.triangles[i].b;
+                        }
+                        if (tail.triangles[i].c > verticeNum)
+                        {
+                            verticeNum = tail.triangles[i].c;
+                        }
+                    }
+                    tail.vertices = new Vector2[verticeNum + 1];
+                    tail.UVvertices = new Vector2[verticeNum + 1];
+                    for (int j = 0; j < verticeNum; j++)
+                    {
+                        tail.vertices[j] = new Vector2(0f, 0f);
+                        tail.UVvertices[j] = new Vector2(0f, 0f);
+                    }
+                    if (tail.customColor)
+                    {
+                        tail.verticeColors = new Color[verticeNum + 1];
+                        for (int k = 0; k < tail.verticeColors.Length; k++)
+                        {
+                            tail.verticeColors[k] = tail._alphaColor;
+                        }
+                    }
+                    tail.Init(FFacetType.Triangle, tail.element, triangles.Length);;
+
+                    //rCam.ReturnFContainer("Midground").AddChild(tail);
+                    //tail.MoveBehindOtherNode(sLeaser.sprites[4]);
                 }
                 //THE REST WE ALWAYS RUN, BECAUSE WE NEED TO APPLY CUSTOM TEXTURES
 

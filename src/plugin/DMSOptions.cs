@@ -17,6 +17,7 @@ namespace DressMySlugcat
 
     public class DMSOptions : OptionInterface
     {
+        public static readonly DMSOptions Instance = new();
         public readonly Configurable<bool> LoadInactiveMods;
 
         public DMSOptions()

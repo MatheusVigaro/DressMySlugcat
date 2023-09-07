@@ -3,17 +3,8 @@ using System.Security.Permissions;
 using System.Security;
 using System;
 using UnityEngine;
-using System.Linq;
 using System.Collections.Generic;
-using Random = UnityEngine.Random;
 using DressMySlugcat.Hooks;
-using System.IO;
-using HUD;
-using System.Runtime.Serialization.Json;
-using RWCustom;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
-using System.Threading;
 using BepInEx.Logging;
 
 [module: UnverifiableCode]
@@ -37,31 +28,26 @@ namespace DressMySlugcat
         private bool IsInit;
         private bool IsPostInit;
 
+        private void Awake()
+        {
+            SpriteDefinitions.Init();
+        }
+
         private void OnEnable()
         {
             try
             {
-                if (IsInit) return;
-                IsInit = true;
-
                 Logger = base.Logger;
+                Logger.LogInfo("Loading plugin DressMySlugcat");
 
-                On.Menu.MainMenu.ctor += MainMenu_ctor;
-
-                SpriteDefinitions.Init();
-                AtlasHooks.Init();
-                PlayerGraphicsHooks.Init();
-                MenuHooks.Init();
-                PauseMenuHooks.Init();
                 On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
                 On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
 
-                Debug.Log($"Plugin DressMySlugcat is loaded!");
+                Logger.LogInfo("Plugin DressMySlugcat is loaded!");
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                Logger.LogError(ex);
             }
         }
 
@@ -70,7 +56,17 @@ namespace DressMySlugcat
             orig(self);
             try
             {
-                MachineConnector.SetRegisteredOI(BaseName, Options = new DMSOptions());
+                MachineConnector.SetRegisteredOI(BaseName, Options = DMSOptions.Instance);
+                
+                if (IsInit) return;
+                IsInit = true;
+                
+                On.Menu.MainMenu.ctor += MainMenu_ctor;
+
+                AtlasHooks.Init();
+                PlayerGraphicsHooks.Init();
+                MenuHooks.Init();
+                PauseMenuHooks.Init();
             }
             catch (Exception ex)
             {
