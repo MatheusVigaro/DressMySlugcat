@@ -1,10 +1,10 @@
 {
 	"id": "dressmyslugcat",
 	"name": "Dress My Slugcat",
-	"version": "1.6.6",
+	"version": "1.6.7",
 	"hide_version": false,
 	"authors": "Vigaro, Frithuritaks, WillowWisp, BensoneWhite, forthbridge, NoirCatto",
-	"description": "Dress My Slugcat",
+	"description": "Dress My Slugcat <LINE>Note: if the Get Fancy button does not appear on the main menu, verify integrity of game files and then disable the mod, restart the game, and re-enable the mod.",
 	"requirements": [],
 	"requirements_names": [],
 	"checksum_override_version": false,
