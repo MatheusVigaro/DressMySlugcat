@@ -28,7 +28,16 @@ namespace DressMySlugcat
             SlugcatDefaults.Add(customization);
         }
 
-        public static Customization GetSlugcatDefault(string slugcat, int playerNumber) => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber).LastOrDefault();
+        //public static Customization GetSlugcatDefault(string slugcat, int playerNumber) => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber).LastOrDefault();
+        public static Customization GetSlugcatDefault(string slugcat, int playerNumber)
+        {
+            if (playerNumber > 3) //WW- So Myriad players past 4 can use defaults
+                playerNumber = 0;
+
+            return (from x in SpriteDefinitions.SlugcatDefaults
+                    where x.Slugcat == slugcat && x.PlayerNumber == playerNumber
+                    select x).LastOrDefault<Customization>();
+        }
 
         public static void Init()
         {
