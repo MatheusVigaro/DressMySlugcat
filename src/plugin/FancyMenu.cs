@@ -6,6 +6,7 @@ using DressMySlugcat.Hooks;
 using Menu;
 using Menu.Remix.MixedUI;
 using Menu.Remix;
+using Newtonsoft.Json;
 
 namespace DressMySlugcat
 {
@@ -13,6 +14,9 @@ namespace DressMySlugcat
     {
         public SimpleButton backButton;
         public SimpleButton resetButton;
+        public SimpleButton copyButton;
+        public SimpleButton pasteButton;
+        public SimpleButton defaultsButton;
         public RoundedRect textBoxBorder;
         public FSprite textBoxBack;
         public PlayerGraphicsDummy slugcatDummy;
@@ -42,6 +46,9 @@ namespace DressMySlugcat
 
         private readonly float leftAnchor;
         private readonly float rightAnchor;
+
+        //COPY PASTE MEMORY
+        private Customization copiedCustomization = Customization.For("White", 1, false).Copy();
 
         public FancyMenu(ProcessManager manager, PauseMenu owner = null) : base(manager)
         {
@@ -123,6 +130,17 @@ namespace DressMySlugcat
 
             resetButton = new SimpleButton(this, pages[0], "RELOAD ATLASES", "RELOAD_ATLASES", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) - new Vector2(160, 40), new Vector2(160f, 30f));
             pages[0].subObjects.Add(resetButton);
+
+            defaultsButton = new SimpleButton(this, pages[0], "RESET", "CUST_DEFAULTS", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) + new Vector2(-210, 20), new Vector2(60f, 30f));
+            pages[0].subObjects.Add(defaultsButton);
+
+            copyButton = new SimpleButton(this, pages[0], "COPY", "CUST_COPY", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) + new Vector2(-140, 20), new Vector2(60f, 30f));
+            pages[0].subObjects.Add(copyButton);
+
+            pasteButton = new SimpleButton(this, pages[0], "PASTE", "CUST_PASTE", textBoxBorder.pos + new Vector2(textBoxBorder.size.x, 0) + new Vector2(-70, 20), new Vector2(60f, 30f));
+            pages[0].subObjects.Add(pasteButton);
+            pasteButton.inactive = true; //START OUT INACTIVE
+
         }
 
         public override void Update()
@@ -263,7 +281,7 @@ namespace DressMySlugcat
             var customization = Customization.For(selectedSlugcat, selectedPlayerIndex, false);
             foreach (var key in selectSpriteButtons.Keys)
             {
-                var customSprite = customization.CustomSprite(key);
+                var customSprite = customization?.CustomSprite(key);
                 SpriteSheet sheet = customSprite?.SpriteSheet;
 
                 if (sheet == null)
@@ -401,6 +419,49 @@ namespace DressMySlugcat
                 var spritename = message.Substring(18);
                 PlaySound(SoundID.MENU_Player_Join_Game);
                 manager.ShowDialog(new SpriteCustomizer(this, spritename));
+            }
+            else if (message == "CUST_DEFAULTS")
+            {
+                PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                Customization.ResetToDefaults(selectedSlugcat, selectedPlayerIndex);
+                UpdateControls();
+                slugcatDummy.UpdateSprites();
+            }
+            else if (message == "CUST_COPY")
+            {
+                copiedCustomization = Customization.For(selectedSlugcat, selectedPlayerIndex, false).Copy();
+                //Debug.Log("COPIED SPRITES!!" + selectedSlugcat + " - " + selectedPlayerIndex);
+                PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                pasteButton.inactive = false;
+            }
+            else if (message == "CUST_PASTE")
+            {
+                if (pasteButton.inactive)
+                {
+                    PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                }
+                else
+                {
+                    for (var i = 0; i < SaveManager.Customizations.Count; i++)
+                    {
+                        if (SaveManager.Customizations[i].Slugcat == selectedSlugcat && SaveManager.Customizations[i].PlayerNumber == selectedPlayerIndex)
+                        {
+                            var origCust = SaveManager.Customizations[i].Copy();
+                            SaveManager.Customizations[i] = copiedCustomization.Copy();
+                            //DON'T CHANGE THESE THOUGH, THAT'D BE BAD...
+                            SaveManager.Customizations[i].PlayerNumber = origCust.PlayerNumber;
+                            SaveManager.Customizations[i].Slugcat = origCust.Slugcat;
+                            //DON'T COPY THE TAIL COLOR IF IT WAS DEFAULT 
+                            if (copiedCustomization.CustomTail.Color == Utils.DefaultColorForSprite(copiedCustomization.Slugcat, "TAIL"));
+                                SaveManager.Customizations[i].CustomTail.Color = origCust.CustomTail.Color;
+                            //Debug.Log("PASTED SPRITES!!" + SaveManager.Customizations[i].PlayerNumber + " - " + SaveManager.Customizations[i].Slugcat);
+                            break;
+                        }
+                    }
+                    PlaySound(SoundID.MENU_Switch_Page_Out);
+                    UpdateControls();
+                    slugcatDummy.UpdateSprites();
+                }
             }
         }
 

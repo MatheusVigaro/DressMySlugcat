@@ -108,6 +108,38 @@ namespace DressMySlugcat
             }
         }
 
+        public static void ResetToDefaults(string slugcatName, int playerNumber)
+        {
+            var customization = SaveManager.Customizations.FirstOrDefault(x => x.Matches(slugcatName, playerNumber));
+            var defaults = SpriteDefinitions.GetSlugcatDefault(customization.Slugcat, customization.PlayerNumber)?.Copy();
+
+            foreach (var sprite in customization.CustomSprites.ToList())
+            {
+                customization.CustomSprites.Remove(sprite);
+            }
+
+            if (defaults == null)
+            {
+                customization.CustomTail.AsymTail = false;
+                customization.CustomTail.CustTailShape = false;
+                customization.CustomTail.Color = Utils.DefaultBodyColor(slugcatName);
+                return;
+            }
+            
+            customization.CustomTail.Length = defaults.CustomTail.Length;
+            customization.CustomTail.Wideness = defaults.CustomTail.Wideness;
+            customization.CustomTail.Roundness = defaults.CustomTail.Roundness;
+            customization.CustomTail.Lift = defaults.CustomTail.Lift;
+            customization.CustomTail.AsymTail = defaults.CustomTail.AsymTail;
+            customization.CustomTail.CustTailShape = defaults.CustomTail.IsCustom;
+            customization.CustomTail.Color = defaults.CustomTail.Color;
+
+            //foreach (var sprite in defaults.CustomSprites)
+            //{
+            //    customization.CustomSprites.Add(sprite);
+            //}
+        }
+
         #region Deprecated
         [Obsolete("Use Customization.CustomSprites instead")]
         public string Sprite;
