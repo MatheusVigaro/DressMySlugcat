@@ -118,7 +118,8 @@ namespace DressMySlugcat
             playerButtons = new SelectOneButton[this.manager.rainWorld.options.controls.Length]; //-WW -DYNAMIC LENGTH
             for (int i = 0; i < playerButtons.Length; i++)
             {
-                var playerButton = new SelectOneButton(this, pages[0], "Player " + (i + 1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(65 * i, -40), new Vector2(60, 30), playerButtons, i);
+                float startPos = playerButtons.Length > 14 ? -150 : 0; //Don't cut off 15 and 16 if they exist
+                var playerButton = new SelectOneButton(this, pages[0], "Player " + (i + 1), "PLAYER_" + i, textBoxBorder.pos + new Vector2(startPos + (65 * i), -40), new Vector2(60, 30), playerButtons, i);
                 pages[0].subObjects.Add(playerButton);
                 playerButtons[i] = playerButton;
             }
@@ -260,15 +261,24 @@ namespace DressMySlugcat
             {
                 var sprite = availableSprites[i];
 
-                var label = new MenuLabel(this, pages[0], sprite.Description, internalTopLeft + new Vector2(72, i * -70f), new Vector2(200f, 30f), bigText: true);
+                //TO HELP FIX HUGE SPRITELISTS THAT GO OFFSCREEN
+                float iHeight = i;
+                float xPad = 0f;
+                if (i >= 10)
+                {
+                    iHeight -= 10; //I'm sorry if you've got more than 20 that's on you
+                    xPad = 300f;
+                }
+
+                var label = new MenuLabel(this, pages[0], sprite.Description, internalTopLeft + new Vector2(72 + xPad, iHeight * -69f), new Vector2(200f, 30f), bigText: true);
                 selectSpriteLabels[sprite.Name] = label;
                 pages[0].subObjects.Add(label);
 
-                var button = new SimpleButton(this, pages[0], "", "SPRITE_SELECTOR_" + sprite.Name, internalTopLeft + new Vector2(80, (i * -70) - 30), new Vector2(180f, 30f));
+                var button = new SimpleButton(this, pages[0], "", "SPRITE_SELECTOR_" + sprite.Name, internalTopLeft + new Vector2(80 + xPad, (iHeight * -69) - 30), new Vector2(180f, 30f));
                 selectSpriteButtons[sprite.Name] = button;
                 pages[0].subObjects.Add(button);
 
-                button = new SimpleButton(this, pages[0], "Customize", sprite.Name == "TAIL" ? "TAIL_CUSTOMIZER" : "SPRITE_CUSTOMIZER_" + sprite.Name, internalTopLeft + new Vector2(80 + 190, (i * -70) - 30), new Vector2(70f, 30f));
+                button = new SimpleButton(this, pages[0], "Customize", sprite.Name == "TAIL" ? "TAIL_CUSTOMIZER" : "SPRITE_CUSTOMIZER_" + sprite.Name, internalTopLeft + new Vector2(80 + 190 + xPad, (iHeight * -69) - 30), new Vector2(70f, 30f));
                 customizeSpriteButtons.Add(sprite.Name, button);
                 pages[0].subObjects.Add(button);
             }
@@ -486,6 +496,7 @@ namespace DressMySlugcat
                 selectedButton = owner.customizeSpriteButtons[sprite];
 
                 var pos = selectedButton.pos + new Vector2(selectedButton.size.x + 10 - owner.leftAnchor, -120f);
+                pos.y = Mathf.Max(55, pos.y); //DON'T LET THIS APPEAR UNDERNEATH THE SELECTABLE WINDOW
 
                 border = new RoundedRect(this, pages[0], pos, new Vector2(171, 207), true);
 

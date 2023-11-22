@@ -1,0 +1,19 @@
+{
+  "Title": "Dress My Slugcat",
+  "Description": "Dress My Slugcat",
+  "ID": "dressmyslugcat",
+  "Version": "1.6.7",
+  "TargetGameVersion": "v1.9.06",
+  "Requirements": "",
+  "RequirementNames": "",
+  "Authors": "Vigaro, Frithuritaks, WillowWisp, BensoneWhite, forthbridge, NoirCatto",
+  "Visibility": "Public",
+  "Tags": [
+    "Cosmetics",
+    "Dependency",
+    "Tools"
+  ],
+  "WorkshopID": 2948971756,
+  "UploadFilesOnly": true,
+  "UploadThumbnail": false
+}
