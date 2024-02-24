@@ -6,7 +6,6 @@ using DressMySlugcat.Hooks;
 using Menu;
 using Menu.Remix.MixedUI;
 using Menu.Remix;
-using Newtonsoft.Json;
 
 namespace DressMySlugcat
 {
@@ -149,7 +148,7 @@ namespace DressMySlugcat
             base.Update();
             if (InGame)
             {
-                if (RWInput.CheckPauseButton(0, owner.game.rainWorld))
+                if (RWInput.CheckPauseButton(0))
                 {
                     Singal(backObject, "BACK");
                 }
@@ -462,7 +461,7 @@ namespace DressMySlugcat
                             SaveManager.Customizations[i].PlayerNumber = origCust.PlayerNumber;
                             SaveManager.Customizations[i].Slugcat = origCust.Slugcat;
                             //DON'T COPY THE TAIL COLOR IF IT WAS DEFAULT 
-                            if (copiedCustomization.CustomTail.Color == Utils.DefaultColorForSprite(copiedCustomization.Slugcat, "TAIL"));
+                            if (copiedCustomization.CustomTail.Color == Utils.DefaultColorForSprite(copiedCustomization.Slugcat, "TAIL"))
                                 SaveManager.Customizations[i].CustomTail.Color = origCust.CustomTail.Color;
                             //Debug.Log("PASTED SPRITES!!" + SaveManager.Customizations[i].PlayerNumber + " - " + SaveManager.Customizations[i].Slugcat);
                             break;
@@ -559,7 +558,7 @@ namespace DressMySlugcat
                 base.Update();
                 if (owner.InGame)
                 {
-                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    if (RWInput.CheckPauseButton(0))
                     {
                         owner.Singal(owner.backObject, "BACK");
                         manager.StopSideProcess(this);
@@ -975,7 +974,7 @@ namespace DressMySlugcat
                 base.Update();
                 if (owner.InGame)
                 {
-                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    if (RWInput.CheckPauseButton(0))
                     {
                         owner.Singal(owner.backObject, "BACK");
                         manager.StopSideProcess(this);
@@ -1105,7 +1104,7 @@ namespace DressMySlugcat
                 base.Update();
                 if (owner.InGame)
                 {
-                    if (RWInput.CheckPauseButton(0, owner.owner.game.rainWorld))
+                    if (RWInput.CheckPauseButton(0))
                     {
                         owner.Singal(owner.backObject, "BACK");
                         manager.StopSideProcess(this);
