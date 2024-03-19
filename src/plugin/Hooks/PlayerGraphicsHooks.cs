@@ -114,8 +114,8 @@ namespace DressMySlugcat.Hooks
 
             try
             {
-                if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchLdloc(2),
-                                                         i => i.MatchLdloc(1),
+                if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchLdloc(out _),
+                                                         i => i.MatchLdloc(out _),
                                                          i => i.MatchLdcR4(0.5f)))
                 {
                     throw new Exception("Failed to match IL for PlayerGraphics_DrawSpritesTail! (first)");
@@ -125,7 +125,7 @@ namespace DressMySlugcat.Hooks
                 cursor.MarkLabel(label);
 
                 if (!cursor.TryGotoPrev(MoveType.After, i => i.MatchLdcR4(6),
-                                                        i => i.MatchStloc(7)))
+                                                        i => i.MatchStloc(out _)))
                 {
                     throw new Exception("Failed to match IL for PlayerGraphics_DrawSpritesTail! (second)");
                 }
