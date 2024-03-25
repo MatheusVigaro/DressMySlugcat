@@ -613,7 +613,7 @@ namespace DressMySlugcat.Hooks
                         {
                             var specificSprite = sprite;
 
-                            var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.GenericName == sprite && ((self.player.playerState.isPup && x.Slugcat == "Slugpup") || x.Slugcat == name));
+                            var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.GenericName == sprite && ((self.player.playerState.isPup && x.Slugcat == "Slugpup") || (x.Slugcat == name && !self.player.playerState.isPup)));
                             if (specificReplacement != null)
                             {
                                 specificSprite = specificReplacement.SpecificName;
