@@ -447,6 +447,13 @@ namespace DressMySlugcat.Hooks
 
         public static PlayerGraphicsEx InitiateCustomGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
+            //CHECK MEADOW STUFF
+            if (Plugin.Options.DefaultMeadowSkins.Value && Plugin.CheckForMeadowNonselfClient(self.owner as Player))
+            {
+                Debug.Log("THIS MEADOW CLIENT IS NOT US! DEFAULT SKIN FOR THEM");
+                return null;
+            }
+
             var playerGraphicsData = new PlayerGraphicsEx();
             if (PlayerGraphicsData.TryGetValue(self, out var oldData))
             {

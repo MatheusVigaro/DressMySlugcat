@@ -52,6 +52,10 @@ namespace DressMySlugcat
 
         public static Customization For(string slugcatName, int playerNumber = 0, bool mergeDefaults = true)
         {
+            //MAKE MEADOW MODE PLAYERS USE SURV SKINS
+            if (slugcatName == "MeadowOnline")
+                slugcatName = "White";
+
             var customization = SaveManager.Customizations.FirstOrDefault(x => x.Matches(slugcatName, playerNumber));
             if (!mergeDefaults)
             {
