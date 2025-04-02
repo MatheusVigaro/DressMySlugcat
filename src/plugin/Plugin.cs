@@ -6,7 +6,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using DressMySlugcat.Hooks;
 using BepInEx.Logging;
-using RainMeadow;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -15,6 +14,7 @@ using RainMeadow;
 
 namespace DressMySlugcat
 {
+    [BepInDependency("henpemaz.rainmeadow", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(BaseName, "Dress My Slugcat", "1.0.0")]
     public partial class Plugin : BaseUnityPlugin
@@ -28,7 +28,6 @@ namespace DressMySlugcat
 
         private bool IsInit;
         private bool IsPostInit;
-        public static bool meadowEnabled;
 
         private void Awake()
         {
@@ -69,13 +68,6 @@ namespace DressMySlugcat
                 PlayerGraphicsHooks.Init();
                 MenuHooks.Init();
                 PauseMenuHooks.Init();
-
-                //CHECK FOR RAIN MEADOW
-                for (int i = 0; i < ModManager.ActiveMods.Count; i++)
-                {
-                    if (ModManager.ActiveMods[i].id == "henpemaz_rainmeadow")
-                        meadowEnabled = true;
-                }
             }
             catch (Exception ex)
             {
@@ -115,30 +107,6 @@ namespace DressMySlugcat
             {
                 Debug.LogException(ex);
             }
-        }
-
-        public static bool IsMeadowSession()
-        {
-            if (meadowEnabled)
-                return CheckMS();
-            return false;
-        }
-
-        public static bool CheckMS()
-        {
-            return (OnlineManager.lobby != null);
-        }
-
-        public static bool CheckForMeadowNonselfClient(Player self)
-        {
-            if (IsMeadowSession())
-                return CheckIsNotSelf(self);
-            return false;
-        }
-
-        public static bool CheckIsNotSelf(Player self)
-        {
-            return (!self.IsLocal());
         }
     }
 }
