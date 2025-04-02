@@ -53,7 +53,7 @@ namespace DressMySlugcat
 
         public override void Update()
         {
-            if (Plugin.meadowEnabled)
+            if (MeadowCompatibility.meadowEnabled)
                 this.mpBox.greyedOut = false;
             else
                 this.mpBox.greyedOut = true;

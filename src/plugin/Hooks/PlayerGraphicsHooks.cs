@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using Watcher;
 using static TriangleMesh;
 using Color = UnityEngine.Color;
 using Debug = UnityEngine.Debug;
@@ -92,6 +93,9 @@ namespace DressMySlugcat.Hooks
                     for (var i = 0; i < sLeaser.sprites.Length; i++)
                     {
                         playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
+
+                        if (playerGraphics.player.slugcatStats.name != WatcherEnums.SlugcatStatsName.Watcher)
+                            sLeaser.sprites[i].shader = FShader.defaultShader;
                     }
 
                     if (playerGraphics.player.flipDirection == 1)
@@ -104,6 +108,7 @@ namespace DressMySlugcat.Hooks
                         sLeaser.sprites[5].MoveBehindOtherNode(sLeaser.sprites[0]);
                         sLeaser.sprites[6].MoveBehindOtherNode(sLeaser.sprites[3]);
                     }
+                    
                 }
             });
         }
@@ -448,7 +453,7 @@ namespace DressMySlugcat.Hooks
         public static PlayerGraphicsEx InitiateCustomGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
             //CHECK MEADOW STUFF
-            if (Plugin.Options.DefaultMeadowSkins.Value && Plugin.CheckForMeadowNonselfClient(self.owner as Player))
+            if (Plugin.Options.DefaultMeadowSkins.Value && MeadowCompatibility.CheckForMeadowNonselfClient(self.owner as Player))
             {
                 Debug.Log("THIS MEADOW CLIENT IS NOT US! DEFAULT SKIN FOR THEM");
                 return null;
