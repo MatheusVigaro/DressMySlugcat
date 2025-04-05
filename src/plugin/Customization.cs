@@ -1,12 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-using System.Runtime.CompilerServices;
-
-namespace DressMySlugcat
+﻿namespace DressMySlugcat
 {
     [Serializable]
     public class Customization

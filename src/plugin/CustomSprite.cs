@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace DressMySlugcat
+﻿namespace DressMySlugcat
 {
     [Serializable]
     public class CustomSprite

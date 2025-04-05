@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using static TriangleMesh;
-
-namespace DressMySlugcat
+﻿namespace DressMySlugcat
 {
     public class PlayerGraphicsEx
     {

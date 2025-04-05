@@ -1,16 +1,4 @@
-﻿using BepInEx;
-using System.Security.Permissions;
-using System.Security;
-using System;
-using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
-using Random = UnityEngine.Random;
-using DressMySlugcat.Hooks;
-using System.IO;
-using Menu;
-using IL.Menu.Remix;
-using UnityEngine.UIElements;
+﻿using DressMySlugcat.Hooks;
 
 namespace DressMySlugcat
 {

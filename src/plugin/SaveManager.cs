@@ -1,22 +1,4 @@
-﻿using BepInEx;
-using System.Security.Permissions;
-using System.Security;
-using System;
-using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
-using Random = UnityEngine.Random;
-using DressMySlugcat.Hooks;
-using System.IO;
-using Menu;
-using UnityEngine.Networking;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
-using System.Collections;
-using static DressMySlugcat.SaveManager;
-using RWCustom;
-
-namespace DressMySlugcat
+﻿namespace DressMySlugcat
 {
     public static class SaveManager
     {

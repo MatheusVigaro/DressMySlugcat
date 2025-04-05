@@ -1,22 +1,10 @@
-﻿using BepInEx;
-using System.Security.Permissions;
-using System.Security;
-using System;
-using UnityEngine;
-using System.Collections.Generic;
-using DressMySlugcat.Hooks;
-using BepInEx.Logging;
-
-[module: UnverifiableCode]
-#pragma warning disable CS0618 // Type or member is obsolete
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
-#pragma warning restore CS0618 // Type or member is obsolete
+﻿using DressMySlugcat.Hooks;
 
 namespace DressMySlugcat
 {
     [BepInDependency("henpemaz.rainmeadow", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin(BaseName, "Dress My Slugcat", "1.0.0")]
+    [BepInPlugin(BaseName, "Dress My Slugcat", "2.1.0")]
     public partial class Plugin : BaseUnityPlugin
     {
         public static new ManualLogSource Logger { get; private set; } = null!;

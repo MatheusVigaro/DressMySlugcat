@@ -1,25 +1,4 @@
-﻿using HUD;
-using Menu;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MoreSlugcats;
-using RWCustom;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
-
-namespace DressMySlugcat.Hooks
+﻿namespace DressMySlugcat.Hooks
 {
     public class MenuHooks
     {

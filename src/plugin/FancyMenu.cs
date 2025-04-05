@@ -1,11 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
-using DressMySlugcat.Hooks;
-using Menu;
-using Menu.Remix.MixedUI;
-using Menu.Remix;
+﻿using DressMySlugcat.Hooks;
 
 namespace DressMySlugcat
 {

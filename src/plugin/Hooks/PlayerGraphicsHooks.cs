@@ -1,18 +1,4 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MoreSlugcats;
-using RWCustom;
-using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-using Watcher;
-using static TriangleMesh;
-using Color = UnityEngine.Color;
-using Debug = UnityEngine.Debug;
-using Vector2 = UnityEngine.Vector2;
-
-namespace DressMySlugcat.Hooks
+﻿namespace DressMySlugcat.Hooks
 {
     public class PlayerGraphicsHooks
     {
@@ -94,8 +80,10 @@ namespace DressMySlugcat.Hooks
                     {
                         playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
 
-                        if (playerGraphics.player.slugcatStats.name != WatcherEnums.SlugcatStatsName.Watcher)
-                            sLeaser.sprites[i].shader = FShader.defaultShader;
+                        if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher || sLeaser.sprites.Length == 10)
+                            continue;
+
+                            sLeaser.sprites[i].shader = FShader.Basic;
                     }
 
                     if (playerGraphics.player.flipDirection == 1)
