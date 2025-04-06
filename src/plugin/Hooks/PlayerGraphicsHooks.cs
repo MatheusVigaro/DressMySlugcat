@@ -80,7 +80,7 @@ public class PlayerGraphicsHooks
                 {
                     playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
 
-                    if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher || sLeaser.sprites.Length == 10)
+                    if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher || i == 10)
                         continue;
 
                         sLeaser.sprites[i].shader = FShader.Basic;
