@@ -118,11 +118,7 @@ public static class SpriteDefinitions
             ExcludedSlugcatsSprites = new() { { "Watcher", "BODY" } }
         };
 
-        //Skip body watcher, contains a shader that don't allows sprites or colors, this is for the ability
-        if(!body.ExcludedSlugcatsSprites.ContainsKey("Watcher"))
-        {
-            AvailableSprites.Add(body);
-        }
+        AvailableSprites.Add(body);
 
         AvailableSprites.Add(new()
         {
