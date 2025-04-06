@@ -1,111 +1,108 @@
-﻿using BepInEx;
-using System.Security.Permissions;
-using System.Security;
-using System;
-using UnityEngine;
-using System.Collections.Generic;
-using DressMySlugcat.Hooks;
-using BepInEx.Logging;
+﻿using DressMySlugcat.Hooks;
 
-[module: UnverifiableCode]
-#pragma warning disable CS0618 // Type or member is obsolete
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
-#pragma warning restore CS0618 // Type or member is obsolete
+namespace DressMySlugcat;
 
-namespace DressMySlugcat
+[BepInDependency("henpemaz.rainmeadow", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
+[BepInPlugin(BaseName, "Dress My Slugcat", "2.1.2")]
+public class Plugin : BaseUnityPlugin
 {
-    [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin(BaseName, "Dress My Slugcat", "1.0.0")]
-    public partial class Plugin : BaseUnityPlugin
+    public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
+    public const string BaseName = "dressmyslugcat";
+
+    public static DMSOptions Options;
+
+    private bool IsInit;
+    private bool IsPostInit;
+
+    public static new ManualLogSource Logger;
+
+    public static void DebugLog(object ex) => Logger.LogInfo(ex);
+
+    public static void DebugWarning(object ex) => Logger.LogWarning(ex);
+
+    public static void DebugError(object ex) => Logger.LogError(ex);
+
+    public static void DebugFatal(object ex) => Logger.LogFatal(ex);
+
+    public void Awake()
     {
-        public static new ManualLogSource Logger { get; private set; } = null!;
+        Logger = base.Logger;
 
-        public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
-        public const string BaseName = "dressmyslugcat";
+        SpriteDefinitions.Init();
+    }
 
-        public static DMSOptions Options;
-
-        private bool IsInit;
-        private bool IsPostInit;
-
-        private void Awake()
+    public void OnEnable()
+    {
+        try
         {
-            SpriteDefinitions.Init();
+            DebugLog("Loading plugin DressMySlugcat");
+
+            On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
+            On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+
+            DebugLog("Plugin DressMySlugcat is loaded!");
         }
-
-        private void OnEnable()
+        catch (Exception ex)
         {
-            try
-            {
-                Logger = base.Logger;
-                Logger.LogInfo("Loading plugin DressMySlugcat");
-
-                On.RainWorld.OnModsEnabled += RainWorld_OnModsEnabled;
-                On.RainWorld.OnModsInit += RainWorld_OnModsInit;
-
-                Logger.LogInfo("Plugin DressMySlugcat is loaded!");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex);
-            }
+            DebugError(ex);
         }
+    }
 
-        private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
+    private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
+    {
+        orig(self);
+        try
         {
-            orig(self);
-            try
-            {
-                MachineConnector.SetRegisteredOI(BaseName, Options = DMSOptions.Instance);
-                
-                if (IsInit) return;
-                IsInit = true;
-                
-                On.Menu.MainMenu.ctor += MainMenu_ctor;
+            MachineConnector.SetRegisteredOI(BaseName, Options = DMSOptions.Instance);
+            
+            if (IsInit) return;
+            IsInit = true;
+            
+            On.Menu.MainMenu.ctor += MainMenu_ctor;
 
-                AtlasHooks.Init();
-                PlayerGraphicsHooks.Init();
-                MenuHooks.Init();
-                PauseMenuHooks.Init();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-            }
+            AtlasHooks.Init();
+            PlayerGraphicsHooks.Init();
+            MenuHooks.Init();
+            PauseMenuHooks.Init();
         }
-
-        private void RainWorld_OnModsEnabled(On.RainWorld.orig_OnModsEnabled orig, RainWorld self, ModManager.Mod[] newlyEnabledMods)
+        catch (Exception ex)
         {
-            orig(self, newlyEnabledMods);
-            try
-            {
-                SpriteSheet.UpdateDefaults();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-            }
+            DebugError(ex);
         }
+    }
 
-        public static List<SpriteSheet> SpriteSheets = new();
-
-        private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
+    private void RainWorld_OnModsEnabled(On.RainWorld.orig_OnModsEnabled orig, RainWorld self, ModManager.Mod[] newlyEnabledMods)
+    {
+        orig(self, newlyEnabledMods);
+        try
         {
-            orig(self, manager, showRegionSpecificBkg);
+            SpriteSheet.UpdateDefaults();
+        }
+        catch (Exception ex)
+        {
+            DebugError(ex);
+        }
+    }
 
-            try
-            {
-                if (IsPostInit) return;
-                IsPostInit = true;
+    public static List<SpriteSheet> SpriteSheets = new();
 
-                SpriteSheet.UpdateDefaults();
-                AtlasHooks.LoadAtlases();
-                SaveManager.Load();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogException(ex);
-            }
+    private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
+    {
+        orig(self, manager, showRegionSpecificBkg);
+
+        try
+        {
+            if (IsPostInit) return;
+            IsPostInit = true;
+
+            SpriteSheet.UpdateDefaults();
+            AtlasHooks.LoadAtlases();
+            SaveManager.Load();
+        }
+        catch (Exception ex)
+        {
+            DebugError(ex);
         }
     }
 }
