@@ -80,9 +80,25 @@ public class PlayerGraphicsHooks
                 {
                     playerGraphicsData.SpriteNames[i] = sLeaser.sprites[i].element.name;
 
-                    if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher || i == 10)
-                        continue;
+                    /* 
+                    Sprite 0 = BodyA
+                    Sprite 1 = HipsA
+                    Sprite 2 = Tail
+                    Sprite 3 = HeadA || B
+                    Sprite 4 = LegsA
+                    Spruite 5 = Arm
+                    Sprite 6 = Arm
+                    Sprite 7 = TerrainHand
+                    sprite 8 = TerrainHand
+                    sprite 9 = FaceA
+                    sprite 10 = Futile_White with shader Flatlight
+                    sprite 11 = pixel Mark of comunication
+                    */
+                    //BW - Magic numbers for vanilla sprites, avoid breaking other mod shaders by replacing the sprite shader to Basic...
+                    //Excluded sprite 10 due the FlatLight shader
+                    bool spritesToChangeShader = i == 0 || i == 1 || i == 2 || i == 3 || i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 11;
 
+                    if (spritesToChangeShader)
                         sLeaser.sprites[i].shader = FShader.Basic;
                 }
 
