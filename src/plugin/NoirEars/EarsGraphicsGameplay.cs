@@ -5,12 +5,12 @@ public partial class NoirEars
     public static void PlayerGraphicsOnUpdate(On.PlayerGraphics.orig_Update orig, PlayerGraphics self)
     {
         orig(self);
-        if (!self.player.TryGetEarsData(out var noirData)) return;
+        if (!self.player.TryGetEarsData(out var earsData)) return;
 
-        EarsUpdate(noirData);
-        MoveEars(noirData);
+        EarsUpdate(earsData);
+        MoveEars(earsData);
 
-        noirData.LastHeadRotation = self.head.connection.Rotation;
+        earsData.LastHeadRotation = self.head.connection.Rotation;
     }
 
     private static void MoveEars(EarsData earsData)
@@ -44,35 +44,35 @@ public partial class NoirEars
 
             if ((self.player.bodyMode == Player.BodyModeIndex.Crawl) && self.player.input[0].x == 0)
             {
-                var noirFlpDirNeg = earsData.FlipDirection * -1;
+                var earsFlpDirNeg = earsData.FlipDirection * -1;
                 if (earsData.FlipDirection == 1)
                 {
-                    earL[0].vel.x += 0.45f * noirFlpDirNeg;
-                    earL[1].vel.x += 0.45f * noirFlpDirNeg;
-                    earR[0].vel.x += 0.35f * noirFlpDirNeg;
-                    earR[1].vel.x += 0.35f * noirFlpDirNeg;
+                    earL[0].vel.x += 0.45f * earsFlpDirNeg;
+                    earL[1].vel.x += 0.45f * earsFlpDirNeg;
+                    earR[0].vel.x += 0.35f * earsFlpDirNeg;
+                    earR[1].vel.x += 0.35f * earsFlpDirNeg;
 
                     if (self.player.superLaunchJump >= 20)
                     {
-                        earL[0].vel.x += 0.5f * noirFlpDirNeg;
-                        earL[1].vel.x += 0.5f * noirFlpDirNeg;
-                        earR[0].vel.x += 0.5f * noirFlpDirNeg;
-                        earR[1].vel.x += 0.5f * noirFlpDirNeg;
+                        earL[0].vel.x += 0.5f * earsFlpDirNeg;
+                        earL[1].vel.x += 0.5f * earsFlpDirNeg;
+                        earR[0].vel.x += 0.5f * earsFlpDirNeg;
+                        earR[1].vel.x += 0.5f * earsFlpDirNeg;
                     }
                 }
                 else
                 {
-                    earL[0].vel.x += 0.35f * noirFlpDirNeg;
-                    earL[1].vel.x += 0.35f * noirFlpDirNeg;
-                    earR[0].vel.x += 0.45f * noirFlpDirNeg;
-                    earR[1].vel.x += 0.45f * noirFlpDirNeg;
+                    earL[0].vel.x += 0.35f * earsFlpDirNeg;
+                    earL[1].vel.x += 0.35f * earsFlpDirNeg;
+                    earR[0].vel.x += 0.45f * earsFlpDirNeg;
+                    earR[1].vel.x += 0.45f * earsFlpDirNeg;
 
                     if (self.player.superLaunchJump >= 20)
                     {
-                        earL[0].vel.x += 0.5f * noirFlpDirNeg;
-                        earL[1].vel.x += 0.5f * noirFlpDirNeg;
-                        earR[0].vel.x += 0.5f * noirFlpDirNeg;
-                        earR[1].vel.x += 0.5f * noirFlpDirNeg;
+                        earL[0].vel.x += 0.5f * earsFlpDirNeg;
+                        earL[1].vel.x += 0.5f * earsFlpDirNeg;
+                        earR[0].vel.x += 0.5f * earsFlpDirNeg;
+                        earR[1].vel.x += 0.5f * earsFlpDirNeg;
                     }
                 }
             }

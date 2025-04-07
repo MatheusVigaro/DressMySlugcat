@@ -66,24 +66,24 @@ public partial class NoirEars
 
     public static void PlayerGraphicsOnAddToContainer(On.PlayerGraphics.orig_AddToContainer orig, PlayerGraphics self, RoomCamera.SpriteLeaser sleaser, RoomCamera rcam, FContainer newcontatiner)
     {
-        if (!self.player.TryGetEarsData(out var noirData))
+        if (!self.player.TryGetEarsData(out var earsData))
         {
             orig(self, sleaser, rcam, newcontatiner);
             return;
         }
 
-        if (noirData.CallingAddToContainerFromOrigInitiateSprites) return;
+        if (earsData.CallingAddToContainerFromOrigInitiateSprites) return;
 
         orig(self, sleaser, rcam, newcontatiner);
 
         if (!rcam.game.DEBUGMODE)
         {
             var container = rcam.ReturnFContainer("Midground");
-            container.AddChild(sleaser.sprites[noirData.EarSpr[0]]);
-            container.AddChild(sleaser.sprites[noirData.EarSpr[1]]);
+            container.AddChild(sleaser.sprites[earsData.EarSpr[0]]);
+            container.AddChild(sleaser.sprites[earsData.EarSpr[1]]);
 
-            sleaser.sprites[noirData.EarSpr[0]].MoveInFrontOfOtherNode(sleaser.sprites[HeadSpr]);
-            sleaser.sprites[noirData.EarSpr[1]].MoveInFrontOfOtherNode(sleaser.sprites[HeadSpr]);
+            sleaser.sprites[earsData.EarSpr[0]].MoveInFrontOfOtherNode(sleaser.sprites[HeadSpr]);
+            sleaser.sprites[earsData.EarSpr[1]].MoveInFrontOfOtherNode(sleaser.sprites[HeadSpr]);
         }
     }
 
