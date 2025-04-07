@@ -1,4 +1,6 @@
-﻿namespace DressMySlugcat.Hooks;
+﻿using Unity.Mathematics;
+
+namespace DressMySlugcat.Hooks;
 
 public class PlayerGraphicsHooks
 {
@@ -98,8 +100,32 @@ public class PlayerGraphicsHooks
                     //Excluded sprite 10 due the FlatLight shader
                     bool spritesToChangeShader = i == 0 || i == 1 || i == 2 || i == 3 || i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 11;
 
-                    if (spritesToChangeShader)
+                    if (playerGraphics.player.slugcatStats.name != WatcherEnums.SlugcatStatsName.Watcher && spritesToChangeShader)
                         sLeaser.sprites[i].shader = FShader.Basic;
+
+                    //BW - Changing the Watcher color body sprite to Hips color sprite
+                    //Hidding the arm sprites when the Watcher is on Camo mode, sprites changed 5, 6, 7, 8
+                    if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher)
+                    {
+                        sLeaser.sprites[0].color = sLeaser.sprites[1].color;
+
+                        float camoProgress = playerGraphics.player.camoProgress;
+                        bool isCamo = playerGraphics.player.isCamo;
+
+                        if (camoProgress < 0.3f)
+                        {
+                            for (int armSprites = 5; armSprites <= 8; armSprites++)
+                                sLeaser.sprites[armSprites].alpha = 1f;
+                        }
+
+                        if (camoProgress > 0.1f)
+                        {
+                            float tick = Mathf.InverseLerp(0.3f, 1f, camoProgress);
+                            float targetAlpha = isCamo ? 0f : 1f;
+                            for (int armSprites = 5; armSprites <= 8; armSprites++)
+                                sLeaser.sprites[armSprites].alpha = Mathf.Lerp(sLeaser.sprites[armSprites].alpha, targetAlpha, tick);
+                        }
+                    }
                 }
 
                 if (playerGraphics.player.flipDirection == 1)
