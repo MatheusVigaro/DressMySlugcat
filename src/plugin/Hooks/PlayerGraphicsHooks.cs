@@ -281,6 +281,12 @@ public class PlayerGraphicsHooks
                         playerGraphicsData.SpriteNames[i] = "Face" + (sLeaser.sprites[i].scaleX < 0f ? "C" : "D") + playerGraphicsData.SpriteNames[i].Substring(5);
                     }
 
+                    if (playerGraphicsData.IsWatcher && playerGraphicsData.SpriteNames[i].StartsWith("BodyA"))
+                    {
+                        var bodyColor = sLeaser.sprites[1].color;
+                        sLeaser.sprites[0].color = bodyColor;
+                    }
+
                     if (sLeaser.sprites[i] != null)
                     {
                         string spriteName = playerGraphicsData.SpriteNames[i];
@@ -629,17 +635,12 @@ public class PlayerGraphicsHooks
                     {
                         var specificSprite = sprite;
 
-                        var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.GenericName == sprite && ((self.player.playerState.isPup && x.Slugcat == "Slugpup") || x.Slugcat == name));
+                        var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.GenericName == sprite && ((self.player.playerState.isPup && x.Slugcat == "Slugpup") || (x.Slugcat == name && !self.player.playerState.isPup)));
                         if (specificReplacement != null)
                         {
                             specificSprite = specificReplacement.SpecificName;
                         }
 
-                            var specificReplacement = definition.SlugcatSpecificReplacements.FirstOrDefault(x => x.GenericName == sprite && ((self.player.playerState.isPup && x.Slugcat == "Slugpup") || (x.Slugcat == name && !self.player.playerState.isPup)));
-                            if (specificReplacement != null)
-                            {
-                                specificSprite = specificReplacement.SpecificName;
-                            }
                         if (customSprite.SpriteSheetID != SpriteSheet.DefaultName)
                         {
                             playerGraphicsData.SpriteReplacements[specificSprite] = sheet.Elements[sprite];
