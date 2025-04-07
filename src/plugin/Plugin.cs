@@ -65,6 +65,8 @@ public class Plugin : BaseUnityPlugin
             PlayerGraphicsHooks.Init();
             MenuHooks.Init();
             PauseMenuHooks.Init();
+            NoirEars.NoirEars.LoadAtlases();
+            NoirEars.NoirEars.ApplyHooks();
         }
         catch (Exception ex)
         {
