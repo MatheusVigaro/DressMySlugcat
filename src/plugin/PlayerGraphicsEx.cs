@@ -8,6 +8,7 @@ public class PlayerGraphicsEx
     public Dictionary<string, Color> SpriteColors = new();
     public string[] SpriteNames;
     public bool IsArtificer;
+    public bool IsWatcher;
     public bool ScheduleForRecreation;
     public Customization Customization;
     public TriangleMesh tailRef;

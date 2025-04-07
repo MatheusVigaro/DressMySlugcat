@@ -184,8 +184,19 @@ public class PlayerGraphicsDummy
         else
         {
             Sprites[0].element = Futile.atlasManager.GetElementWithName("BodyA");
+        }   
+
+        //BW- Watcher exception for colors since body can't be selected
+        if (customization.Slugcat == "Watcher")
+        {
+            customSprite = customization.CustomSprite("HIPS");
+
+            Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "HIPS");
         }
-        Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "BODY");
+        else
+        {
+            Sprites[0].color = customSprite?.Color != default && customSprite?.Color.a != 0 ? customSprite.Color : Utils.DefaultColorForSprite(owner.selectedSlugcat, "BODY");
+        }
 
         customSprite = customization.CustomSprite("HIPS");
         if (customSprite?.SpriteSheet != null && customSprite.SpriteSheet.Elements.ContainsKey("HipsA"))

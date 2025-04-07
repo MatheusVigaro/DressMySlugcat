@@ -67,10 +67,6 @@
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
 		<Private>False</Private>
     </Reference>
-    <Reference Include="Rain Meadow">
-      <HintPath>..\..\..\..\..\Downloads\rainmeadow.1.3.0\rainmeadow\plugins\Rain Meadow.dll</HintPath>
-		<Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Mathematics">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>

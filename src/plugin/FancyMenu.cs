@@ -247,14 +247,7 @@ public class FancyMenu : Dialog, SelectOneButton.SelectOneButtonOwner
         customizeSpriteButtons.Clear();
 
         var internalTopLeft = new Vector2(leftAnchor + 190f, 710f);
-        var availableSprites = SpriteDefinitions.AvailableSprites
-    .Where(x =>
-        // que no esté excluido para este slugcat
-        !x.ExcludedSlugcatsSprites.ContainsKey(selectedSlugcat)
-        // y siga cumpliendo las reglas de inclusión normales
-        && (x.Slugcats.Count == 0 || x.Slugcats.Contains(selectedSlugcat))
-    )
-    .ToList();
+        var availableSprites = SpriteDefinitions.AvailableSprites.Where(x => !x.ExcludedSlugcatsSprites.ContainsKey(selectedSlugcat) && (x.Slugcats.Count == 0 || x.Slugcats.Contains(selectedSlugcat))).ToList();
 
         for (var i = 0; i < availableSprites.Count; i++)
         {
