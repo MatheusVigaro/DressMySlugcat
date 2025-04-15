@@ -9,6 +9,7 @@ public class PlayerGraphicsEx
     public string[] SpriteNames;
     public bool IsArtificer;
     public bool IsWatcher;
+    public bool IsPupCached;
     public bool ScheduleForRecreation;
     public Customization Customization;
     public TriangleMesh tailRef;

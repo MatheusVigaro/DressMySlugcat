@@ -294,7 +294,7 @@ public class PlayerGraphicsHooks
         {
             if (sLeaser.drawableObject is PlayerGraphics playerGraphics && PlayerGraphicsData.TryGetValue(playerGraphics, out var playerGraphicsData) && playerGraphicsData != null && playerGraphicsData.SpriteReplacements != null && sLeaser.sprites != null && playerGraphicsData.SpriteNames != null)
             {
-                if (playerGraphicsData.ScheduleForRecreation)
+                if (playerGraphicsData.ScheduleForRecreation || playerGraphicsData.IsPupCached != playerGraphics.player.playerState.isPup)
                 {
                     playerGraphicsData = InitiateCustomGraphics(playerGraphics, sLeaser, rCam);
                 }
@@ -701,6 +701,10 @@ public class PlayerGraphicsHooks
         ReplaceTailGraphics(self, sLeaser, rCam, false); //WAIT THIS IS FOR THE GRAPHICS NOT THE SIZE...
 
         self.ApplyPalette(sLeaser, rCam, rCam.currentPalette);
+
+        // Pupifier compatibility
+        playerGraphicsData.IsPupCached = self.player.playerState.isPup;
+
         return playerGraphicsData;
     }
 
