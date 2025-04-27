@@ -23,25 +23,24 @@ public class DMSOptions : OptionInterface
     public override void Initialize()
     {
         var opTab = new OpTab(this, "Settings");
-        Tabs = new[] { opTab };
+        Tabs = [opTab];
 
-        elements = new UIelement[] {
+        elements = 
+        [
             new OpCheckBox(LoadInactiveMods, 10, 540),
             new OpLabel(45f, 540f, "Load Inactive Mods"),
 
-            this.mpBox = new OpCheckBox(DefaultMeadowSkins, 10, 500) { description = "Requires the Rain Meadow mod. If disabled, all other players skins are treated as player 1" },
+            mpBox = new OpCheckBox(DefaultMeadowSkins, 10, 500) { description = "Requires the Rain Meadow mod. If disabled, all other players skins are treated as player 1" },
             new OpLabel(45f, 500f, "Default skins for Rain Meadow players")
-        };
+        ];
         opTab.AddItems(elements);
     }
-
 
     public override void Update()
     {
         if (MeadowCompatibility.meadowEnabled)
-            this.mpBox.greyedOut = false;
+            mpBox.greyedOut = false;
         else
-            this.mpBox.greyedOut = true;
+            mpBox.greyedOut = true;
     }
-
 }

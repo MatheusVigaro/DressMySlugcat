@@ -8,20 +8,20 @@ public class SpriteSheet
 
     public string Prefix;
 
-    public Dictionary<string, FAtlasElement> Elements = new();
-    public Dictionary<string, FAtlasElement> LeftElements = new();
-    public Dictionary<string, FAtlasElement> RightElements = new();
-    public Dictionary<string, FAtlasElement> TrimmedElements = new();
-    public List<FAtlas> Atlases = new();
-    public List<string> AvailableSpriteNames = new();
-    public List<string> AvailableAsymmetrySpriteNames = new();
-    public Dictionary<string, Color> DefaultColors = new();
+    public Dictionary<string, FAtlasElement> Elements = [];
+    public Dictionary<string, FAtlasElement> LeftElements = [];
+    public Dictionary<string, FAtlasElement> RightElements = [];
+    public Dictionary<string, FAtlasElement> TrimmedElements = [];
+    public List<FAtlas> Atlases = [];
+    public List<string> AvailableSpriteNames = [];
+    public List<string> AvailableAsymmetrySpriteNames = [];
+    public Dictionary<string, Color> DefaultColors = [];
     public CustomTail DefaultTail = new();
 
     public List<SpriteDefinitions.AvailableSprite> AvailableSprites => SpriteDefinitions.AvailableSprites.Where(x => AvailableSpriteNames.Contains(x.Name)).ToList();
     public bool HasAsymmetry(string name) => AvailableAsymmetrySpriteNames.Contains(name);
 
-    public static SpriteSheet Get(string id) => Plugin.SpriteSheets.FirstOrDefault(x => x.ID == id);
+    public static SpriteSheet Get(string id) => SpriteSheets.FirstOrDefault(x => x.ID == id);
     public static SpriteSheet GetDefault() => Get(DefaultName);
     public static SpriteSheet GetEmpty() => Get(EmptyName);
 
@@ -75,7 +75,7 @@ public class SpriteSheet
             if (required.All(sprite => LeftElements.ContainsKey(sprite) && RightElements.ContainsKey(sprite)))
             {
                 AvailableAsymmetrySpriteNames.Add(group.Name);
-            }   
+            }
         }
     }
 
@@ -139,7 +139,7 @@ public class SpriteSheet
             var texture = new Texture2D(1, 1);
             texture.SetPixel(0, 0, Color.clear);
             texture.Apply();
-            EmptyAtlas = Futile.atlasManager.LoadAtlasFromTexture(Plugin.BaseName + "__emptyatlas", texture, false);
+            EmptyAtlas = Futile.atlasManager.LoadAtlasFromTexture(BaseName + "__emptyatlas", texture, false);
             EmptyElement = EmptyAtlas.elements[0];
         }
 
@@ -170,7 +170,7 @@ public class SpriteSheet
                 Name = "Default",
                 Author = "DressMySlugcat"
             };
-            Plugin.SpriteSheets.Insert(0, defaults);
+            SpriteSheets.Insert(0, defaults);
         }
 
         var empty = GetEmpty();
@@ -182,7 +182,7 @@ public class SpriteSheet
                 Name = "Empty",
                 Author = "DressMySlugcat"
             };
-            Plugin.SpriteSheets.Insert(1, empty);
+            SpriteSheets.Insert(1, empty);
         }
 
         foreach (var definition in SpriteDefinitions.AvailableSprites)

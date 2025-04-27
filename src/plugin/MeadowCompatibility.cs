@@ -23,7 +23,7 @@ public class MeadowCompatibility
     public static bool CheckMS()
     {
         if (IsMeadowSession())
-            return (OnlineManager.lobby != null);
+            return OnlineManager.lobby != null;
         return false;
     }
 
@@ -37,7 +37,7 @@ public class MeadowCompatibility
     public static bool CheckIsNotSelf(Player self)
     {
         if (IsMeadowSession())
-            return (!self.IsLocal());
+            return !self.IsLocal();
         return false;
     }
 }

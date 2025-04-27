@@ -12,7 +12,7 @@ public class CustomSprite
     {
         get
         {
-            if (!ColorUtility.TryParseHtmlString(ColorHex, out var color) || color.r == 0 && color.g == 0 && color.b == 0)
+            if (!ColorUtility.TryParseHtmlString(ColorHex, out var color) || (color.r == 0 && color.g == 0 && color.b == 0))
             {
                 return default;
             }

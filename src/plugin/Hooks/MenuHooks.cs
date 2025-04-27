@@ -13,23 +13,22 @@ public class MenuHooks
     {
         var cursor = new ILCursor(il);
 
-
         try
         {
             if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchLdarg(0),
-                                                     i => i.MatchLdfld<ProcessManager>("oldProcess"),
+                                                     i => i.MatchLdfld<ProcessManager>(nameof(ProcessManager.oldProcess)),
                                                      i => i.MatchLdarg(0),
-                                                     i => i.MatchLdfld<ProcessManager>("currentMainLoop"),
-                                                     i => i.MatchCallOrCallvirt<MainLoopProcess>("CommunicateWithUpcomingProcess")))
+                                                     i => i.MatchLdfld<ProcessManager>(nameof(ProcessManager.currentMainLoop)),
+                                                     i => i.MatchCallOrCallvirt<MainLoopProcess>(nameof(MainLoopProcess.CommunicateWithUpcomingProcess))))
             {
                 throw new Exception("Failed to match IL for ProcessManager_PostSwitchMainProcess!");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for ProcessManager_PostSwitchMainProcess!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for ProcessManager_PostSwitchMainProcess!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
 
@@ -58,13 +57,13 @@ public class MenuHooks
             }
 
             cursor.MoveAfterLabels();
-            cursor.EmitDelegate((int _) => 12); //BENSON WISHES FOR MORE THAN 9...
+            cursor.EmitDelegate((int _) => 12);
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for MainMenu_ctor1!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for MainMenu_ctor1!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
     }
@@ -74,10 +73,11 @@ public class MenuHooks
         orig(self, manager, showRegionSpecificBkg);
 
         float buttonWidth = Menu.MainMenu.GetButtonWidth(self.CurrLang);
-        Vector2 pos = new Vector2(683f - buttonWidth / 2f, 0f);
-        Vector2 size = new Vector2(buttonWidth, 30f);
-        
-        self.AddMainMenuButton(new SimpleButton(self, self.pages[0], "GET FANCY", "GETFANCY", pos, size), () => {
+        Vector2 pos = new(683f - (buttonWidth / 2f), 0f);
+        Vector2 size = new(buttonWidth, 30f);
+
+        self.AddMainMenuButton(new SimpleButton(self, self.pages[0], "GET FANCY", "GETFANCY", pos, size), () =>
+        {
             manager.RequestMainProcessSwitch(Plugin.FancyMenu);
             self.PlaySound(SoundID.MENU_Switch_Page_In);
         }, 50);

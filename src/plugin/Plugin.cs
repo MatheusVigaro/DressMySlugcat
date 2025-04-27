@@ -7,7 +7,7 @@ namespace DressMySlugcat;
 [BepInPlugin(BaseName, "Dress My Slugcat", "2.1.3")]
 public class Plugin : BaseUnityPlugin
 {
-    public static ProcessManager.ProcessID FancyMenu => new ProcessManager.ProcessID("FancyMenu", register: true);
+    public static ProcessManager.ProcessID FancyMenu => new("FancyMenu", register: true);
     public const string BaseName = "dressmyslugcat";
 
     public static DMSOptions Options;
@@ -23,7 +23,7 @@ public class Plugin : BaseUnityPlugin
 
     public static void DebugError(object ex) => Logger.LogError(ex);
 
-    public static void DebugFatal(object ex) => Logger.LogFatal(ex);
+    //public static void DebugFatal(object ex) => Logger.LogFatal(ex);
 
     public void Awake()
     {
@@ -32,6 +32,7 @@ public class Plugin : BaseUnityPlugin
         SpriteDefinitions.Init();
     }
 
+    [Obsolete]
     public void OnEnable()
     {
         try
@@ -49,16 +50,17 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
+    [Obsolete]
     private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
     {
         orig(self);
         try
         {
             MachineConnector.SetRegisteredOI(BaseName, Options = DMSOptions.Instance);
-            
+
             if (IsInit) return;
             IsInit = true;
-            
+
             On.Menu.MainMenu.ctor += MainMenu_ctor;
 
             AtlasHooks.Init();
@@ -85,8 +87,9 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    public static List<SpriteSheet> SpriteSheets = new();
+    public static List<SpriteSheet> SpriteSheets = [];
 
+    [Obsolete]
     private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
     {
         orig(self, manager, showRegionSpecificBkg);

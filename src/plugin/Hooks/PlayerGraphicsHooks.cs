@@ -1,6 +1,4 @@
-﻿using Unity.Mathematics;
-
-namespace DressMySlugcat.Hooks;
+﻿namespace DressMySlugcat.Hooks;
 
 public class PlayerGraphicsHooks
 {
@@ -66,9 +64,9 @@ public class PlayerGraphicsHooks
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for PlayerGraphics_DrawSprites!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for PlayerGraphics_DrawSprites!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
 
@@ -88,7 +86,7 @@ public class PlayerGraphicsHooks
                     Sprite 2 = Tail
                     Sprite 3 = HeadA || B
                     Sprite 4 = LegsA
-                    Spruite 5 = Arm
+                    Sprite 5 = Arm
                     Sprite 6 = Arm
                     Sprite 7 = TerrainHand
                     sprite 8 = TerrainHand
@@ -96,9 +94,10 @@ public class PlayerGraphicsHooks
                     sprite 10 = Futile_White with shader Flatlight
                     sprite 11 = pixel Mark of comunication
                     */
+
                     //BW - Magic numbers for vanilla sprites, avoid breaking other mod shaders by replacing the sprite shader to Basic...
                     //Excluded sprite 10 due the FlatLight shader
-                    bool spritesToChangeShader = i == 0 || i == 1 || i == 2 || i == 3 || i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 11;
+                    bool spritesToChangeShader = i is 0 or 1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 11;
 
                     if (playerGraphics.player.slugcatStats.name != WatcherEnums.SlugcatStatsName.Watcher && spritesToChangeShader)
                         sLeaser.sprites[i].shader = FShader.Basic;
@@ -138,7 +137,7 @@ public class PlayerGraphicsHooks
                     sLeaser.sprites[5].MoveBehindOtherNode(sLeaser.sprites[0]);
                     sLeaser.sprites[6].MoveBehindOtherNode(sLeaser.sprites[3]);
                 }
-                
+
             }
         });
     }
@@ -199,6 +198,7 @@ public class PlayerGraphicsHooks
                 {
                     return false;
                 }*/
+
                 //-WW JUST STOP IF WE AREN'T CUSTOM
                 if (!playerGraphicsData.Customization.CustomTail.IsCustom)
                 {
@@ -209,8 +209,8 @@ public class PlayerGraphicsHooks
                     ReplaceTailGraphics(self, sLeaser, rCam, uvMapped);
 
 
-                float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f);
-                float num3 = 1f - 0.2f * self.malnourished;
+                float num = 0.5f + (0.5f * Mathf.Sin(Mathf.Lerp(self.lastBreath, self.breath, timeStacker) * (float)Math.PI * 2f));
+                float num3 = 1f - (0.2f * self.malnourished);
                 float num4 = self.tail[0].rad;
 
                 Vector2 val = Vector2.Lerp(self.drawPositions[0, 1], self.drawPositions[0, 0], timeStacker);
@@ -220,7 +220,7 @@ public class PlayerGraphicsHooks
                     val += Custom.DirVec(val2, val) * Mathf.Lerp(-1f, 1f, num) * Mathf.InverseLerp(0.5f, 1f, self.player.aerobicLevel) * 0.5f;
 
                 }
-                Vector2 val4 = (val2 * 3f + val) / 4f;
+                Vector2 val4 = ((val2 * 3f) + val) / 4f;
 
 
                 for (int i = 0; i < self.tail.Length; i++)
@@ -234,16 +234,16 @@ public class PlayerGraphicsHooks
                     {
                         num5 = 0f;
                     }
-                    tailSprite.MoveVertice(i * 4, val4 - val7 * num4 * num3 + normalized * num5 - camPos);
-                    tailSprite.MoveVertice(i * 4 + 1, val4 + val7 * num4 * num3 + normalized * num5 - camPos);
-                    if (i < self.tail.Length - 1 && i * 4 + 3 < tailSprite.vertices.Length)
+                    tailSprite.MoveVertice(i * 4, val4 - (val7 * num4 * num3) + (normalized * num5) - camPos);
+                    tailSprite.MoveVertice((i * 4) + 1, val4 + (val7 * num4 * num3) + (normalized * num5) - camPos);
+                    if (i < self.tail.Length - 1 && (i * 4) + 3 < tailSprite.vertices.Length)
                     {
-                        tailSprite.MoveVertice(i * 4 + 2, val5 - val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
-                        tailSprite.MoveVertice(i * 4 + 3, val5 + val7 * self.tail[i].StretchedRad * num3 - normalized * num5 - camPos);
+                        tailSprite.MoveVertice((i * 4) + 2, val5 - (val7 * self.tail[i].StretchedRad * num3) - (normalized * num5) - camPos);
+                        tailSprite.MoveVertice((i * 4) + 3, val5 + (val7 * self.tail[i].StretchedRad * num3) - (normalized * num5) - camPos);
                     }
                     else
                     {
-                        tailSprite.MoveVertice(i * 4 + 2, val5 - camPos);
+                        tailSprite.MoveVertice((i * 4) + 2, val5 - camPos);
                     }
                     num4 = self.tail[i].StretchedRad;
                     val4 = val5;
@@ -255,9 +255,9 @@ public class PlayerGraphicsHooks
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for PlayerGraphics_DrawSpritesTail!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for PlayerGraphics_DrawSpritesTail!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
     }
@@ -269,21 +269,21 @@ public class PlayerGraphicsHooks
         try
         {
             if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdarg(0),
-                                                    i => i.MatchLdfld<RoomCamera.SpriteLeaser>("drawableObject"),
+                                                    i => i.MatchLdfld<RoomCamera.SpriteLeaser>(nameof(RoomCamera.SpriteLeaser.drawableObject)),
                                                     i => i.MatchLdarg(0),
                                                     i => i.MatchLdarg(2),
                                                     i => i.MatchLdarg(1),
                                                     i => i.MatchLdarg(3),
-                                                    i => i.MatchCallOrCallvirt<IDrawable>("DrawSprites")))
+                                                    i => i.MatchCallOrCallvirt<IDrawable>(nameof(IDrawable.DrawSprites))))
             {
                 throw new Exception("Failed to match IL for SpriteLeaser_Update!");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for SpriteLeaser_Update!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for SpriteLeaser_Update!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
 
@@ -349,11 +349,11 @@ public class PlayerGraphicsHooks
                             var legsPos = Vector2.Lerp(playerGraphics.drawPositions[1, 1], playerGraphics.drawPositions[1, 0], timeStacker);
                             var bodyAngle = Custom.AimFromOneVectorToAnother(legsPos, headPos);
 
-                            if (bodyAngle < -30 && bodyAngle > -150)
+                            if (bodyAngle is < (-30) and > (-150))
                             {
                                 playerGraphicsData.LeftSpriteReplacements.TryGetValue(spriteName, out replacement);
                             }
-                            else if (bodyAngle > 30 && bodyAngle < 150)
+                            else if (bodyAngle is > 30 and < 150)
                             {
                                 playerGraphicsData.RightSpriteReplacements.TryGetValue(spriteName, out replacement);
                             }
@@ -405,7 +405,7 @@ public class PlayerGraphicsHooks
                         {
                             if (playerGraphics.malnourished > 0f)
                             {
-                                float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
+                                float num = playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f);
                                 customColor = Color.Lerp(customColor, Color.gray, 0.4f * num);
                             }
 
@@ -421,7 +421,7 @@ public class PlayerGraphicsHooks
                     var color = playerGraphicsData.tailColor;
                     if (playerGraphics.malnourished > 0f)
                     {
-                        float num = (playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f));
+                        float num = playerGraphics.player.Malnourished ? playerGraphics.malnourished : Mathf.Max(0f, playerGraphics.malnourished - 0.005f);
                         color = Color.Lerp(color, Color.gray, 0.4f * num);
                     }
 
@@ -480,11 +480,9 @@ public class PlayerGraphicsHooks
     public static float GetSegmentRadius(int segment, int length, float wideness, float roundness, int offset, bool pup)
     {
         int i = segment;
-        float segRad = Mathf.Lerp(6f, 1f, Mathf.Pow((float)(i + 1) / (float)length, wideness)) * (1f + Mathf.Sin((float)i / (float)length * (float)Math.PI) * roundness);
+        float segRad = Mathf.Lerp(6f, 1f, Mathf.Pow((i + 1) / (float)length, wideness)) * (1f + (Mathf.Sin(i / (float)length * (float)Math.PI) * roundness));
         return segRad;
-        //Debug.LogFormat("RAD: " + segRad);
     }
-
 
     public static PlayerGraphicsEx InitiateCustomGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
@@ -561,7 +559,7 @@ public class PlayerGraphicsHooks
             for (var i = 0; i < length; i++)
             {
                 float segRad = GetSegmentRadius(i, length, wideness, roundness, 0, pup);
-                self.tail[i] = new TailSegment(self, segRad, (float)((i == 0) ? 4 : 7) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, true);
+                self.tail[i] = new TailSegment(self, segRad, ((i == 0) ? 4 : 7) * (pup ? 0.5f : 1f), (i > 0) ? self.tail[i - 1] : null, 0.85f, 1f, (i == 0) ? 1f : 0.5f, true);
                 //Debug.LogFormat("RAD: " + segRad);
             }
 
@@ -624,7 +622,7 @@ public class PlayerGraphicsHooks
         var bp = self.bodyParts.ToList();
         bp.RemoveAll(x => x is TailSegment);
         bp.AddRange(self.tail);
-        self.bodyParts = bp.ToArray();
+        self.bodyParts = [.. bp];
 
         playerGraphicsData.tailSegmentRef = self.tail;
 
@@ -720,7 +718,7 @@ public class PlayerGraphicsHooks
             {
                 //sLeaser.sprites[2].RemoveFromContainer();
 
-                Triangle[] triangles = new Triangle[(self.tail.Length - 1) * 4 + 1];
+                Triangle[] triangles = new Triangle[((self.tail.Length - 1) * 4) + 1];
                 for (int i = 0; i < self.tail.Length - 1; i++)
                 {
                     int num = i * 4;
@@ -729,8 +727,8 @@ public class PlayerGraphicsHooks
                         triangles[num + j] = new Triangle(num + j, num + j + 1, num + j + 2);
                     }
                 }
-                triangles[(self.tail.Length - 1) * 4] = new Triangle((self.tail.Length - 1) * 4, (self.tail.Length - 1) * 4 + 1, (self.tail.Length - 1) * 4 + 2);
-                
+                triangles[(self.tail.Length - 1) * 4] = new Triangle((self.tail.Length - 1) * 4, ((self.tail.Length - 1) * 4) + 1, ((self.tail.Length - 1) * 4) + 2);
+
                 //tail = new TriangleMesh("Futile_White", array, tail.customColor, false);
                 //sLeaser.sprites[2] = tail;
                 playerGraphicsData.tailRef = tail;
@@ -768,7 +766,7 @@ public class PlayerGraphicsHooks
                         tail.verticeColors[k] = tail._alphaColor;
                     }
                 }
-                tail.Init(FFacetType.Triangle, tail.element, triangles.Length);;
+                tail.Init(FFacetType.Triangle, tail.element, triangles.Length); ;
 
                 //rCam.ReturnFContainer("Midground").AddChild(tail);
                 //tail.MoveBehindOtherNode(sLeaser.sprites[4]);
@@ -792,7 +790,7 @@ public class PlayerGraphicsHooks
     private static void MapTailUV(PlayerGraphics self, PlayerGraphicsEx playerGraphicsData, TriangleMesh tail)
     {
         const float ASYM_SCALE_FAC = 3.0f; //-FB asymmetric tail is 3 times as wide as normal
-        
+
         float uvYOffset = 0.0f;
         float scaleFac = 1.0f;
 
@@ -820,7 +818,7 @@ public class PlayerGraphicsHooks
 
         for (int vertex = tail.vertices.Length - 1; vertex >= 0; vertex--)
         {
-            float interpolation = (vertex / 2.0f) / (tail.vertices.Length / 2.0f);
+            float interpolation = vertex / 2.0f / (tail.vertices.Length / 2.0f);
             Vector2 uvInterpolation;
 
             // Even vertexes

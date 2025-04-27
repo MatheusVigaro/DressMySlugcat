@@ -2,10 +2,10 @@
 
 public class PlayerGraphicsEx
 {
-    public Dictionary<string, FAtlasElement> SpriteReplacements = new();
-    public Dictionary<string, FAtlasElement> LeftSpriteReplacements = new();
-    public Dictionary<string, FAtlasElement> RightSpriteReplacements = new();
-    public Dictionary<string, Color> SpriteColors = new();
+    public Dictionary<string, FAtlasElement> SpriteReplacements = [];
+    public Dictionary<string, FAtlasElement> LeftSpriteReplacements = [];
+    public Dictionary<string, FAtlasElement> RightSpriteReplacements = [];
+    public Dictionary<string, Color> SpriteColors = [];
     public string[] SpriteNames;
     public bool IsArtificer;
     public bool IsWatcher;

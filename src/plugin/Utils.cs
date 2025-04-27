@@ -4,21 +4,12 @@ public static class Utils
 {
     public static Color DefaultColorForSprite(string slugcat, string sprite)
     {
-        switch (sprite)
+        return sprite switch
         {
-            case "FACE":
-                return DefaultEyeColor(slugcat);
-            case "HEAD":
-            case "BODY":
-            case "ARMS":
-            case "HIPS":
-            case "LEGS":
-            case "TAIL":
-            case "PIXEL":
-                return DefaultBodyColor(slugcat);
-            default:
-                return DefaultExtraColor(slugcat);
-        }
+            "FACE" => DefaultEyeColor(slugcat),
+            "HEAD" or "BODY" or "ARMS" or "HIPS" or "LEGS" or "TAIL" or "PIXEL" => DefaultBodyColor(slugcat),
+            _ => DefaultExtraColor(slugcat),
+        };
     }
 
     public static Color DefaultBodyColor(string slugcat)
@@ -67,7 +58,7 @@ public static class Utils
     {
         if (!ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcat, true, out var name) || name == null)
         {
-            return new();
+            return [];
         }
 
         return PlayerGraphics.DefaultBodyPartColorHex(name as SlugcatStats.Name);
@@ -79,17 +70,16 @@ public static class Utils
     {
         if (Path.IsPathRooted(path))
         {
-            return (directories ? Directory.GetDirectories(path) : Directory.GetFiles(path));
+            return directories ? Directory.GetDirectories(path) : Directory.GetFiles(path);
         }
 
         if (!Plugin.Options?.LoadInactiveMods?.Value ?? false)
         {
             return AssetManager.ListDirectory(path, directories, includeAll);
         }
-        List<string> list = new List<string>();
-        List<string> list2 = new List<string>();
-        List<string> list3 = new List<string>();
-        list3.Add(Path.Combine(Custom.RootFolderDirectory(), "mergedmods"));
+        List<string> list = [];
+        List<string> list2 = [];
+        List<string> list3 = [Path.Combine(Custom.RootFolderDirectory(), "mergedmods")];
         for (int i = 0; i < ModManager.InstalledMods.Count; i++)
         {
             list3.Add(ModManager.InstalledMods[i].path);
@@ -104,7 +94,7 @@ public static class Utils
                 continue;
             }
 
-            string[] array = (directories ? Directory.GetDirectories(path2) : Directory.GetFiles(path2));
+            string[] array = directories ? Directory.GetDirectories(path2) : Directory.GetFiles(path2);
             for (int j = 0; j < array.Length; j++)
             {
                 string text = array[j].ToLowerInvariant();
@@ -120,6 +110,6 @@ public static class Utils
             }
         }
 
-        return list.ToArray();
+        return [.. list];
     }
 }

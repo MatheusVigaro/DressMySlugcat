@@ -4,7 +4,7 @@
 public class Customization
 {
     public CustomTail CustomTail = new();
-    public List<CustomSprite> CustomSprites = new();
+    public List<CustomSprite> CustomSprites = [];
 
     public string Slugcat;
     public int PlayerNumber;
@@ -31,11 +31,12 @@ public class Customization
     {
         var formatter = new BinaryFormatter();
 
-        using (var ms = new MemoryStream()) {
-            formatter.Serialize(ms, this);
-            ms.Seek(0, SeekOrigin.Begin);
-            return (Customization)formatter.Deserialize(ms);
-        }
+        using var ms = new MemoryStream();
+
+        formatter.Serialize(ms, this);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        return (Customization)formatter.Deserialize(ms);
     }
 
     public bool Matches(string slugcatName, int playerNumber = 0) => slugcatName == Slugcat && (playerNumber == PlayerNumber);
@@ -121,7 +122,7 @@ public class Customization
             customization.CustomTail.Color = Utils.DefaultBodyColor(slugcatName);
             return;
         }
-        
+
         customization.CustomTail.Length = defaults.CustomTail.Length;
         customization.CustomTail.Wideness = defaults.CustomTail.Wideness;
         customization.CustomTail.Roundness = defaults.CustomTail.Roundness;
@@ -145,14 +146,5 @@ public class Customization
     public bool Enforce;
     [Obsolete("Use Customization.CustomSprites instead")]
     public bool ForceWhiteColor;
-
-    [Obsolete("Use Customization.CustomSprites instead")]
-    public SpriteSheet SpriteSheet => SpriteSheet.Get(SpriteSheetID);
-
-    [Obsolete("Use Customization.CustomSprites instead")]
-    public SpriteDefinitions.AvailableSprite SpriteDefinition => SpriteDefinitions.Get(Sprite);
-
-    [Obsolete("Use Customization.CustomSprites instead")]
-    public FAtlasElement GetElement(string name) => SpriteSheet?.Elements[name];
     #endregion
 }
