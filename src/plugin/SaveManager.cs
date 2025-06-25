@@ -2,14 +2,15 @@
 
 public static class SaveManager
 {
-    public static string root = Application.persistentDataPath + Path.DirectorySeparatorChar + Plugin.BaseName + Path.DirectorySeparatorChar;
-    [ObsoleteAttribute("Use customizationFile instead")]
+    public static string root = $"{Application.persistentDataPath}{Path.DirectorySeparatorChar}{BaseName}{Path.DirectorySeparatorChar}";
+    [Obsolete("Use customizationFile instead")]
     public static string spriteReplacementsFile = root + "spritereplacements.dat";
-    [ObsoleteAttribute("Use customizationFile instead")]
+    [Obsolete("Use customizationFile instead")]
     public static string oldCustomizationsFile = root + "customizations.dat";
     public static string customizationFile = root + "customization.dat";
-    public static List<Customization> Customizations = new();
+    public static List<Customization> Customizations = [];
 
+    [Obsolete]
     public static void Load()
     {
         if (File.Exists(spriteReplacementsFile))
@@ -73,6 +74,7 @@ public static class SaveManager
     }
 
     #region Legacy save
+    [Obsolete]
     public static void MigrateOldSave()
     {
         SaveData data;
@@ -102,6 +104,7 @@ public static class SaveManager
         File.Delete(spriteReplacementsFile);
     }
 
+    [Obsolete]
     public static void MigrateOldSave2()
     {
         using (var fs = new FileStream(oldCustomizationsFile, FileMode.Open))

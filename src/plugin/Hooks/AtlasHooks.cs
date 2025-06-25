@@ -18,16 +18,16 @@ public class AtlasHooks
         {
             if (!cursor.TryGotoNext(MoveType.After, i => i.MatchLdloc(out loc),
                                                     i => i.MatchLdloc(out _),
-                                                    i => i.MatchStfld<FAtlasElement>("name")))
+                                                    i => i.MatchStfld<FAtlasElement>(nameof(FAtlasElement.name))))
             {
                 throw new Exception("Failed to match IL for FAtlas_LoadAtlasData!");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError("Exception when matching IL for FAtlas_LoadAtlasData!");
-            Debug.LogException(ex);
-            Debug.LogError(il);
+            DebugError("Exception when matching IL for FAtlas_LoadAtlasData!");
+            DebugError(ex);
+            DebugError(il);
             throw;
         }
 
@@ -42,18 +42,18 @@ public class AtlasHooks
         });
     }
 
-    public static List<string> Errors = new();
+    public static List<string> Errors = [];
     public static void RegisterError(string friendly, Exception exception = null)
     {
         Errors.Add(friendly);
-        Debug.LogWarning("DressMySlugcat: " + friendly + Environment.NewLine + (exception != null ? StackTraceUtility.ExtractStringFromException(exception) : ""));
+        DebugWarning("DressMySlugcat: " + friendly + Environment.NewLine + (exception != null ? StackTraceUtility.ExtractStringFromException(exception) : ""));
     }
 
     public static void ReloadAtlases()
     {
         SpriteSheet.EmptyAtlas = null;
         SpriteSheet.TailAtlas = null;
-        foreach (var sheet in Plugin.SpriteSheets)
+        foreach (var sheet in SpriteSheets)
         {
             foreach (var atlas in sheet.Atlases)
             {
@@ -61,19 +61,19 @@ public class AtlasHooks
             }
         }
 
-        Plugin.SpriteSheets.Clear();
+        SpriteSheets.Clear();
 
         LoadAtlases();
         SpriteSheet.UpdateDefaults();
     }
 
-    public static void LoadAtlases(string directory = Plugin.BaseName)
+    public static void LoadAtlases(string directory = BaseName)
     {
         Errors.Clear();
         LoadAtlasesInternal(directory);
     }
 
-    public static void LoadAtlasesInternal(string directory = Plugin.BaseName)
+    public static void LoadAtlasesInternal(string directory = BaseName)
     {
         var files = Utils.ListDirectory(directory, includeAll: true).Distinct().ToList();
 
@@ -83,7 +83,7 @@ public class AtlasHooks
         {
             if (!string.IsNullOrEmpty(metaFile))
             {
-                if (Plugin.BaseName.Equals(directory))
+                if (BaseName.Equals(directory))
                 {
                     RegisterError($"Metadata file found in the base directory, please create a subdirectory instead: {metaFile}");
                 }
@@ -169,13 +169,13 @@ public class AtlasHooks
                     return;
                 }
 
-                if (Plugin.SpriteSheets.Any(x => x.ID == spriteSheet.ID))
+                if (SpriteSheets.Any(x => x.ID == spriteSheet.ID))
                 {
                     RegisterError($"Duplicate spritesheet ID! \"{spriteSheet.ID}\"!");
                     return;
                 }
 
-                spriteSheet.Prefix = Plugin.BaseName + "_" + spriteSheet.ID + "_";
+                spriteSheet.Prefix = BaseName + "_" + spriteSheet.ID + "_";
 
                 if (!string.IsNullOrEmpty(spriteSheet.ID) && !string.IsNullOrEmpty(spriteSheet.Name) && !string.IsNullOrEmpty(spriteSheet.Author))
                 {
@@ -207,7 +207,7 @@ public class AtlasHooks
                         spriteSheet.Atlases.Add(atlas);
                     }
 
-                    Plugin.SpriteSheets.Add(spriteSheet);
+                    SpriteSheets.Add(spriteSheet);
 
                     try
                     {
