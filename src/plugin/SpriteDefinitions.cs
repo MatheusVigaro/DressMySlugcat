@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace DressMySlugcat;
+﻿namespace DressMySlugcat;
 
 public static class SpriteDefinitions
 {
@@ -25,7 +23,7 @@ public static class SpriteDefinitions
     {
         SlugcatDefaults.Add(customization);
     }
-    
+
     //public static Customization GetSlugcatDefault(string slugcat, int playerNumber) => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber).LastOrDefault();
     public static Customization GetSlugcatDefault(string slugcat, int playerNumber)
     {
@@ -111,16 +109,13 @@ public static class SpriteDefinitions
 
         AvailableSprites.Add(face);
 
-        var body = new AvailableSprite()
+        AvailableSprites.Add(new()
         {
             Name = "BODY",
             Description = "Body",
             GallerySprite = "BodyA",
-            RequiredSprites = ["BodyA"],
-            ExcludedSlugcatsSprites = new() { { "Watcher", "BODY" } }
-        };
-
-        AvailableSprites.Add(body);
+            RequiredSprites = ["BodyA"]
+        });
 
         AvailableSprites.Add(new()
         {

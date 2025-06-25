@@ -4,7 +4,7 @@ namespace DressMySlugcat;
 
 [BepInDependency("henpemaz.rainmeadow", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInDependency("slime-cubed.slugbase", BepInDependency.DependencyFlags.SoftDependency)]
-[BepInPlugin(BaseName, "Dress My Slugcat", "2.1.3")]
+[BepInPlugin(BaseName, "Dress My Slugcat", "2.1.5")]
 public class Plugin : BaseUnityPlugin
 {
     public static ProcessManager.ProcessID FancyMenu => new("FancyMenu", register: true);
