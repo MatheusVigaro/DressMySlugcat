@@ -1,10 +1,11 @@
-﻿namespace DressMySlugcat;
+﻿using System.Linq;
+
+namespace DressMySlugcat;
 
 public static class SpriteDefinitions
 {
     public static List<AvailableSprite> AvailableSprites = [];
     public static List<Customization> SlugcatDefaults = [];
-
     public static AvailableSprite Get(string name) => AvailableSprites.FirstOrDefault(x => x.Name == name);
 
     public static bool IsInit;
@@ -20,20 +21,21 @@ public static class SpriteDefinitions
         SpriteSheet.UpdateDefaults();
     }
 
-    public static void AddSlugcatDefault(Customization customization, string spriteName)
+    public static void AddSlugcatDefault(Customization customization)
     {
         SlugcatDefaults.Add(customization);
     }
-
+    
     //public static Customization GetSlugcatDefault(string slugcat, int playerNumber) => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber).LastOrDefault();
     public static Customization GetSlugcatDefault(string slugcat, int playerNumber)
     {
         if (playerNumber > 3) //WW- So Myriad players past 4 can use defaults
             playerNumber = 0;
 
-        return (from x in SlugcatDefaults
-                where x.Slugcat == slugcat && x.PlayerNumber == playerNumber
-                select x).LastOrDefault();
+        // BW - Sprites from code slugcats were not loading
+        IEnumerable<Customization> enumerable() => SlugcatDefaults.Where(x => x.Slugcat == slugcat && x.PlayerNumber == playerNumber);
+
+        return enumerable().LastOrDefault();
     }
 
     public static void Init()

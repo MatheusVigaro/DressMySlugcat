@@ -36,7 +36,7 @@ public class FancyMenu : Dialog, SelectOneButton.SelectOneButtonOwner
     public SymbolButton rightPage;
     public MenuLabel pageLabel;
 
-    private readonly float leftAnchor;
+    public readonly float leftAnchor;
     public readonly float rightAnchor;
 
     //COPY PASTE MEMORY
