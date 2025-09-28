@@ -38,9 +38,10 @@ public class DMSOptions : OptionInterface
 
     public override void Update()
     {
-        if (MeadowCompatibility.meadowEnabled)
-            mpBox.greyedOut = false;
-        else
-            mpBox.greyedOut = true;
+        //WW- DIDN'T SEEM TO WORK SO FORGET IT
+        //if (MeadowCompatibility.meadowEnabled)
+        //    mpBox.greyedOut = false;
+        //else
+        //    mpBox.greyedOut = true;
     }
 }

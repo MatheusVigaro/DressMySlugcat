@@ -57,6 +57,8 @@ public class PlayerGraphicsHooks
 
         try
         {
+            cursor.TryGotoNext(MoveType.Before, i => i.MatchRet()); //Finds a Return
+            //WW- THE FIRST ONES A DUD NOW WE WANT THE SECOND ONE..
             if (!cursor.TryGotoNext(MoveType.Before, i => i.MatchRet()))
             {
                 throw new Exception("Failed to match IL for PlayerGraphics_DrawSprites!");
