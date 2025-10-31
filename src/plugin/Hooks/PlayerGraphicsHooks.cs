@@ -11,6 +11,26 @@ public class PlayerGraphicsHooks
         IL.RoomCamera.SpriteLeaser.Update += SpriteLeaser_Update;
         IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
         IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSpritesTail;
+        On.Watcher.WatchermorphBody.UpdateOrigTail += WatchermorphBody_UpdateOrigTail;
+    }
+
+    //THIS BREAKS THE GAME IF WE ARE USING A CUSTOM TAIL SIZE. CAN WE JUST SKIP THIS THING? LET'S FIND OUT...
+    private static void WatchermorphBody_UpdateOrigTail(On.Watcher.WatchermorphBody.orig_UpdateOrigTail orig, WatchermorphBody self, float timeStacker, Vector2 camPos)
+    {
+        if (self.owner.graphicsModule != null)
+        {
+            var playerGraphicsData = new PlayerGraphicsEx();
+            var customization = Customization.For(self.owner.graphicsModule as PlayerGraphics);
+            playerGraphicsData.Customization = customization;
+
+            if (customization.CustomTail.IsCustom && customization.CustomTail.EffectiveLength != 4)
+            {
+                //Debug.Log("CUSTOM TAIL! SKIPPING WATCHER BODYMORPH TAIL UPDATE");
+                return;
+            }  
+        }
+        
+        orig(self, timeStacker, camPos);
     }
 
     private static void SpriteLeaser_ctor(On.RoomCamera.SpriteLeaser.orig_ctor orig, RoomCamera.SpriteLeaser sLeaser, IDrawable obj, RoomCamera rCam)
@@ -36,7 +56,7 @@ public class PlayerGraphicsHooks
         sLeaser.sprites[2].MoveBehindOtherNode(sLeaser.sprites[4]);
 
         //-- Gills behind face
-        if (self.gills != null)
+        if (self.gills != null && self.gills.startSprite < sLeaser.sprites.Length) //REQUEST FROM iwantbread FOR COMPATIBILITY WITH GILLED SLUGCATS
         {
             var lastSprite = sLeaser.sprites[9];
             for (int i = self.gills.startSprite + self.gills.numberOfSprites - 1; i >= self.gills.startSprite; i--)
