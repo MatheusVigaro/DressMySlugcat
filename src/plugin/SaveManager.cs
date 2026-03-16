@@ -73,6 +73,19 @@ public static class SaveManager
         }
     }
 
+
+    public static void WipeSave()
+    {
+        if (Directory.Exists(root))
+        {
+            File.Delete(customizationFile);
+            Customizations.Clear();
+            Customization.CleanDefaults();
+            SaveManager.InitSlugcatCustomizations();
+        }
+    }
+
+
     #region Legacy save
     [Obsolete]
     public static void MigrateOldSave()

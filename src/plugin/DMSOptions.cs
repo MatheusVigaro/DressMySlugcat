@@ -6,6 +6,7 @@ public class DMSOptions : OptionInterface
     public readonly Configurable<bool> LoadInactiveMods;
     public readonly Configurable<bool> DefaultMeadowSkins;
     public OpCheckBox mpBox;
+    private OpSimpleButton wipeDataBtn;
 
     public DMSOptions()
     {
@@ -23,16 +24,20 @@ public class DMSOptions : OptionInterface
     public override void Initialize()
     {
         var opTab = new OpTab(this, "Settings");
+        Vector2 btnSize = new Vector2(130f, 25f);
         Tabs = [opTab];
 
-        elements = 
+        elements =
         [
             new OpCheckBox(LoadInactiveMods, 10, 540),
             new OpLabel(45f, 540f, "Load Inactive Mods"),
 
             mpBox = new OpCheckBox(DefaultMeadowSkins, 10, 500) { description = "Requires the Rain Meadow mod. If disabled, all other players skins are treated as player 1" },
-            new OpLabel(45f, 500f, "Default skins for Rain Meadow players")
+            new OpLabel(45f, 500f, "Default skins for Rain Meadow players"),
+
+            wipeDataBtn = new OpSimpleButton(new Vector2(10f, 450f), btnSize, "Wipe All Presets") { description = OptionInterface.Translate("Delete all DMS preset data, restoring everything to default. This can help fix issues with the get fancy menu if the data file has been corrupted.") },
         ];
+        wipeDataBtn.OnClick += BalancedPreset;
         opTab.AddItems(elements);
     }
 
@@ -43,5 +48,10 @@ public class DMSOptions : OptionInterface
         //    mpBox.greyedOut = false;
         //else
         //    mpBox.greyedOut = true;
+    }
+
+    public void BalancedPreset(UIfocusable trigger)
+    {
+        SaveManager.WipeSave();
     }
 }
