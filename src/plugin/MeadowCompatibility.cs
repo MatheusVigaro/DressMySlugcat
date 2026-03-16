@@ -4,27 +4,16 @@ namespace DressMySlugcat;
 
 public class MeadowCompatibility
 {
-    public static bool meadowEnabled;
-    public MeadowCompatibility()
-    {
-        if (ModManager.ActiveMods.Any(x => x.id == "henpemaz_rainmeadow"))
-        {
-            meadowEnabled = true;
-        }
-    }
-
     public static bool IsMeadowSession()
     {
-        if (meadowEnabled)
+        if (Plugin.meadowEnabled)
             return CheckMS();
         return false;
     }
 
     public static bool CheckMS()
     {
-        if (IsMeadowSession())
-            return OnlineManager.lobby != null;
-        return false;
+        return OnlineManager.lobby != null;
     }
 
     public static bool CheckForMeadowNonselfClient(Player self)

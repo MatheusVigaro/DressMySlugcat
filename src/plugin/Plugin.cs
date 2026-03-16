@@ -24,6 +24,7 @@ public class Plugin : BaseUnityPlugin
     public static void DebugError(object ex) => Logger.LogError(ex);
 
     //public static void DebugFatal(object ex) => Logger.LogFatal(ex);
+    public static bool meadowEnabled = false;
 
     public void Awake()
     {
@@ -57,6 +58,12 @@ public class Plugin : BaseUnityPlugin
         try
         {
             MachineConnector.SetRegisteredOI(BaseName, Options = DMSOptions.Instance);
+
+            //JUST DO THIS HERE
+            if (ModManager.ActiveMods.Any(x => x.id == "henpemaz_rainmeadow"))
+            {
+                meadowEnabled = true;
+            }
 
             if (IsInit) return;
             IsInit = true;
