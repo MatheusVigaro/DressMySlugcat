@@ -124,11 +124,9 @@ public class PlayerGraphicsHooks
                     if (playerGraphics.player.slugcatStats.name != WatcherEnums.SlugcatStatsName.Watcher && spritesToChangeShader)
                         sLeaser.sprites[i].shader = FShader.Basic;
 
-                    //BW - Changing the Watcher color body sprite to Hips color sprite
                     //Hidding the arm sprites when the Watcher is on Camo mode, sprites changed 5, 6, 7, 8
                     if (playerGraphics.player.slugcatStats.name == WatcherEnums.SlugcatStatsName.Watcher)
                     {
-                        sLeaser.sprites[0].color = sLeaser.sprites[1].color;
 
                         float camoProgress = playerGraphics.player.camoProgress;
                         bool isCamo = playerGraphics.player.isCamo;
@@ -329,11 +327,6 @@ public class PlayerGraphicsHooks
                         playerGraphicsData.SpriteNames[i] = "Face" + (sLeaser.sprites[i].scaleX < 0f ? "C" : "D") + playerGraphicsData.SpriteNames[i].Substring(5);
                     }
 
-                    if (playerGraphicsData.IsWatcher && playerGraphicsData.SpriteNames[i].StartsWith("BodyA"))
-                    {
-                        var bodyColor = sLeaser.sprites[1].color;
-                        sLeaser.sprites[0].color = bodyColor;
-                    }
 
                     if (sLeaser.sprites[i] != null)
                     {
