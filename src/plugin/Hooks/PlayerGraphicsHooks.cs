@@ -416,7 +416,20 @@ public class PlayerGraphicsHooks
                             }
                         }
 
-                        if (playerGraphicsData.SpriteColors.TryGetValue(playerGraphicsData.SpriteNames[i], out var customColor))
+                        //WW- RUN THE SEARCH BUT IGNORE ANY LEFT/RIGHT ASYM VARIANTS IN THE NAME, BECAUSE THEY DONT STORE CUSTOM COLOR
+                        string colorSearch = playerGraphicsData.SpriteNames[i];
+                        if (i == 0)
+                        {
+                            colorSearch = colorSearch.Replace("RightBody", "Body");
+                            colorSearch = colorSearch.Replace("LeftBody", "Body");
+                        }
+                        if (i == 1)
+                        {
+                            colorSearch = colorSearch.Replace("RightHips", "Hips");
+                            colorSearch = colorSearch.Replace("LeftHips", "Hips");
+                        }
+
+                        if (playerGraphicsData.SpriteColors.TryGetValue(colorSearch, out var customColor))
                         {
                             if (playerGraphics.malnourished > 0f)
                             {
