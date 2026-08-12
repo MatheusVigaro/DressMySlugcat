@@ -515,7 +515,7 @@ public class PlayerGraphicsHooks
     public static PlayerGraphicsEx InitiateCustomGraphics(PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
     {
         //CHECK MEADOW STUFF
-        if (Plugin.Options.DefaultMeadowSkins.Value && MeadowCompatibility.CheckForMeadowNonselfClient(self.owner as Player))
+        if (Plugin.Options.DefaultMeadowSkins.Value && !Plugin.dmsxmeadowEnabled && MeadowCompatibility.CheckForMeadowNonselfClient(self.owner as Player))
         {
             Debug.Log("THIS MEADOW CLIENT IS NOT US! DEFAULT SKIN FOR THEM");
             return null;

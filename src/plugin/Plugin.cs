@@ -25,6 +25,7 @@ public class Plugin : BaseUnityPlugin
 
     //public static void DebugFatal(object ex) => Logger.LogFatal(ex);
     public static bool meadowEnabled = false;
+    public static bool dmsxmeadowEnabled = false;
 
     public void Awake()
     {
@@ -63,6 +64,10 @@ public class Plugin : BaseUnityPlugin
             if (ModManager.ActiveMods.Any(x => x.id == "henpemaz_rainmeadow"))
             {
                 meadowEnabled = true;
+            }
+            if (ModManager.ActiveMods.Any(x => x.id == "dmsxmeadow"))
+            {
+                dmsxmeadowEnabled = true;
             }
 
             if (IsInit) return;
